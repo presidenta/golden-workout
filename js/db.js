@@ -104,4 +104,4 @@ class Database {
   }
 }
 
-export const db = new Database();
+const db = new Database();

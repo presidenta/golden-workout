@@ -1,11 +1,4 @@
-import { store } from './store.js';
-import { db } from './db.js';
-import { EXERCISE_DB, DEFAULT_PROGRAMS } from './data.js';
-import { WorkoutEngine } from './workout.js';
-import { SpeechController } from './speech.js';
-import { Timer, RestTimer } from './timer.js';
-
-export class UI {
+class UI {
   constructor(i18n) {
     this.i18n = i18n;
     this.engine = null;
@@ -18,12 +11,12 @@ export class UI {
     this._boundHandlers = {};
   }
 
-  init(deps) {
+  async init(deps) {
     this.speech = deps.speech;
     this.engine = deps.engine;
     this.currentLang = store.getState().lang;
     this.t = this.i18n[this.currentLang];
-    this._loadPrograms();
+    await this._loadPrograms();
     this._bindEvents();
     this._renderAll();
     store.subscribe((s) => this._onStateChange(s));
@@ -35,15 +28,13 @@ export class UI {
     }
   }
 
-  _loadPrograms() {
-    // Load custom programs from DB async
-    db.getAll('programs').then(progs => {
+  async _loadPrograms() {
+    try {
+      const progs = await db.getAll('programs');
       progs.forEach(p => { this.programs[p.id] = p; });
-      this._renderPrograms();
-      this._renderPlanList();
-      this._renderConstructor();
-      this._renderSchedule();
-    }).catch(() => {});
+    } catch (e) {
+      console.warn('[UI] Failed to load custom programs:', e);
+    }
   }
 
   _onStateChange(s) {
@@ -482,7 +473,7 @@ export class UI {
     const days = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
     const tdays = this.currentLang === 'en' 
       ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
-      : this.currentLang === 'ua' ? ['Неділя','Понеділок','Вівторок','Середа','Четвер','П'ятниця','Субота']
+      : this.currentLang === 'ua' ? ['Неділя','Понеділок','Вівторок','Середа','Четвер',"П'ятниця",'Субота']
       : days;
     const sched = store.getState().schedule;
     tdays.forEach((dayName, idx) => {

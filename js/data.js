@@ -1,4 +1,4 @@
-export const EXERCISE_DB = {
+const EXERCISE_DB = {
   pushups: {
     id: 'pushups', reps: 15, rest: 90,
     muscles: ['chest', 'triceps', 'core'], equipment: 'bodyweight', difficulty: 'beginner',
@@ -137,7 +137,7 @@ export const EXERCISE_DB = {
   }
 };
 
-export const DEFAULT_PROGRAMS = {
+const DEFAULT_PROGRAMS = {
   fullbody: { name: 'Full-Body База', exercises: ['pushups', 'squats', 'lunges', 'crunches'] },
   glutes: { name: 'Ягодицы & Ноги', exercises: ['glute_bridge', 'romanian_dl', 'lunges_reverse', 'calf_raises'] },
   arms_chest: { name: 'Грудь & Руки', exercises: ['pushups_wide', 'biceps_curl', 'triceps_dips', 'pushups_diamond'] },
@@ -145,5 +145,5 @@ export const DEFAULT_PROGRAMS = {
   goltis: { name: 'Голтис Импульс', exercises: ['goltis_joint', 'squats', 'glute_bridge', 'plank'] }
 };
 
-export const WARMUP_EXERCISES = ['goltis_joint', 'squats'];
-export const COOLDOWN_EXERCISES = ['plank', 'goltis_joint'];
+const WARMUP_EXERCISES = ['goltis_joint', 'squats'];
+const COOLDOWN_EXERCISES = ['plank', 'goltis_joint'];

@@ -1,8 +1,4 @@
-import { store } from './store.js';
-import { EXERCISE_DB, DEFAULT_PROGRAMS, WARMUP_EXERCISES, COOLDOWN_EXERCISES } from './data.js';
-import { db } from './db.js';
-
-export class WorkoutEngine {
+class WorkoutEngine {
   constructor() {
     this.programKey = null;
     this.exercises = [];

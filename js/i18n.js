@@ -1,4 +1,4 @@
-export const I18N = {
+const I18N = {
   ru: {
     subtitle: "Architect Pro v4.0",
     tabs: { workout: "Тренировка", constructor: "Конструктор", schedule: "Расписание", stats: "Статистика" },

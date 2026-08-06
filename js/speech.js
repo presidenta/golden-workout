@@ -1,4 +1,4 @@
-export class SpeechController {
+class SpeechController {
   constructor(lang = 'ru-RU') {
     this.lang = lang;
     this.synth = window.speechSynthesis || null;

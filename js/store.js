@@ -36,4 +36,4 @@ class Store {
   }
 }
 
-export const store = new Store();
+const store = new Store();

@@ -1,10 +1,3 @@
-import { db } from './db.js';
-import { store } from './store.js';
-import { I18N } from './i18n.js';
-import { SpeechController } from './speech.js';
-import { WorkoutEngine } from './workout.js';
-import { UI } from './ui.js';
-
 async function bootstrap() {
   try {
     await db.init();
@@ -29,7 +22,7 @@ async function bootstrap() {
 
     const engine = new WorkoutEngine();
     const ui = new UI(I18N);
-    ui.init({ speech, engine });
+    await ui.init({ speech, engine });
 
     // Restore volume UI
     document.querySelectorAll('.vol-btn').forEach(b => {
@@ -52,11 +45,15 @@ async function bootstrap() {
   }
 }
 
-// Register Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
-    .then(reg => console.log('[SW] Registered:', reg.scope))
-    .catch(err => console.warn('[SW] Registration failed:', err));
+// Register Service Worker (with fallback for file://)
+try {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('[SW] Registered:', reg.scope))
+      .catch(err => console.warn('[SW] Registration failed:', err));
+  }
+} catch (err) {
+  console.warn('[SW] Service Worker not available (file://?):', err);
 }
 
 // Prevent zoom on double-tap for PWA feel

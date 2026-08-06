@@ -1,4 +1,4 @@
-export class Timer {
+class Timer {
   constructor(options) {
     this.duration = options.duration || 0;
     this.onTick = options.onTick || (() => {});
@@ -37,7 +37,7 @@ export class Timer {
   }
 }
 
-export class RestTimer extends Timer {
+class RestTimer extends Timer {
   constructor(seconds) {
     super({ duration: seconds });
   }
