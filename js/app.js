@@ -17,7 +17,8 @@ async function bootstrap() {
     const state = store.getState();
     const lang = state.lang || 'ru';
     const speech = new SpeechController(lang === 'ru' ? 'ru-RU' : lang === 'ua' ? 'uk-UA' : 'en-US');
-    speech.enabled = state.voiceEnabled !== false;
+    // Голос нужен, если считаем вслух или подсказываем дыхание
+    speech.enabled = state.countAloud !== false || (state.breathMode || 'inhale') !== 'off';
     speech.voiceCommandsEnabled = !!state.voiceControlEnabled;
 
     const engine = new WorkoutEngine();
@@ -33,7 +34,8 @@ async function bootstrap() {
     document.getElementById('inputGlobalSets').value = state.globalSets;
     document.getElementById('inputGlobalTempo').value = state.globalTempo;
     document.getElementById('inputRestSeconds').value = state.restSeconds;
-    document.getElementById('setVoice').checked = state.voiceEnabled !== false;
+    document.getElementById('selectBreath').value = state.breathMode || 'inhale';
+    document.getElementById('setCountAloud').checked = state.countAloud !== false;
     document.getElementById('setVoiceControl').checked = !!state.voiceControlEnabled;
     document.getElementById('inputReminderTime').value = state.reminderTime || '09:00';
     document.getElementById('selectLang').value = lang;

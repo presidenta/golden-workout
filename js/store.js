@@ -8,7 +8,11 @@ class Store {
       globalSets: 3,
       globalTempo: 4,
       restSeconds: 90,
-      voiceEnabled: true,
+      // Подсказки дыхания: 'inhale' — только вдох, 'both' — вдох и выдох,
+      // 'off' — молча. Выдох очевиден сам по себе, поэтому по умолчанию
+      // произносится только вдох.
+      breathMode: 'inhale',
+      countAloud: true,
       voiceControlEnabled: false,
       reminderTime: '09:00',
       schedule: { 0: 'goltis', 1: 'fullbody', 2: 'glutes', 3: 'arms_chest', 4: 'cardio_core', 5: 'fullbody', 6: 'glutes' },

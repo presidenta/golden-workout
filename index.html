@@ -42,11 +42,20 @@
         <h3 style="color: var(--gold-primary); margin-bottom: 14px;" id="ui_set_title">Системные настройки</h3>
 
         <div class="form-group">
-          <label>Голосовой помощник</label>
+          <label id="ui_breath_label">Подсказки дыхания</label>
+          <select id="selectBreath">
+            <option value="inhale">Только вдох</option>
+            <option value="both">Вдох и выдох</option>
+            <option value="off">Выключено</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label id="ui_count_label">Счёт вслух</label>
           <div class="toggle-row">
-            <span style="font-size: 0.8rem; color: #ccc;">Озвучка фаз (Вдох/Выдох)</span>
+            <span style="font-size: 0.8rem; color: #ccc;" id="ui_count_hint">Проговаривать номер повтора</span>
             <label class="switch">
-              <input type="checkbox" id="setVoice" checked>
+              <input type="checkbox" id="setCountAloud" checked>
               <span class="slider"></span>
             </label>
           </div>

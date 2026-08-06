@@ -138,6 +138,17 @@ class UI {
     document.getElementById('actionBtn').textContent = this.t.start;
     document.getElementById('btnExportCSV').textContent = this.t.exportCSV;
     document.getElementById('btnFinishSession').textContent = this.t.finishWorkout;
+
+    // Настройки дыхания и счёта
+    document.getElementById('ui_breath_label').textContent = this.t.breathLabel;
+    document.getElementById('ui_count_label').textContent = this.t.countLabel;
+    document.getElementById('ui_count_hint').textContent = this.t.countHint;
+    const breathSel = document.getElementById('selectBreath');
+    ['inhale', 'both', 'off'].forEach(mode => {
+      const opt = breathSel.querySelector(`option[value="${mode}"]`);
+      if (opt) opt.textContent = this.t.breathModes[mode];
+    });
+
     document.querySelector('[data-vol="min"]').textContent = this.t.volume.min;
     document.querySelector('[data-vol="norm"]').textContent = this.t.volume.norm;
     document.querySelector('[data-vol="max"]').textContent = this.t.volume.max;
@@ -366,31 +377,54 @@ class UI {
     // Пока идёт подход, кадрами управляют фазы дыхания
     this._stopFrameLoop();
 
+    const overlay = document.getElementById('breathOverlay');
+    const overlayText = document.getElementById('breathOverlayText');
+    const phaseText = document.getElementById('phaseDisplay');
+    const circle = document.getElementById('counterCircle');
+
     const tick = () => {
+      const st = store.getState();
+      const breath = st.breathMode || 'inhale';
       this.currentRep++;
       const rep = this.currentRep;
       document.getElementById('repDisplay').textContent = rep;
       this._updateSetProgress();
-      if (this.speech) this.speech.speak(String(rep));
+      if (this.speech && st.countAloud !== false) this.speech.speak(String(rep));
 
-      // Inhale
+      // Первая половина цикла — опускание. На нём делается вдох,
+      // поэтому и кадр здесь нижний.
       setTimeout(() => {
-        document.getElementById('phaseDisplay').textContent = this.t.inhale;
-        document.getElementById('breathOverlayText').textContent = this.t.inhale;
-        document.getElementById('breathOverlay').className = 'breath-overlay show inhale';
-        document.getElementById('counterCircle').className = 'counter-circle state-inhale';
-        this._showFrame(0);
-        if (this.speech && store.getState().voiceEnabled) this.speech.speak(this.t.inhale);
+        this._showFrame(1);
+        circle.className = 'counter-circle state-inhale';
+        if (breath === 'off') {
+          phaseText.textContent = '';
+          overlay.className = 'breath-overlay';
+          return;
+        }
+        phaseText.textContent = this.t.inhale;
+        // Надпись поверх картинки закрывает технику, поэтому её
+        // показываем только когда просили обе фазы
+        if (breath === 'both') {
+          overlayText.textContent = this.t.inhale;
+          overlay.className = 'breath-overlay show inhale';
+        }
+        if (this.speech) this.speech.speak(this.t.inhale);
       }, 400);
 
-      // Exhale
+      // Вторая половина — подъём, усилие. Выдох и верхний кадр.
       setTimeout(() => {
-        document.getElementById('phaseDisplay').textContent = this.t.exhale;
-        document.getElementById('breathOverlayText').textContent = this.t.exhale;
-        document.getElementById('breathOverlay').className = 'breath-overlay show exhale';
-        document.getElementById('counterCircle').className = 'counter-circle state-exhale';
-        this._showFrame(1);
-        if (this.speech && store.getState().voiceEnabled) this.speech.speak(this.t.exhale);
+        this._showFrame(0);
+        circle.className = 'counter-circle state-exhale';
+        if (breath !== 'both') {
+          // В режимах «только вдох» и «выключено» о выдохе не напоминаем
+          phaseText.textContent = '';
+          overlay.className = 'breath-overlay';
+          return;
+        }
+        phaseText.textContent = this.t.exhale;
+        overlayText.textContent = this.t.exhale;
+        overlay.className = 'breath-overlay show exhale';
+        if (this.speech) this.speech.speak(this.t.exhale);
       }, half + 200);
 
       if (rep >= ex.reps) {
@@ -839,7 +873,8 @@ class UI {
       globalSets: parseInt(document.getElementById('inputGlobalSets').value) || 3,
       globalTempo: parseInt(document.getElementById('inputGlobalTempo').value) || 4,
       restSeconds: parseInt(document.getElementById('inputRestSeconds').value) || 90,
-      voiceEnabled: document.getElementById('setVoice').checked,
+      breathMode: document.getElementById('selectBreath').value,
+      countAloud: document.getElementById('setCountAloud').checked,
       voiceControlEnabled: document.getElementById('setVoiceControl').checked,
       reminderTime: document.getElementById('inputReminderTime').value || '09:00',
       lang: document.getElementById('selectLang').value
@@ -849,7 +884,8 @@ class UI {
       this._toggleSettings(false);
       this._renderAll();
       if (this.speech) {
-        this.speech.enabled = s.voiceEnabled;
+        // Голос нужен, если просят считать вслух или подсказывать дыхание
+        this.speech.enabled = s.countAloud || s.breathMode !== 'off';
         this.speech.voiceCommandsEnabled = s.voiceControlEnabled;
         this.speech.lang = s.lang === 'ru' ? 'ru-RU' : s.lang === 'ua' ? 'uk-UA' : 'en-US';
       }
