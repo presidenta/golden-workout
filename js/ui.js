@@ -35,6 +35,8 @@ class UI {
     } catch (e) {
       console.warn('[UI] Failed to load custom programs:', e);
     }
+    // Движок берёт программы из store, поэтому список нужно продублировать туда.
+    store.setState({ programs: this.programs });
   }
 
   _onStateChange(s) {
@@ -164,7 +166,7 @@ class UI {
         <img class="exercise-thumb lazy" data-src="${ex.gif}" alt="" loading="lazy">
         <div class="exercise-info">
           <div class="exercise-name">${this._esc(loc.name)}</div>
-          <div class="exercise-details">${effSets} ${this.t.setInfo(1,1).split(' ')[1]} × ${ex.reps} ${this.t.reps} | ${this._esc(loc.desc)}</div>
+          <div class="exercise-details">${effSets} ${this.t.setsShort} × ${ex.reps} ${this.t.reps} | ${this._esc(loc.desc)}</div>
         </div>
         <div class="exercise-status">⭕</div>
       `;
@@ -459,7 +461,7 @@ class UI {
     const prog = { id, name, exercises: checked };
     this.programs[id] = prog;
     db.set('programs', id, prog).then(() => {
-      store.setState({ currentProgram: id });
+      store.setState({ programs: this.programs, currentProgram: id });
       this._renderPrograms();
       this._renderPlanList();
       this._switchTab('workout');

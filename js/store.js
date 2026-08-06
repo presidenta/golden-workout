@@ -12,6 +12,9 @@ class Store {
       voiceControlEnabled: false,
       reminderTime: '09:00',
       schedule: { 0: 'goltis', 1: 'fullbody', 2: 'glutes', 3: 'arms_chest', 4: 'cardio_core', 5: 'fullbody', 6: 'glutes' },
+      // Программы — стандартные плюс созданные в конструкторе.
+      // Наполняется из UI, отсюда их берёт WorkoutEngine при старте.
+      programs: {},
       currentWorkout: null,
       theme: 'dark'
     };

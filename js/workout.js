@@ -11,7 +11,9 @@ class WorkoutEngine {
 
   start(programKey, withWarmup = true) {
     this.programKey = programKey;
-    const prog = store.getState().programs[programKey] || DEFAULT_PROGRAMS[programKey] || DEFAULT_PROGRAMS.fullbody;
+    // programs может быть пустым — тогда берём стандартную программу.
+    const known = store.getState().programs || {};
+    const prog = known[programKey] || DEFAULT_PROGRAMS[programKey] || DEFAULT_PROGRAMS.fullbody;
     const mainExercises = prog.exercises.map(id => EXERCISE_DB[id]).filter(Boolean);
 
     this.exercises = withWarmup 
