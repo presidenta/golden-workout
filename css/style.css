@@ -373,20 +373,38 @@ body {
   display: block;
   border-radius: 8px;
 }
-/* Метка на гнезде: кольцо, которое расходится, как круги по воде */
+/* Метка на гнезде: кольцо плюс силуэт самой ручки в нужном повороте */
 .board-mark {
   position: absolute;
-  width: 26px; height: 26px;
-  margin: -13px 0 0 -13px;
+  width: 22px; height: 22px;
+  margin: -11px 0 0 -11px;
   border-radius: 50%;
   border: 3px solid var(--mc, #fff);
-  box-shadow: 0 0 0 2px rgba(0,0,0,0.55), 0 0 12px var(--mc, #fff);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.6), 0 0 14px var(--mc, #fff);
   animation: markPulse 1.7s ease-in-out infinite;
   pointer-events: none;
 }
 @keyframes markPulse {
-  0%, 100% { transform: scale(1);    opacity: 1; }
-  50%      { transform: scale(1.22); opacity: 0.6; }
+  0%, 100% { box-shadow: 0 0 0 2px rgba(0,0,0,0.6), 0 0 8px var(--mc, #fff); }
+  50%      { box-shadow: 0 0 0 2px rgba(0,0,0,0.6), 0 0 20px var(--mc, #fff); }
+}
+
+/* Сама ручка: вдоль тела — стоймя, поперёк — лёжа */
+.board-handle {
+  position: absolute;
+  left: 50%; top: 50%;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.14);
+  border: 2.5px solid var(--mc, #fff);
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+.board-mark.along .board-handle {
+  width: 16px; height: 62px;
+  margin: -31px 0 0 -8px;
+}
+.board-mark.across .board-handle {
+  width: 62px; height: 16px;
+  margin: -8px 0 0 -31px;
 }
 
 .form-svg {

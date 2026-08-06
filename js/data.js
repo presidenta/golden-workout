@@ -138,7 +138,7 @@
     id: 'board_blue', reps: 12, rest: 90,
     muscles: ['chest'], equipment: 'push-up board', difficulty: 'beginner',
     frames: [],
-    board: { color: 'blue', slots: ['blueL', 'blueR'], grip: 'along' },
+    board: { color: 'blue', slot: 'blue', grip: 'along' },
     ru: {
       name: "Доска · Синий (грудь)",
       desc: "Большая грудная мышца, средний и нижний пучок.",
@@ -159,7 +159,7 @@
     id: 'board_blue_wide', reps: 10, rest: 90,
     muscles: ['chest'], equipment: 'push-up board', difficulty: 'intermediate',
     frames: [],
-    board: { color: 'blue', slots: ['blueL', 'blueR'], grip: 'across' },
+    board: { color: 'blue', slot: 'blueWide', grip: 'across' },
     ru: {
       name: "Доска · Синий широкий (внешняя грудь)",
       desc: "Внешний край грудных, зона подмышки.",
@@ -180,7 +180,7 @@
     id: 'board_green', reps: 10, rest: 90,
     muscles: ['triceps'], equipment: 'push-up board', difficulty: 'intermediate',
     frames: [],
-    board: { color: 'green', slots: ['greenL', 'greenR'], grip: 'along' },
+    board: { color: 'green', slot: 'green', grip: 'along' },
     ru: {
       name: "Доска · Зелёный (трицепс)",
       desc: "Трицепс — задняя поверхность руки, все три головки.",
@@ -201,7 +201,7 @@
     id: 'board_red', reps: 10, rest: 90,
     muscles: ['shoulders'], equipment: 'push-up board', difficulty: 'intermediate',
     frames: [],
-    board: { color: 'red', slots: ['redL', 'redR'], grip: 'along' },
+    board: { color: 'red', slot: 'red', grip: 'along' },
     ru: {
       name: "Доска · Красный (плечи)",
       desc: "Передняя и средняя дельта, верх груди.",
@@ -222,7 +222,7 @@
     id: 'board_yellow', reps: 12, rest: 90,
     muscles: ['back', 'lats'], equipment: 'push-up board', difficulty: 'intermediate',
     frames: [],
-    board: { color: 'yellow', slots: ['yellowL', 'yellowR'], grip: 'across' },
+    board: { color: 'yellow', slot: 'yellow', grip: 'across' },
     ru: {
       name: "Доска · Жёлтый (спина и осанка)",
       desc: "Широчайшие, ромбовидные, трапеция — то, что держит осанку.",

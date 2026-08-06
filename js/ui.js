@@ -654,23 +654,29 @@ class UI {
      чужих картинок — совпадает с доской и работает без интернета. */
 
   // Положение гнёзд на фотографии доски, в процентах от её размеров.
-  // Снято с самой доски: 7 гнёзд на половину, половины зеркальны.
+  // Снято с фотографии: половины зеркальны, поэтому у каждой пары
+  // одна высота и симметричные отступы слева и справа.
   static get BOARD_SLOTS() {
     return {
-      blue:   { l: 16.4, r: 83.6, y: 37.4, c: '#4a90e2' },  // широкие, по краям
-      red:    { l: 33.2, r: 66.8, y: 34.0, c: '#e74c3c' },  // на красной стрелке
-      green:  { l: 39.1, r: 60.9, y: 54.0, c: '#2ecc71' },  // на зелёных стрелках
-      yellow: { l: 41.7, r: 58.3, y: 81.7, c: '#e8c400' }   // нижние, в жёлтой зоне
+      blue:     { l: 6.7,  r: 93.3, y: 48.5, c: '#4a90e2' },  // синяя зона, средний ряд
+      blueWide: { l: 4.7,  r: 95.3, y: 19.9, c: '#4a90e2' },  // синяя зона, крайние верхние
+      red:      { l: 31.7, r: 68.3, y: 27.6, c: '#e74c3c' },  // на красной стрелке
+      green:    { l: 38.2, r: 61.8, y: 48.5, c: '#2ecc71' },  // на зелёных стрелках
+      yellow:   { l: 40.5, r: 59.5, y: 76.5, c: '#e8c400' }   // в жёлтой зоне, внизу
     };
   }
 
-  // Фотография доски с подсветкой тех гнёзд, куда ставить ручки
+  // Фотография доски: в нужные гнёзда пририсованы сами ручки,
+  // повёрнутые так, как их надо поставить.
   _boardPhoto(board) {
     if (!board) return '';
-    const s = UI.BOARD_SLOTS[board.color];
+    const s = UI.BOARD_SLOTS[board.slot || board.color];
     if (!s) return '';
+    const cls = board.grip === 'across' ? 'across' : 'along';
     const mark = (left) => `
-      <span class="board-mark" style="left:${left}%; top:${s.y}%; --mc:${s.c};"></span>`;
+      <span class="board-mark ${cls}" style="left:${left}%; top:${s.y}%; --mc:${s.c};">
+        <span class="board-handle"></span>
+      </span>`;
     return `
       <div class="board-photo">
         <img src="assets/board/board.jpg" alt="">

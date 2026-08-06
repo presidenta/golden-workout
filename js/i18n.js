@@ -1,6 +1,6 @@
 const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 7",
+    subtitle: "Architect Pro · сборка 8",
     tabs: { workout: "Тренировка", constructor: "Конструктор", treadmill: "Дорожка", schedule: "Расписание", stats: "Статистика" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -72,7 +72,7 @@ const I18N = {
     warmup: "🔥 Разминка", cooldown: "❄️ Заминка"
   },
   en: {
-    subtitle: "Architect Pro · build 7",
+    subtitle: "Architect Pro · build 8",
     tabs: { workout: "Workout", constructor: "Builder", treadmill: "Treadmill", schedule: "Schedule", stats: "Stats" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -143,7 +143,7 @@ const I18N = {
     warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 7",
+    subtitle: "Architect Pro · збірка 8",
     tabs: { workout: "Тренування", constructor: "Конструктор", treadmill: "Доріжка", schedule: "Розклад", stats: "Статистика" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
