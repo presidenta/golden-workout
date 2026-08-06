@@ -1,6 +1,6 @@
 const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 6",
+    subtitle: "Architect Pro · сборка 7",
     tabs: { workout: "Тренировка", constructor: "Конструктор", treadmill: "Дорожка", schedule: "Расписание", stats: "Статистика" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -42,6 +42,13 @@ const I18N = {
     logCardio: "Записать",
     boardCaption: "Ручки в подсвеченные гнёзда",
     boardGrip: { along: "вдоль тела", across: "поперёк" },
+    formCaption: "Локти",
+    elbowHints: {
+      blue:   "уходят назад под 45°, не в стороны",
+      green:  "прижаты к рёбрам, скользят строго назад",
+      red:    "под 45°, таз выше плеч — тело углом",
+      yellow: "разведены шире, работают лопатки, а не руки"
+    },
     breathLabel: "Подсказки дыхания",
     breathModes: { inhale: "Только вдох", both: "Вдох и выдох", off: "Выключено" },
     countLabel: "Счёт вслух",
@@ -65,7 +72,7 @@ const I18N = {
     warmup: "🔥 Разминка", cooldown: "❄️ Заминка"
   },
   en: {
-    subtitle: "Architect Pro · build 6",
+    subtitle: "Architect Pro · build 7",
     tabs: { workout: "Workout", constructor: "Builder", treadmill: "Treadmill", schedule: "Schedule", stats: "Stats" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -106,6 +113,13 @@ const I18N = {
     logCardio: "Log",
     boardCaption: "Handles into the highlighted slots",
     boardGrip: { along: "along the body", across: "across" },
+    formCaption: "Elbows",
+    elbowHints: {
+      blue:   "back at 45°, not out to the sides",
+      green:  "pinned to the ribs, sliding straight back",
+      red:    "at 45°, hips above shoulders — body in a pike",
+      yellow: "opened wider, the blades work, not the arms"
+    },
     breathLabel: "Breathing cues",
     breathModes: { inhale: "Inhale only", both: "Inhale and exhale", off: "Off" },
     countLabel: "Count aloud",
@@ -129,7 +143,7 @@ const I18N = {
     warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 6",
+    subtitle: "Architect Pro · збірка 7",
     tabs: { workout: "Тренування", constructor: "Конструктор", treadmill: "Доріжка", schedule: "Розклад", stats: "Статистика" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -170,6 +184,13 @@ const I18N = {
     logCardio: "Записати",
     boardCaption: "Ручки у підсвічені гнізда",
     boardGrip: { along: "вздовж тіла", across: "упоперек" },
+    formCaption: "Лікті",
+    elbowHints: {
+      blue:   "йдуть назад під 45°, не в боки",
+      green:  "притиснуті до ребер, ковзають назад",
+      red:    "під 45°, таз вище плечей — тіло кутом",
+      yellow: "розведені ширше, працюють лопатки, а не руки"
+    },
     breathLabel: "Підказки дихання",
     breathModes: { inhale: "Тільки вдих", both: "Вдих і видих", off: "Вимкнено" },
     countLabel: "Лічба вголос",

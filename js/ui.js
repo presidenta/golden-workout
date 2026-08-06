@@ -612,11 +612,7 @@ class UI {
     // Для доски показываем схему: куда вставлять ручки и как их развернуть
     if (ex.board) {
       img.style.display = 'none';
-      const fig = document.createElement('div');
-      fig.className = 'board-figure';
-      fig.innerHTML = this._boardSvg(ex.board) +
-        `<div class="board-caption">${this.t.boardCaption}: ${this.t.boardGrip[ex.board.grip]}</div>`;
-      mediaBox.appendChild(fig);
+      mediaBox.insertAdjacentHTML('beforeend', this._boardFigure(ex));
       document.getElementById('previewModal').classList.remove('hidden');
       return;
     }
@@ -657,56 +653,78 @@ class UI {
      куда ставить ручки для текущего упражнения. Своя схема надёжнее
      чужих картинок — совпадает с доской и работает без интернета. */
 
-  // Координаты гнёзд на доске (система координат 200 x 104)
+  // Положение гнёзд на фотографии доски, в процентах от её размеров.
+  // Снято с самой доски: 7 гнёзд на половину, половины зеркальны.
   static get BOARD_SLOTS() {
     return {
-      yellowL: { x: 24,  y: 82, c: '#e8c400' },
-      yellowR: { x: 176, y: 82, c: '#e8c400' },
-      blueL:   { x: 30,  y: 50, c: '#3f7fd4' },
-      blueR:   { x: 170, y: 50, c: '#3f7fd4' },
-      greenL:  { x: 68,  y: 44, c: '#2ecc71' },
-      greenR:  { x: 132, y: 44, c: '#2ecc71' },
-      redL:    { x: 86,  y: 20, c: '#e74c3c' },
-      redR:    { x: 114, y: 20, c: '#e74c3c' }
+      blue:   { l: 16.4, r: 83.6, y: 37.4, c: '#4a90e2' },  // широкие, по краям
+      red:    { l: 33.2, r: 66.8, y: 34.0, c: '#e74c3c' },  // на красной стрелке
+      green:  { l: 39.1, r: 60.9, y: 54.0, c: '#2ecc71' },  // на зелёных стрелках
+      yellow: { l: 41.7, r: 58.3, y: 81.7, c: '#e8c400' }   // нижние, в жёлтой зоне
     };
   }
 
-  _boardSvg(board) {
+  // Фотография доски с подсветкой тех гнёзд, куда ставить ручки
+  _boardPhoto(board) {
     if (!board) return '';
-    const all = UI.BOARD_SLOTS;
-    const active = new Set(board.slots || []);
-
-    const dots = Object.entries(all).map(([key, s]) => {
-      const on = active.has(key);
-      return `<circle cx="${s.x}" cy="${s.y}" r="${on ? 7.5 : 4.5}"
-        fill="${on ? s.c : '#2a2a33'}"
-        stroke="${on ? '#fff' : '#3a3a44'}" stroke-width="${on ? 2 : 1}"
-        ${on ? 'class="board-slot-on"' : ''} />`;
-    }).join('');
-
-    // Ручка: вдоль тела или поперёк — от этого зависит, какие мышцы тянет
-    const handles = (board.slots || []).map(k => {
-      const s = all[k];
-      if (!s) return '';
-      const w = board.grip === 'across' ? 30 : 11;
-      const h = board.grip === 'across' ? 11 : 30;
-      return `<rect x="${s.x - w / 2}" y="${s.y - h / 2}" width="${w}" height="${h}"
-        rx="5" fill="none" stroke="${s.c}" stroke-width="2.5" opacity="0.9" />`;
-    }).join('');
-
+    const s = UI.BOARD_SLOTS[board.color];
+    if (!s) return '';
+    const mark = (left) => `
+      <span class="board-mark" style="left:${left}%; top:${s.y}%; --mc:${s.c};"></span>`;
     return `
-      <svg viewBox="0 0 200 104" class="board-svg" role="img">
-        <rect x="1" y="1" width="198" height="102" rx="10" fill="#15151b" stroke="#33333d"/>
-        <line x1="100" y1="4" x2="100" y2="100" stroke="#33333d" stroke-width="1" stroke-dasharray="3 3"/>
-        <path d="M6 96 L48 96 L6 66 Z"      fill="#e8c400" opacity="0.16"/>
-        <path d="M194 96 L152 96 L194 66 Z" fill="#e8c400" opacity="0.16"/>
-        <path d="M8 62 L52 30 L58 44 L14 76 Z"      fill="#3f7fd4" opacity="0.16"/>
-        <path d="M192 62 L148 30 L142 44 L186 76 Z" fill="#3f7fd4" opacity="0.16"/>
-        <path d="M56 60 L80 30 L88 38 L64 68 Z"     fill="#2ecc71" opacity="0.18"/>
-        <path d="M144 60 L120 30 L112 38 L136 68 Z" fill="#2ecc71" opacity="0.18"/>
-        <path d="M94 46 L94 14 L100 8 L106 14 L106 46 Z" fill="#e74c3c" opacity="0.22"/>
-        ${dots}${handles}
+      <div class="board-photo">
+        <img src="assets/board/board.jpg" alt="">
+        ${mark(s.l)}${mark(s.r)}
+      </div>`;
+  }
+
+  // Человечек: вид сверху, куда ставить ладони и куда уходят локти.
+  // Именно это чаще всего делают неправильно.
+  _formSvg(board) {
+    if (!board) return '';
+    const f = UI.FORM_VIEWS[board.color];
+    if (!f) return '';
+    return `
+      <svg viewBox="0 0 200 130" class="form-svg" role="img">
+        <!-- корпус сверху: голова, плечи, таз -->
+        <ellipse cx="100" cy="20" rx="13" ry="14" fill="#3a3a46"/>
+        <path d="M78 36 L122 36 L116 104 L84 104 Z" fill="#2f2f3a"/>
+        <rect x="92" y="104" width="16" height="20" rx="6" fill="#2f2f3a"/>
+        <!-- руки: от плеча через локоть к ладони -->
+        <path d="M80 40 L${f.eL} L${f.hL}" fill="none" stroke="#8a8a9e" stroke-width="5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M120 40 L${f.eR} L${f.hR}" fill="none" stroke="#8a8a9e" stroke-width="5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- локти -->
+        <circle cx="${f.eL.split(' ')[0]}" cy="${f.eL.split(' ')[1]}" r="5" fill="${f.c}"/>
+        <circle cx="${f.eR.split(' ')[0]}" cy="${f.eR.split(' ')[1]}" r="5" fill="${f.c}"/>
+        <!-- ладони на ручках -->
+        <rect x="${+f.hL.split(' ')[0] - 9}" y="${+f.hL.split(' ')[1] - 6}" width="18" height="12" rx="4"
+              fill="none" stroke="${f.c}" stroke-width="2.5"/>
+        <rect x="${+f.hR.split(' ')[0] - 9}" y="${+f.hR.split(' ')[1] - 6}" width="18" height="12" rx="4"
+              fill="none" stroke="${f.c}" stroke-width="2.5"/>
       </svg>`;
+  }
+
+  // Положения локтей (e) и ладоней (h) для каждого цвета
+  static get FORM_VIEWS() {
+    return {
+      blue:   { eL: '52 62',  eR: '148 62',  hL: '58 88',  hR: '142 88',  c: '#4a90e2' },
+      green:  { eL: '70 66',  eR: '130 66',  hL: '84 88',  hR: '116 88',  c: '#2ecc71' },
+      red:    { eL: '58 54',  eR: '142 54',  hL: '70 78',  hR: '130 78',  c: '#e74c3c' },
+      yellow: { eL: '40 58',  eR: '160 58',  hL: '34 88',  hR: '166 88',  c: '#e8c400' }
+    };
+  }
+
+  _boardFigure(ex) {
+    const b = ex.board;
+    return `
+      <div class="board-figure">
+        ${this._boardPhoto(b)}
+        <div class="board-caption">${this.t.boardCaption}: ${this.t.boardGrip[b.grip]}</div>
+        ${this._formSvg(b)}
+        <div class="board-caption form-caption">${this.t.formCaption}: ${this.t.elbowHints[b.color]}</div>
+      </div>`;
   }
 
   /* ----- Анимация упражнения -----
@@ -729,11 +747,7 @@ class UI {
     if (ex && ex.board) {
       this._stopFrameLoop();
       img.style.display = 'none';
-      const fig = document.createElement('div');
-      fig.className = 'board-figure';
-      fig.innerHTML = this._boardSvg(ex.board) +
-        `<div class="board-caption">${this.t.boardCaption}: ${this.t.boardGrip[ex.board.grip]}</div>`;
-      box.appendChild(fig);
+      box.insertAdjacentHTML('beforeend', this._boardFigure(ex));
       return;
     }
 

@@ -48,7 +48,10 @@ body {
 /* Навигация */
 .nav-tabs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* Колонки подстраиваются под число вкладок и ширину экрана.
+     С жёсткими четырьмя пятая вкладка падала на вторую строку
+     и занимала четверть ширины. */
+  grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
   gap: 4px;
   background: #09090c;
   padding: 4px;
@@ -60,8 +63,10 @@ body {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  padding: 8px 4px;
-  font-size: 0.7rem;
+  padding: 8px 2px;
+  font-size: 0.63rem;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
   font-weight: 700;
   text-transform: uppercase;
   cursor: pointer;
@@ -358,21 +363,52 @@ body {
   font-size: 2.8rem; font-weight: 900; color: var(--gold-light);
 }
 
-/* Схема доски для отжиманий: куда вставлять ручки */
-.board-figure { width: 100%; padding: 8px 6px 10px 6px; }
-.board-svg { width: 100%; height: auto; display: block; }
-/* Подсвеченные гнёзда мигают, чтобы их было не спутать с остальными */
-.board-slot-on { animation: slotPulse 1.6s ease-in-out infinite; }
-@keyframes slotPulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.55; }
+/* Доска для отжиманий: фотография с подсветкой нужных гнёзд */
+.board-figure { width: 100%; padding: 10px 8px 12px 8px; }
+
+.board-photo { position: relative; width: 100%; line-height: 0; }
+.board-photo img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
 }
+/* Метка на гнезде: кольцо, которое расходится, как круги по воде */
+.board-mark {
+  position: absolute;
+  width: 26px; height: 26px;
+  margin: -13px 0 0 -13px;
+  border-radius: 50%;
+  border: 3px solid var(--mc, #fff);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.55), 0 0 12px var(--mc, #fff);
+  animation: markPulse 1.7s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes markPulse {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%      { transform: scale(1.22); opacity: 0.6; }
+}
+
+.form-svg {
+  width: 62%;
+  max-width: 190px;
+  height: auto;
+  display: block;
+  margin: 10px auto 0 auto;
+}
+
 .board-caption {
-  margin-top: 6px;
+  margin-top: 8px;
   text-align: center;
-  font-size: 0.73rem;
+  font-size: 0.74rem;
   color: var(--gold-light);
   font-weight: 700;
+  line-height: 1.35;
+}
+.board-caption.form-caption {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-weight: 400;
 }
 
 /* Переключатель языка в шапке */
