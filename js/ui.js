@@ -656,31 +656,51 @@ class UI {
   // Положение гнёзд на фотографии доски, в процентах от её размеров.
   // Снято с фотографии: половины зеркальны, поэтому у каждой пары
   // одна высота и симметричные отступы слева и справа.
-  static get BOARD_SLOTS() {
+  /* Планка вставляется в ДВА гнезда: нижним концом в общее гнездо,
+     верхним — в цветное. Отсюда и разные углы наклона. Расстояние
+     между гнёздами одинаковое — это длина планки.
+     Координаты сняты с фотографии 1597 x 1142. */
+  static get BOARD_GEOMETRY() {
     return {
-      blue:     { l: 6.7,  r: 93.3, y: 48.5, c: '#4a90e2' },  // синяя зона, средний ряд
-      blueWide: { l: 4.7,  r: 95.3, y: 19.9, c: '#4a90e2' },  // синяя зона, крайние верхние
-      red:      { l: 31.7, r: 68.3, y: 27.6, c: '#e74c3c' },  // на красной стрелке
-      green:    { l: 38.2, r: 61.8, y: 48.5, c: '#2ecc71' },  // на зелёных стрелках
-      yellow:   { l: 40.5, r: 59.5, y: 76.5, c: '#e8c400' }   // в жёлтой зоне, внизу
+      w: 1597, h: 1142,
+      pivot: { l: { x: 327, y: 725 }, r: { x: 1270, y: 725 } },
+      // Расстояние от общего гнезда до каждого — 338–345 пикселей.
+      // Это длина планки, она у всех положений одна.
+      ends: {
+        blue:   { l: { x: 355, y: 385 }, r: { x: 1242, y: 385 }, c: '#4a90e2' },
+        red:    { l: { x: 522, y: 442 }, r: { x: 1075, y: 442 }, c: '#e74c3c' },
+        green:  { l: { x: 620, y: 542 }, r: { x: 977,  y: 542 }, c: '#2ecc71' },
+        yellow: { l: { x: 662, y: 680 }, r: { x: 935,  y: 680 }, c: '#e8c400' }
+      }
     };
   }
 
-  // Фотография доски: в нужные гнёзда пририсованы сами ручки,
-  // повёрнутые так, как их надо поставить.
+  // Фотография доски с нарисованной планкой: она перекрывает оба гнезда
+  // и стоит ровно под тем углом, под каким её надо поставить.
   _boardPhoto(board) {
     if (!board) return '';
-    const s = UI.BOARD_SLOTS[board.slot || board.color];
-    if (!s) return '';
-    const cls = board.grip === 'across' ? 'across' : 'along';
-    const mark = (left) => `
-      <span class="board-mark ${cls}" style="left:${left}%; top:${s.y}%; --mc:${s.c};">
-        <span class="board-handle"></span>
-      </span>`;
+    const geo = UI.BOARD_GEOMETRY;
+    const e = geo.ends[board.slot || board.color];
+    if (!e) return '';
+
+    const bar = (side) => {
+      const a = geo.pivot[side], b = e[side];
+      const line = (w, stroke, extra = '') =>
+        `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"
+               stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" ${extra}/>`;
+      return line(78, 'rgba(0,0,0,0.6)') +
+             line(62, e.c, 'opacity="0.92"') +
+             line(62, '#fff', 'opacity="0.16" class="board-bar"') +
+             `<circle cx="${a.x}" cy="${a.y}" r="26" fill="none" stroke="#fff" stroke-width="6" opacity="0.9"/>
+              <circle cx="${b.x}" cy="${b.y}" r="26" fill="none" stroke="#fff" stroke-width="6" opacity="0.9"/>`;
+    };
+
     return `
       <div class="board-photo">
         <img src="assets/board/board.jpg" alt="">
-        ${mark(s.l)}${mark(s.r)}
+        <svg class="board-overlay" viewBox="0 0 ${geo.w} ${geo.h}" preserveAspectRatio="none">
+          ${bar('l')}${bar('r')}
+        </svg>
       </div>`;
   }
 

@@ -155,27 +155,6 @@
       instructions: "СИНІ гнізда — широкі, по краях дошки. Ручки вставте вздовж тіла. Долоні під плечима або трохи ширше. Тіло пряме. Опускайтесь, доки груди не будуть на рівні ручок — дошка дозволяє піти нижче підлоги, у цьому її сенс. Лікті назад під 45°, не в боки. Вгору на видиху."
     }
   },
-  board_blue_wide: {
-    id: 'board_blue_wide', reps: 10, rest: 90,
-    muscles: ['chest'], equipment: 'push-up board', difficulty: 'intermediate',
-    frames: [],
-    board: { color: 'blue', slot: 'blueWide', grip: 'across' },
-    ru: {
-      name: "Доска · Синий широкий (внешняя грудь)",
-      desc: "Внешний край грудных, зона подмышки.",
-      instructions: "Те же СИНИЕ гнёзда, но ручки разверните поперёк, вырезом наружу. Руки шире плеч на полторы ладони. Амплитуда короче обычной — не гонитесь за глубиной, следите за натяжением по внешнему краю груди. Локти разводятся шире, но не до прямого угла с телом: плечо этого не любит. Вариант тяжелее базового, поэтому повторов меньше."
-    },
-    en: {
-      name: "Board · Blue wide (outer chest)",
-      desc: "Outer chest, the area near the armpit.",
-      instructions: "Same BLUE slots, but turn the handles across, opening outwards. Hands wider than shoulders. Shorter range than the base version — chase the stretch along the outer chest, not the depth. Elbows open wider but never to a right angle with the body."
-    },
-    ua: {
-      name: "Дошка · Синій широкий (зовнішні груди)",
-      desc: "Зовнішній край грудних, зона пахви.",
-      instructions: "Ті самі СИНІ гнізда, але ручки розверніть упоперек. Руки ширше плечей. Амплітуда коротша — стежте за натягом по зовнішньому краю грудей, а не за глибиною."
-    }
-  },
   board_green: {
     id: 'board_green', reps: 10, rest: 90,
     muscles: ['triceps'], equipment: 'push-up board', difficulty: 'intermediate',
@@ -270,7 +249,7 @@ const DEFAULT_PROGRAMS = {
   },
   push_board_chest: {
     name: { ru: 'Доска · Грудь и трицепс', en: 'Board · Chest & triceps', ua: 'Дошка · Груди і трицепс' },
-    exercises: ['board_blue', 'board_blue_wide', 'board_green', 'board_yellow']
+    exercises: ['board_blue', 'board_green', 'board_yellow', 'board_red']
   }
 };
 
