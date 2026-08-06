@@ -358,6 +358,45 @@ body {
   font-size: 2.8rem; font-weight: 900; color: var(--gold-light);
 }
 
+/* Общий прогресс тренировки.
+   Полоса убывает: показывает, сколько подходов ещё осталось. */
+.session-progress {
+  margin: 2px 0 14px 0;
+}
+.session-progress-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+}
+#sessionLeftLabel {
+  color: var(--gold-light);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+#sessionDoneLabel {
+  color: var(--text-muted);
+}
+.session-progress-track {
+  height: 6px;
+  border-radius: 3px;
+  background: #1e1e26;
+  overflow: hidden;
+}
+.session-progress-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 3px;
+  background: var(--gold-gradient);
+  transition: width 0.45s ease;
+}
+/* Последний подход — полоса становится зелёной */
+.session-progress-fill.almost-done {
+  background: linear-gradient(135deg, #7ee8a5 0%, var(--accent-green) 100%);
+}
+
 /* Статистика и Календарь */
 .stats-card {
   background: #17171f;

@@ -79,6 +79,7 @@ class UI {
 
     // Rest
     on('btnSkipRest', 'click', () => this._skipRest());
+    on('btnExitFromRest', 'click', () => this._finishEarly());
     on('btnRestMinus', 'click', () => { if (this.restTimer) this.restTimer.addSeconds(-10); });
     on('btnRestPlus', 'click', () => { if (this.restTimer) this.restTimer.addSeconds(10); });
 
@@ -126,6 +127,7 @@ class UI {
     document.getElementById('btnStartNext').textContent = this.t.start;
     document.getElementById('actionBtn').textContent = this.t.start;
     document.getElementById('btnExportCSV').textContent = this.t.exportCSV;
+    document.getElementById('btnExitFromRest').textContent = this.t.finishWorkout;
     document.querySelector('[data-vol="min"]').textContent = this.t.volume.min;
     document.querySelector('[data-vol="norm"]').textContent = this.t.volume.norm;
     document.querySelector('[data-vol="max"]').textContent = this.t.volume.max;
@@ -230,6 +232,8 @@ class UI {
     if (!ex) return;
     const loc = ex[this.currentLang] || ex.ru;
     const t = this.t;
+
+    this._updateSessionProgress();
 
     document.getElementById('activeExTitle').textContent = loc.name;
     document.getElementById('activeSetBadge').textContent = t.setInfo(st.set, st.totalSets);
@@ -379,6 +383,7 @@ class UI {
     document.getElementById('screenWorkout').classList.add('hidden');
     document.getElementById('restScreen').classList.remove('hidden');
     document.getElementById('restNextText').textContent = this.t.restNext;
+    this._updateSessionProgress();
 
     const circle = document.getElementById('restProgress');
     const timeEl = document.getElementById('restTime');
@@ -403,10 +408,42 @@ class UI {
     this._refreshWorkoutUI();
   }
 
+  /* ----- Общий прогресс тренировки ----- */
+
+  // Полоса убывает: показывает, сколько подходов ещё впереди.
+  _updateSessionProgress() {
+    const box = document.getElementById('sessionProgress');
+    const fill = document.getElementById('sessionProgressFill');
+    const total = this.engine.getTotalSets();
+    const done = this.engine.getCompletedSets();
+    const left = Math.max(0, total - done);
+
+    box.classList.remove('hidden');
+    document.getElementById('sessionLeftLabel').textContent = this.t.sessionLeft(left);
+    document.getElementById('sessionDoneLabel').textContent = this.t.sessionDone(done, total);
+    fill.style.width = total > 0 ? `${(left / total) * 100}%` : '0%';
+    fill.classList.toggle('almost-done', left <= 1);
+  }
+
+  _hideSessionProgress() {
+    document.getElementById('sessionProgress').classList.add('hidden');
+  }
+
+  // Досрочное завершение с экрана отдыха: то, что успели сделать,
+  // попадает в статистику.
+  _finishEarly() {
+    if (!confirm(this.t.confirmFinish)) return;
+    if (this.repTimer) { clearInterval(this.repTimer); this.repTimer = null; }
+    if (this.restTimer) { this.restTimer.stop(); this.restTimer = null; }
+    const result = this.engine.finish();
+    this._finishWorkout(result.record);
+  }
+
   _finishWorkout(record) {
     document.getElementById('screenWorkout').classList.add('hidden');
     document.getElementById('screenPlan').classList.remove('hidden');
     document.getElementById('restScreen').classList.add('hidden');
+    this._hideSessionProgress();
     if (this.speech) {
       this.speech.stopListening();
       this.speech.speak(this.t.workoutComplete);
@@ -421,6 +458,7 @@ class UI {
     document.getElementById('screenWorkout').classList.add('hidden');
     document.getElementById('restScreen').classList.add('hidden');
     document.getElementById('screenPlan').classList.remove('hidden');
+    this._hideSessionProgress();
     if (this.speech) this.speech.stopListening();
   }
 

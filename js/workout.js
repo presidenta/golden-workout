@@ -20,6 +20,7 @@ class WorkoutEngine {
       ? [...WARMUP_EXERCISES.map(id => EXERCISE_DB[id]).filter(Boolean), ...mainExercises, ...COOLDOWN_EXERCISES.map(id => EXERCISE_DB[id]).filter(Boolean)]
       : mainExercises;
 
+    this.withWarmup = withWarmup;
     this.currentExIndex = 0;
     this.currentSet = 1;
     this.logs = [];
@@ -48,6 +49,33 @@ class WorkoutEngine {
     if (s.volumeLevel === 'min') return Math.max(1, base - 1);
     if (s.volumeLevel === 'max') return base + 2;
     return base;
+  }
+
+  /* ----- Общий объём тренировки ----- */
+
+  // Сколько подходов у упражнения по его номеру.
+  // У разминки и заминки всегда один, у основных — по настройке объёма.
+  setsForIndex(idx) {
+    if (!this.withWarmup) return this.getEffectiveSets();
+    const mainStart = WARMUP_EXERCISES.length;
+    const mainEnd = this.exercises.length - COOLDOWN_EXERCISES.length;
+    const isAccessory = idx < mainStart || idx >= mainEnd;
+    return isAccessory ? 1 : this.getEffectiveSets();
+  }
+
+  // Всего подходов за тренировку — с разминкой и заминкой.
+  getTotalSets() {
+    let total = 0;
+    for (let i = 0; i < this.exercises.length; i++) total += this.setsForIndex(i);
+    return total;
+  }
+
+  // Сколько уже позади. Текущий подход считается невыполненным,
+  // пока его не закрыли.
+  getCompletedSets() {
+    let done = 0;
+    for (let i = 0; i < this.currentExIndex; i++) done += this.setsForIndex(i);
+    return done + (this.currentSet - 1);
   }
 
   isWarmup() {
