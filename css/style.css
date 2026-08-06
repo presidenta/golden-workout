@@ -358,6 +358,34 @@ body {
   font-size: 2.8rem; font-weight: 900; color: var(--gold-light);
 }
 
+/* Переключатель языка в шапке */
+.header-right { display: flex; align-items: center; gap: 8px; }
+.lang-switch {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 12px;
+  background: #16161c;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+.lang-btn {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.lang-btn:hover { color: var(--gold-light); }
+.lang-btn.active {
+  background: var(--gold-gradient);
+  color: #1a1a10;
+}
+
 /* ===== Беговая дорожка ===== */
 .tm-head { margin-bottom: 10px; }
 .tm-model {

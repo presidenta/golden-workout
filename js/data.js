@@ -168,57 +168,178 @@
   }
 };
 
+// name — на трёх языках, чтобы переключатель менял и названия программ
 const DEFAULT_PROGRAMS = {
-  fullbody: { name: 'Full-Body База', exercises: ['pushups', 'squats', 'lunges', 'crunches'] },
-  glutes: { name: 'Ягодицы & Ноги', exercises: ['glute_bridge', 'romanian_dl', 'lunges_reverse', 'calf_raises'] },
-  arms_chest: { name: 'Грудь & Руки', exercises: ['pushups_wide', 'biceps_curl', 'triceps_dips', 'pushups_diamond'] },
-  cardio_core: { name: 'Кардио & Кор', exercises: ['mountain_climbers', 'squats', 'plank', 'crunches'] },
-  goltis: { name: 'Голтис Импульс', exercises: ['goltis_joint', 'squats', 'glute_bridge', 'plank'] },
+  fullbody: {
+    name: { ru: 'Full-Body База', en: 'Full-Body Base', ua: 'Full-Body База' },
+    exercises: ['pushups', 'squats', 'lunges', 'crunches']
+  },
+  glutes: {
+    name: { ru: 'Ягодицы & Ноги', en: 'Glutes & Legs', ua: 'Сідниці & Ноги' },
+    exercises: ['glute_bridge', 'romanian_dl', 'lunges_reverse', 'calf_raises']
+  },
+  arms_chest: {
+    name: { ru: 'Грудь & Руки', en: 'Chest & Arms', ua: 'Груди & Руки' },
+    exercises: ['pushups_wide', 'biceps_curl', 'triceps_dips', 'pushups_diamond']
+  },
+  cardio_core: {
+    name: { ru: 'Кардио & Кор', en: 'Cardio & Core', ua: 'Кардіо & Кор' },
+    exercises: ['mountain_climbers', 'squats', 'plank', 'crunches']
+  },
+  goltis: {
+    name: { ru: 'Голтис Импульс', en: 'Goltis Impulse', ua: 'Голтіс Імпульс' },
+    exercises: ['goltis_joint', 'squats', 'glute_bridge', 'plank']
+  },
   // Все четыре цвета доски за одну тренировку
-  push_board: { name: 'Доска (все цвета)', exercises: ['board_blue', 'board_green', 'board_red', 'board_yellow'] }
+  push_board: {
+    name: { ru: 'Доска (все цвета)', en: 'Board (all colours)', ua: 'Дошка (всі кольори)' },
+    exercises: ['board_blue', 'board_green', 'board_red', 'board_yellow']
+  }
 };
+
 
 /* ===== БЕГОВАЯ ДОРОЖКА SPORTOP T5 WAVE DECK =====
    План перехода от часовой ходьбы к получасу непрерывного бега.
    Отправная точка: час ходьбы на 4–5 км/ч, при беге появляется одышка.
    Три занятия в неделю, между ними день отдыха или ходьбы.
-   Скорости даны как ориентир — главный судья разговорный тест. */
+
+   Числа (скорости, минуты, повторы) одни для всех языков — меняются
+   только подписи и пояснения. */
 
 const TREADMILL = {
   model: 'Sportop T5 Wave Deck',
-  specs: [
-    ['Скорость', 'до 18 км/ч'],
-    ['Наклон', '15 уровней, кнопки 3 / 6 / 9 / 12 %'],
-    ['Двигатель', '2–2.5 л.с.'],
-    ['Полотно', 'Wave Deck — шестисекционная амортизация, бережёт колени'],
-    ['Программы', '20 встроенных + 3 своих, пульсовые режимы']
-  ],
-  rule: 'Разговорный тест: во время бега вы должны выговаривать короткую фразу, не задыхаясь. Не получается — снижайте скорость на 0.5 км/ч. Одышка означает, что темп взят выше вашего сегодняшнего, а не что вы слабы.',
+
+  // w — номер недели, run/walk — минуты и скорость, sets — сколько раз
+  // повторить связку, total — вся тренировка с разминкой, runTotal — чистый бег
   plan: [
-    { w: 1,  run: '1 мин · 6.5–7.0', walk: '2 мин · 5.0', sets: 8, total: 34, runTotal: 8,  note: 'Бег короткий специально. Задача недели — приучить сердце к смене темпа, а не устать.' },
-    { w: 2,  run: '2 мин · 6.5–7.0', walk: '2 мин · 5.0', sets: 6, total: 34, runTotal: 12, note: 'Если после первой недели ноги тяжёлые — повторите первую неделю ещё раз. Спешить некуда.' },
-    { w: 3,  run: '3 мин · 7.0',     walk: '2 мин · 5.0', sets: 5, total: 35, runTotal: 15, note: 'С этой недели бег суммарно обгоняет ходьбу по нагрузке. Следите за дыханием: вдох носом на два шага, выдох ртом на два.' },
-    { w: 4,  run: '5 мин · 7.0',     walk: '2 мин · 5.0', sets: 4, total: 38, runTotal: 20, note: 'Первый серьёзный рубеж. Пять минут подряд — это уже бег, а не пробежки между ходьбой.' },
-    { w: 5,  run: '7 мин · 7.0–7.5', walk: '2 мин · 5.0', sets: 3, total: 37, runTotal: 21, note: 'Отдых сокращается. Если тяжело — оставьте скорость 7.0 и не поднимайте.' },
-    { w: 6,  run: '10 мин · 7.0–7.5',walk: '3 мин · 5.0', sets: 2, total: 36, runTotal: 20, note: 'Десять минут без остановки. Психологически это сложнее, чем физически.' },
-    { w: 7,  run: '12 мин · 7.5',    walk: '3 мин · 5.0', sets: 2, total: 40, runTotal: 24, note: 'Предпоследний шаг к цели. Держите ровный темп, не разгоняйтесь в начале.' },
-    { w: 8,  run: '20 мин · 7.0–7.5',walk: '—',           sets: 1, total: 30, runTotal: 20, note: 'Двадцать минут непрерывно. Скорость можно снизить — важна непрерывность, а не быстрота.' },
-    { w: 9,  run: '25 мин · 7.5',    walk: '—',           sets: 1, total: 35, runTotal: 25, note: 'Почти цель. Если дыхание сбивается — сбросьте до 6.5 и добегите.' },
-    { w: 10, run: '30 мин · 7.5–8.0',walk: '—',           sets: 1, total: 40, runTotal: 30, note: 'Цель достигнута: полчаса непрерывного бега. Дальше можно наращивать скорость, а не время.' }
+    { w: 1,  run: 1,  runSpeed: '6.5–7.0', walk: 2, walkSpeed: '5.0', sets: 8, total: 34, runTotal: 8 },
+    { w: 2,  run: 2,  runSpeed: '6.5–7.0', walk: 2, walkSpeed: '5.0', sets: 6, total: 34, runTotal: 12 },
+    { w: 3,  run: 3,  runSpeed: '7.0',     walk: 2, walkSpeed: '5.0', sets: 5, total: 35, runTotal: 15 },
+    { w: 4,  run: 5,  runSpeed: '7.0',     walk: 2, walkSpeed: '5.0', sets: 4, total: 38, runTotal: 20 },
+    { w: 5,  run: 7,  runSpeed: '7.0–7.5', walk: 2, walkSpeed: '5.0', sets: 3, total: 37, runTotal: 21 },
+    { w: 6,  run: 10, runSpeed: '7.0–7.5', walk: 3, walkSpeed: '5.0', sets: 2, total: 36, runTotal: 20 },
+    { w: 7,  run: 12, runSpeed: '7.5',     walk: 3, walkSpeed: '5.0', sets: 2, total: 40, runTotal: 24 },
+    { w: 8,  run: 20, runSpeed: '7.0–7.5', walk: 0, walkSpeed: '',    sets: 1, total: 30, runTotal: 20 },
+    { w: 9,  run: 25, runSpeed: '7.5',     walk: 0, walkSpeed: '',    sets: 1, total: 35, runTotal: 25 },
+    { w: 10, run: 30, runSpeed: '7.5–8.0', walk: 0, walkSpeed: '',    sets: 1, total: 40, runTotal: 30 }
   ],
-  walkDays: [
-    { title: 'Ходьба в горку', body: 'Час на 4.5–5.0 км/ч с наклоном 3–6 %. Пульс поднимается как при беге, а ударной нагрузки на колени нет. Лучший вариант в дни между беговыми.' },
-    { title: 'Длинная ровная', body: 'Час на 5.0–5.5 км/ч, наклон 0–2 %. То, что вы уже делаете. Хорошо восстанавливает после беговых дней.' },
-    { title: 'Переменная ходьба', body: '10 подходов: 2 минуты на наклоне 8–10 % (скорость 4.0–4.5), затем 2 минуты на ровном. Готовит сердце к интервалам без бега.' }
-  ],
-  tips: [
-    'Разминка и заминка обязательны: 5 минут спокойной ходьбы 4.0–4.5 км/ч до и после. Их время уже включено в общую длительность.',
-    'Наклон 1–2 % при беге делает дорожку ближе к улице и снимает нагрузку с голени.',
-    'При одышке снижайте скорость, но не переходите на шаг сразу — сначала попробуйте сбросить полкилометра в час.',
-    'Три занятия в неделю, между ними минимум один день без бега. Мышцы растут в отдыхе, а не на дорожке.',
-    'Боль в колене или голени — остановка и день отдыха. Терпеть нельзя.',
-    'Если пропустили неделю — вернитесь на шаг назад и повторите предыдущую.'
-  ]
+
+  ru: {
+    goal: 'От часа ходьбы — к 30 минутам бега',
+    specs: [
+      ['Скорость', 'до 18 км/ч'],
+      ['Наклон', '15 уровней, кнопки 3 / 6 / 9 / 12 %'],
+      ['Двигатель', '2–2.5 л.с.'],
+      ['Полотно', 'Wave Deck — шестисекционная амортизация, бережёт колени'],
+      ['Программы', '20 встроенных + 3 своих, пульсовые режимы']
+    ],
+    rule: 'Разговорный тест: во время бега вы должны выговаривать короткую фразу, не задыхаясь. Не получается — снижайте скорость на 0.5 км/ч. Одышка означает, что темп взят выше вашего сегодняшнего, а не что вы слабы.',
+    titles: { weeks: 'План по неделям', walk: 'Дни без бега', tips: 'Правила' },
+    ui: { week: 'Неделя', totalMin: 'всего', min: 'мин', runOf: 'бега', run: 'бег', walk: 'ходьба', nonstop: 'без остановок', times: 'раза' },
+    notes: [
+      'Бег короткий специально. Задача недели — приучить сердце к смене темпа, а не устать.',
+      'Если после первой недели ноги тяжёлые — повторите первую неделю ещё раз. Спешить некуда.',
+      'С этой недели бег суммарно обгоняет ходьбу по нагрузке. Следите за дыханием: вдох носом на два шага, выдох ртом на два.',
+      'Первый серьёзный рубеж. Пять минут подряд — это уже бег, а не пробежки между ходьбой.',
+      'Отдых сокращается. Если тяжело — оставьте скорость 7.0 и не поднимайте.',
+      'Десять минут без остановки. Психологически это сложнее, чем физически.',
+      'Предпоследний шаг к цели. Держите ровный темп, не разгоняйтесь в начале.',
+      'Двадцать минут непрерывно. Скорость можно снизить — важна непрерывность, а не быстрота.',
+      'Почти цель. Если дыхание сбивается — сбросьте до 6.5 и добегите.',
+      'Цель достигнута: полчаса непрерывного бега. Дальше можно наращивать скорость, а не время.'
+    ],
+    walkDays: [
+      { title: 'Ходьба в горку', body: 'Час на 4.5–5.0 км/ч с наклоном 3–6 %. Пульс поднимается как при беге, а ударной нагрузки на колени нет. Лучший вариант в дни между беговыми.' },
+      { title: 'Длинная ровная', body: 'Час на 5.0–5.5 км/ч, наклон 0–2 %. То, что вы уже делаете. Хорошо восстанавливает после беговых дней.' },
+      { title: 'Переменная ходьба', body: '10 подходов: 2 минуты на наклоне 8–10 % (скорость 4.0–4.5), затем 2 минуты на ровном. Готовит сердце к интервалам без бега.' }
+    ],
+    tips: [
+      'Разминка и заминка обязательны: 5 минут спокойной ходьбы 4.0–4.5 км/ч до и после. Их время уже включено в общую длительность.',
+      'Наклон 1–2 % при беге делает дорожку ближе к улице и снимает нагрузку с голени.',
+      'При одышке снижайте скорость, но не переходите на шаг сразу — сначала попробуйте сбросить полкилометра в час.',
+      'Три занятия в неделю, между ними минимум один день без бега. Мышцы растут в отдыхе, а не на дорожке.',
+      'Боль в колене или голени — остановка и день отдыха. Терпеть нельзя.',
+      'Если пропустили неделю — вернитесь на шаг назад и повторите предыдущую.'
+    ]
+  },
+
+  ua: {
+    goal: 'Від години ходьби — до 30 хвилин бігу',
+    specs: [
+      ['Швидкість', 'до 18 км/год'],
+      ['Нахил', '15 рівнів, кнопки 3 / 6 / 9 / 12 %'],
+      ['Двигун', '2–2.5 к.с.'],
+      ['Полотно', 'Wave Deck — шестисекційна амортизація, береже коліна'],
+      ['Програми', '20 вбудованих + 3 власні, пульсові режими']
+    ],
+    rule: 'Розмовний тест: під час бігу ви маєте вимовляти коротку фразу, не задихаючись. Не виходить — знижуйте швидкість на 0.5 км/год. Задишка означає, що темп узятий вищий за ваш сьогоднішній, а не що ви слабкі.',
+    titles: { weeks: 'План по тижнях', walk: 'Дні без бігу', tips: 'Правила' },
+    ui: { week: 'Тиждень', totalMin: 'усього', min: 'хв', runOf: 'бігу', run: 'біг', walk: 'ходьба', nonstop: 'без зупинок', times: 'рази' },
+    notes: [
+      'Біг короткий навмисно. Завдання тижня — привчити серце до зміни темпу, а не втомитися.',
+      'Якщо після першого тижня ноги важкі — повторіть перший тиждень ще раз. Поспішати нікуди.',
+      'Із цього тижня біг сумарно випереджає ходьбу за навантаженням. Стежте за диханням: вдих носом на два кроки, видих ротом на два.',
+      'Перший серйозний рубіж. П\'ять хвилин поспіль — це вже біг, а не пробіжки між ходьбою.',
+      'Відпочинок скорочується. Якщо важко — залиште швидкість 7.0 і не піднімайте.',
+      'Десять хвилин без зупинки. Психологічно це складніше, ніж фізично.',
+      'Передостанній крок до мети. Тримайте рівний темп, не розганяйтесь на початку.',
+      'Двадцять хвилин безперервно. Швидкість можна знизити — важлива безперервність, а не швидкість.',
+      'Майже мета. Якщо дихання збивається — скиньте до 6.5 і добіжіть.',
+      'Мету досягнуто: півгодини безперервного бігу. Далі можна нарощувати швидкість, а не час.'
+    ],
+    walkDays: [
+      { title: 'Ходьба вгору', body: 'Година на 4.5–5.0 км/год з нахилом 3–6 %. Пульс піднімається як під час бігу, а ударного навантаження на коліна немає. Найкращий варіант у дні між біговими.' },
+      { title: 'Довга рівна', body: 'Година на 5.0–5.5 км/год, нахил 0–2 %. Те, що ви вже робите. Добре відновлює після бігових днів.' },
+      { title: 'Змінна ходьба', body: '10 підходів: 2 хвилини на нахилі 8–10 % (швидкість 4.0–4.5), потім 2 хвилини на рівному. Готує серце до інтервалів без бігу.' }
+    ],
+    tips: [
+      'Розминка і заминка обов\'язкові: 5 хвилин спокійної ходьби 4.0–4.5 км/год до і після. Їхній час уже враховано в загальній тривалості.',
+      'Нахил 1–2 % під час бігу робить доріжку ближчою до вулиці та знімає навантаження з гомілки.',
+      'При задишці знижуйте швидкість, але не переходьте на крок одразу — спершу спробуйте скинути пів кілометра на годину.',
+      'Три заняття на тиждень, між ними щонайменше один день без бігу. М\'язи ростуть у відпочинку, а не на доріжці.',
+      'Біль у коліні чи гомілці — зупинка і день відпочинку. Терпіти не можна.',
+      'Якщо пропустили тиждень — поверніться на крок назад і повторіть попередній.'
+    ]
+  },
+
+  en: {
+    goal: 'From an hour of walking to 30 minutes of running',
+    specs: [
+      ['Speed', 'up to 18 km/h'],
+      ['Incline', '15 levels, buttons 3 / 6 / 9 / 12 %'],
+      ['Motor', '2–2.5 HP'],
+      ['Deck', 'Wave Deck — six-section cushioning, easy on the knees'],
+      ['Programs', '20 built-in + 3 custom, heart rate modes']
+    ],
+    rule: 'Talk test: while running you should be able to speak a short sentence without gasping. If you cannot, drop the speed by 0.5 km/h. Breathlessness means the pace is above your current level, not that you are weak.',
+    titles: { weeks: 'Week by week', walk: 'Non-running days', tips: 'Rules' },
+    ui: { week: 'Week', totalMin: 'total', min: 'min', runOf: 'running', run: 'run', walk: 'walk', nonstop: 'non-stop', times: 'times' },
+    notes: [
+      'The runs are short on purpose. This week teaches the heart to switch pace, not to exhaust you.',
+      'If your legs feel heavy after week one, repeat week one. There is no rush.',
+      'From this week running outweighs walking. Watch your breath: in through the nose for two steps, out through the mouth for two.',
+      'First real milestone. Five minutes straight is running, not jogging between walks.',
+      'Rest gets shorter. If it is hard, keep the speed at 7.0 and do not raise it.',
+      'Ten minutes without stopping. Harder mentally than physically.',
+      'One step short of the goal. Hold an even pace, do not start fast.',
+      'Twenty minutes non-stop. Lower the speed if needed — continuity matters more than pace.',
+      'Almost there. If breathing breaks down, drop to 6.5 and finish the run.',
+      'Goal reached: half an hour of continuous running. From here grow the speed, not the time.'
+    ],
+    walkDays: [
+      { title: 'Uphill walk', body: 'One hour at 4.5–5.0 km/h with 3–6 % incline. Heart rate rises as in running, with no impact on the knees. Best choice between running days.' },
+      { title: 'Long flat walk', body: 'One hour at 5.0–5.5 km/h, incline 0–2 %. What you already do. Good recovery after running days.' },
+      { title: 'Interval walk', body: '10 rounds: 2 minutes at 8–10 % incline (speed 4.0–4.5), then 2 minutes flat. Prepares the heart for intervals without running.' }
+    ],
+    tips: [
+      'Warm-up and cool-down are mandatory: 5 minutes of easy walking at 4.0–4.5 km/h before and after. Their time is already in the totals.',
+      'A 1–2 % incline while running makes the treadmill feel like outdoors and unloads the shins.',
+      'When out of breath, lower the speed — but do not drop to a walk straight away, try half a km/h first.',
+      'Three sessions a week with at least one non-running day between them. Muscles grow during rest, not on the treadmill.',
+      'Knee or shin pain means stop and take a rest day. Do not push through it.',
+      'If you skipped a week, go one step back and repeat the previous one.'
+    ]
+  }
 };
 
 const WARMUP_EXERCISES = ['goltis_joint', 'squats'];

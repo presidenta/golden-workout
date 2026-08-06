@@ -68,6 +68,11 @@ class UI {
       });
     });
 
+    // Переключение языка прямо из шапки
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => this._setLang(btn.dataset.lang));
+    });
+
     // Settings
     on('btnSettings', 'click', () => this._toggleSettings(true));
     on('btnSaveSettings', 'click', () => this._saveSettings());
@@ -126,7 +131,54 @@ class UI {
 
   _cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
+  // Смена языка кнопкой в шапке. Настройки и голос подхватывают её сразу,
+  // страница перерисовывается целиком.
+  _setLang(lang) {
+    if (!lang || lang === this.currentLang) return;
+    store.setState({ lang });
+    const sel = document.getElementById('selectLang');
+    if (sel) sel.value = lang;
+    if (this.speech) {
+      this.speech.lang = lang === 'ru' ? 'ru-RU' : lang === 'ua' ? 'uk-UA' : 'en-US';
+    }
+    db.get('settings', 'app').then(saved => {
+      const s = { ...(saved || {}), lang };
+      db.set('settings', 'app', s);
+    }).catch(() => {});
+    this._syncLangButtons();
+  }
+
+  _syncLangButtons() {
+    document.querySelectorAll('.lang-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.lang === this.currentLang);
+    });
+  }
+
+  // У встроенных программ название на трёх языках, у созданных
+  // в конструкторе — обычная строка, как её ввели.
+  _progName(prog) {
+    if (!prog || !prog.name) return '';
+    return typeof prog.name === 'string'
+      ? prog.name
+      : (prog.name[this.currentLang] || prog.name.ru);
+  }
+
+  // Всё, что помечено в разметке data-i18n, переводится разом.
+  // Так новую подпись достаточно пометить в html и добавить в i18n.
+  _applyMarkupTexts() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const val = this.t[el.dataset.i18n];
+      if (typeof val === 'string') el.textContent = val;
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+      const val = this.t[el.dataset.i18nPh];
+      if (typeof val === 'string') el.placeholder = val;
+    });
+  }
+
   _renderAll() {
+    this._syncLangButtons();
+    this._applyMarkupTexts();
     document.getElementById('ui_subtitle').textContent = this.t.subtitle;
     document.getElementById('tabBtnWorkout').textContent = this.t.tabs.workout;
     document.getElementById('tabBtnConstructor').textContent = this.t.tabs.constructor;
@@ -163,38 +215,46 @@ class UI {
   /* ----- Беговая дорожка ----- */
 
   _renderTreadmill() {
-    document.getElementById('tmModel').textContent = TREADMILL.model;
+    const tm = TREADMILL[this.currentLang] || TREADMILL.ru;
+    const u = tm.ui;
 
-    document.getElementById('tmSpecs').innerHTML = TREADMILL.specs
+    document.getElementById('tmModel').textContent = TREADMILL.model;
+    document.getElementById('tmGoal').textContent = tm.goal;
+
+    document.getElementById('tmSpecs').innerHTML = tm.specs
       .map(([k, v]) => `<div class="tm-spec-row"><span>${this._esc(k)}</span><span>${this._esc(v)}</span></div>`)
       .join('');
 
-    document.getElementById('tmRule').textContent = TREADMILL.rule;
+    document.getElementById('tmRule').textContent = tm.rule;
 
-    document.getElementById('tmWeeks').innerHTML = TREADMILL.plan.map(p => {
-      const walk = p.walk === '—'
-        ? '<span class="tm-chip">без остановок</span>'
-        : `<span class="tm-chip walk">ходьба ${this._esc(p.walk)}</span>`;
-      const sets = p.sets > 1 ? `<span class="tm-chip">× ${p.sets} раза</span>` : '';
+    document.getElementById('tmTitleWeeks').textContent = tm.titles.weeks;
+    document.getElementById('tmTitleWalk').textContent = tm.titles.walk;
+    document.getElementById('tmTitleTips').textContent = tm.titles.tips;
+
+    document.getElementById('tmWeeks').innerHTML = TREADMILL.plan.map((p, i) => {
+      const walk = p.walk > 0
+        ? `<span class="tm-chip walk">${u.walk} ${p.walk} ${u.min} · ${p.walkSpeed}</span>`
+        : `<span class="tm-chip">${u.nonstop}</span>`;
+      const sets = p.sets > 1 ? `<span class="tm-chip">× ${p.sets} ${u.times}</span>` : '';
       return `
         <div class="tm-week${p.runTotal >= 30 ? ' reached' : ''}">
           <div class="tm-week-head">
-            <span class="tm-week-no">Неделя ${p.w}</span>
-            <span class="tm-week-total">всего ${p.total} мин · бега ${p.runTotal}</span>
+            <span class="tm-week-no">${u.week} ${p.w}</span>
+            <span class="tm-week-total">${u.totalMin} ${p.total} ${u.min} · ${u.runOf} ${p.runTotal}</span>
           </div>
           <div class="tm-week-body">
-            <span class="tm-chip run">бег ${this._esc(p.run)}</span>
+            <span class="tm-chip run">${u.run} ${p.run} ${u.min} · ${p.runSpeed}</span>
             ${walk}${sets}
           </div>
-          <div class="tm-week-note">${this._esc(p.note)}</div>
+          <div class="tm-week-note">${this._esc(tm.notes[i] || '')}</div>
         </div>`;
     }).join('');
 
-    document.getElementById('tmWalk').innerHTML = TREADMILL.walkDays
+    document.getElementById('tmWalk').innerHTML = tm.walkDays
       .map(w => `<div class="tm-walk-item"><b>${this._esc(w.title)}</b><div>${this._esc(w.body)}</div></div>`)
       .join('');
 
-    document.getElementById('tmTips').innerHTML = TREADMILL.tips
+    document.getElementById('tmTips').innerHTML = tm.tips
       .map(t => `<li>${this._esc(t)}</li>`).join('');
   }
 
@@ -204,7 +264,7 @@ class UI {
     Object.keys(this.programs).forEach(key => {
       const chip = document.createElement('div');
       chip.className = 'prog-chip' + (store.getState().currentProgram === key ? ' active' : '');
-      chip.textContent = this.programs[key].name;
+      chip.textContent = this._progName(this.programs[key]);
       chip.onclick = () => { store.setState({ currentProgram: key }); this._renderPrograms(); this._renderPlanList(); };
       box.appendChild(chip);
     });
@@ -780,7 +840,7 @@ class UI {
       wrap.style.flexDirection = 'column'; wrap.style.alignItems = 'flex-start'; wrap.style.gap = '4px'; wrap.style.cursor = 'default';
       let opts = '';
       Object.keys(this.programs).forEach(pk => {
-        opts += `<option value="${pk}" ${sched[idx] === pk ? 'selected' : ''}>${this.programs[pk].name}</option>`;
+        opts += `<option value="${pk}" ${sched[idx] === pk ? 'selected' : ''}>${this._progName(this.programs[pk])}</option>`;
       });
       wrap.innerHTML = `
         <div style="font-weight:700;font-size:0.8rem;color:var(--gold-light);">${dayName}</div>
@@ -899,7 +959,7 @@ class UI {
     if (timeStr === s.reminderTime) {
       const day = now.getDay();
       const progKey = s.schedule[day] || 'fullbody';
-      const progName = this.programs[progKey] ? this.programs[progKey].name : progKey;
+      const progName = this.programs[progKey] ? this._progName(this.programs[progKey]) : progKey;
       document.getElementById('reminderText').textContent = this.t.reminderBanner(s.reminderTime, progName);
       document.getElementById('reminderBanner').classList.remove('hidden');
       if (this.speech) this.speech.speak(this.t.reminderBanner(s.reminderTime, progName).replace('⏰ ',''));

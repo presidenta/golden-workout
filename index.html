@@ -27,7 +27,15 @@
         <div class="title">Golden Workout</div>
         <div class="subtitle" id="ui_subtitle">Architect Pro v4.0</div>
       </div>
-      <button class="icon-btn" id="btnSettings" title="Настройки">⚙</button>
+      <div class="header-right">
+        <!-- Переключение языка на месте, без захода в настройки -->
+        <div class="lang-switch" id="langSwitch">
+          <button class="lang-btn active" data-lang="ru">RU</button>
+          <button class="lang-btn" data-lang="ua">UA</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <button class="icon-btn" id="btnSettings" title="Настройки">⚙</button>
+      </div>
     </div>
 
     <!-- БАНЕР НАПОМИНАНИЯ -->
@@ -62,9 +70,9 @@
         </div>
 
         <div class="form-group">
-          <label>Голосовые команды</label>
+          <label data-i18n="voiceCmdLabel">Голосовые команды</label>
           <div class="toggle-row">
-            <span style="font-size: 0.8rem; color: #ccc;">Управление голосом (старт, пауза, готово)</span>
+            <span style="font-size: 0.8rem; color: #ccc;" data-i18n="voiceCmdHint">Управление голосом (старт, пауза, готово)</span>
             <label class="switch">
               <input type="checkbox" id="setVoiceControl">
               <span class="slider"></span>
@@ -73,27 +81,27 @@
         </div>
 
         <div class="form-group">
-          <label>Время ежедневного напоминания</label>
+          <label data-i18n="reminderLabel">Время ежедневного напоминания</label>
           <input type="time" id="inputReminderTime" value="09:00">
         </div>
 
         <div class="form-group">
-          <label>Базовое количество подходов (100% план)</label>
+          <label data-i18n="baseSetsLabel">Базовое количество подходов (100% план)</label>
           <input type="number" id="inputGlobalSets" value="3" min="1" max="10">
         </div>
 
         <div class="form-group">
-          <label>Время отдыха между подходами (сек)</label>
+          <label data-i18n="restLabel">Время отдыха между подходами (сек)</label>
           <input type="number" id="inputRestSeconds" value="90" min="10" max="300">
         </div>
 
         <div class="form-group">
-          <label>Темп повторения (сек на цикл)</label>
+          <label data-i18n="tempoLabel">Темп повторения (сек на цикл)</label>
           <input type="number" id="inputGlobalTempo" value="4" min="2" max="10">
         </div>
 
         <div class="form-group">
-          <label>Язык интерфейса</label>
+          <label data-i18n="langLabel">Язык интерфейса</label>
           <select id="selectLang">
             <option value="ru">Русский</option>
             <option value="en">English</option>
@@ -101,7 +109,7 @@
           </select>
         </div>
 
-        <button class="btn-gold" id="btnSaveSettings">Применить</button>
+        <button class="btn-gold" id="btnSaveSettings" data-i18n="apply">Применить</button>
       </div>
     </div>
 
@@ -126,29 +134,29 @@
     <!-- МОДАЛКА ЛОГИРОВАНИЯ ПОДХОДА -->
     <div id="logModal" class="modal-overlay hidden">
       <div class="modal-content">
-        <h3 style="color: var(--gold-primary); margin-bottom: 14px;">Записать подход</h3>
+        <h3 style="color: var(--gold-primary); margin-bottom: 14px;" data-i18n="logSet">Записать подход</h3>
         <div class="form-group">
-          <label>Фактические повторы</label>
+          <label data-i18n="actualReps">Фактические повторы</label>
           <input type="number" id="logReps" min="0" max="200" value="0">
         </div>
         <div class="form-group">
-          <label>Вес (кг) — 0 если без веса</label>
+          <label data-i18n="weightLabel">Вес (кг) — 0 если без веса</label>
           <input type="number" id="logWeight" min="0" max="500" step="0.5" value="0">
         </div>
         <div class="form-group">
-          <label>RPE (усилие): <span id="rpeValue">7</span>/10</label>
+          <label><span data-i18n="rpeLabel">RPE (усилие)</span>: <span id="rpeValue">7</span>/10</label>
           <input type="range" id="logRpe" min="1" max="10" value="7" style="width:100%;">
           <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#888;margin-top:4px;">
-            <span>Легко</span><span>Отказ</span>
+            <span data-i18n="rpeEasy">Легко</span><span data-i18n="rpeHard">Отказ</span>
           </div>
         </div>
         <div class="form-group">
-          <label>Заметки</label>
-          <input type="text" id="logNotes" placeholder="Например: легко, добавить вес">
+          <label data-i18n="notes">Заметки</label>
+          <input type="text" id="logNotes" data-i18n-ph="notesPlaceholder" placeholder="Например: легко, добавить вес">
         </div>
         <div id="prevResultBox" style="font-size:0.78rem;color:var(--gold-light);margin-bottom:12px;"></div>
-        <button class="btn-gold" id="btnSaveLog">Сохранить</button>
-        <button class="btn-gold btn-secondary" id="btnSkipLog" style="margin-top:8px;">Пропустить запись</button>
+        <button class="btn-gold" id="btnSaveLog" data-i18n="save">Сохранить</button>
+        <button class="btn-gold btn-secondary" id="btnSkipLog" style="margin-top:8px;" data-i18n="skipLog">Пропустить запись</button>
       </div>
     </div>
 
@@ -168,7 +176,7 @@
 
     <!-- ЭКРАН ОТДЫХА -->
     <div id="restScreen" class="hidden" style="text-align:center;padding:20px 0;">
-      <div style="font-size:0.9rem;color:var(--gold-light);font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">Отдых</div>
+      <div style="font-size:0.9rem;color:var(--gold-light);font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;" data-i18n="rest">Отдых</div>
       <div class="rest-circle" id="restCircle">
         <svg viewBox="0 0 100 100" class="rest-svg">
           <circle class="rest-track" cx="50" cy="50" r="45"></circle>
@@ -179,7 +187,7 @@
       <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;" id="restNextText">Следующий подход через</div>
       <div style="display:flex;gap:8px;justify-content:center;">
         <button class="icon-btn" id="btnRestMinus" title="-10 сек">−</button>
-        <button class="btn-gold" id="btnSkipRest" style="width:auto;padding:10px 24px;">Пропустить отдых</button>
+        <button class="btn-gold" id="btnSkipRest" style="width:auto;padding:10px 24px;" data-i18n="skipRest">Пропустить отдых</button>
         <button class="icon-btn" id="btnRestPlus" title="+10 сек">+</button>
       </div>
     </div>
@@ -194,7 +202,7 @@
         </div>
         <div class="program-selector" id="programChips"></div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-          <div style="font-size: 0.78rem; color: var(--gold-light); font-weight: 700; text-transform: uppercase;">Выберите упражнение:</div>
+          <div style="font-size: 0.78rem; color: var(--gold-light); font-weight: 700; text-transform: uppercase;" data-i18n="chooseExercise">Выберите упражнение:</div>
           <div style="font-size: 0.7rem; color: var(--text-muted);" id="sessionProgressLabel">Выполнено: 0/4</div>
         </div>
         <div class="exercise-list" id="exerciseList"></div>
@@ -233,48 +241,48 @@
         <div id="prevResultStrip" style="font-size:0.75rem;color:var(--gold-light);text-align:center;margin-bottom:10px;min-height:18px;"></div>
 
         <button class="btn-gold" id="actionBtn">Старт подхода</button>
-        <button class="btn-gold btn-secondary" id="btnExitWorkout">К списку упражнений</button>
+        <button class="btn-gold btn-secondary" id="btnExitWorkout" data-i18n="backToList">К списку упражнений</button>
       </div>
     </div>
 
     <!-- ВКЛАДКА 2: КОНСТРУКТОР -->
     <div id="tabContentConstructor" class="hidden">
-      <div style="font-size:0.85rem; font-weight:700; color:var(--gold-primary); margin-bottom:8px;">Создание своего комплекса</div>
+      <div style="font-size:0.85rem; font-weight:700; color:var(--gold-primary); margin-bottom:8px;" data-i18n="builderTitle">Создание своего комплекса</div>
       <div class="form-group">
-        <label>Название комплекса</label>
+        <label data-i18n="progNameLabel">Название комплекса</label>
         <input type="text" id="customProgName" placeholder="Моя супер-тренировка">
       </div>
-      <div style="font-size:0.78rem; color:var(--gold-light); margin-bottom:6px; font-weight:700;">Выберите упражнения:</div>
+      <div style="font-size:0.78rem; color:var(--gold-light); margin-bottom:6px; font-weight:700;" data-i18n="chooseExercises">Выберите упражнения:</div>
       <div class="exercise-list" id="constructorExercisesList" style="max-height:220px;"></div>
-      <button class="btn-gold" id="btnSaveCustom">Сохранить в программы</button>
+      <button class="btn-gold" id="btnSaveCustom" data-i18n="saveProgram">Сохранить в программы</button>
     </div>
 
     <!-- ВКЛАДКА: БЕГОВАЯ ДОРОЖКА -->
     <div id="tabContentTreadmill" class="hidden">
       <div class="tm-head">
         <div class="tm-model" id="tmModel">—</div>
-        <div class="tm-goal">От часа ходьбы — к 30 минутам бега</div>
+        <div class="tm-goal" id="tmGoal"></div>
       </div>
 
       <div class="stats-card tm-specs" id="tmSpecs"></div>
 
       <div class="tm-rule" id="tmRule"></div>
 
-      <div class="tm-section-title">План по неделям</div>
+      <div class="tm-section-title" id="tmTitleWeeks"></div>
       <div class="tm-weeks" id="tmWeeks"></div>
 
-      <div class="tm-section-title">Дни без бега</div>
+      <div class="tm-section-title" id="tmTitleWalk"></div>
       <div class="tm-walk" id="tmWalk"></div>
 
-      <div class="tm-section-title">Правила</div>
+      <div class="tm-section-title" id="tmTitleTips"></div>
       <ul class="tm-tips" id="tmTips"></ul>
     </div>
 
     <!-- ВКЛАДКА 3: РАСПИСАНИЕ -->
     <div id="tabContentSchedule" class="hidden">
-      <div style="font-size:0.85rem; font-weight:700; color:var(--gold-primary); margin-bottom:8px;">Расписание по дням недели</div>
+      <div style="font-size:0.85rem; font-weight:700; color:var(--gold-primary); margin-bottom:8px;" data-i18n="scheduleTitle">Расписание по дням недели</div>
       <div class="exercise-list" id="scheduleList" style="max-height:280px;"></div>
-      <button class="btn-gold" id="btnSaveSchedule">Сохранить расписание</button>
+      <button class="btn-gold" id="btnSaveSchedule" data-i18n="saveSchedule">Сохранить расписание</button>
     </div>
 
     <!-- ВКЛАДКА 4: СТАТИСТИКА -->
@@ -288,16 +296,16 @@
       </div>
 
       <div class="stats-card" style="margin-top:10px;">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--gold-primary);margin-bottom:8px;">Прогресс по весам</div>
+        <div style="font-size:0.8rem;font-weight:700;color:var(--gold-primary);margin-bottom:8px;" data-i18n="weightProgress">Прогресс по весам</div>
         <div id="weightProgressChart" style="font-size:0.75rem;color:var(--text-muted);">Нет данных для отображения</div>
       </div>
 
       <div class="cardio-box">
-        <div style="font-size:0.8rem; font-weight:700; color:var(--gold-primary); margin-bottom:6px;">Кардио & Беговая дорожка</div>
-        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Рекомендация: 30-40 мин бега / ходьбы ежедневно.</div>
+        <div style="font-size:0.8rem; font-weight:700; color:var(--gold-primary); margin-bottom:6px;" data-i18n="cardioTitle">Кардио & Беговая дорожка</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;" data-i18n="cardioHint">Рекомендация: 30-40 мин бега / ходьбы ежедневно.</div>
         <div style="display:flex; gap:8px;">
           <input type="number" id="cardioMinutesInput" placeholder="Минут" style="flex:1;">
-          <button class="btn-gold" style="margin-top:0; width:120px; padding:8px;" id="btnLogCardio">Записать</button>
+          <button class="btn-gold" style="margin-top:0; width:120px; padding:8px;" id="btnLogCardio" data-i18n="logCardio">Записать</button>
         </div>
         <div id="cardioLogStatus" style="font-size:0.75rem; color:var(--accent-green); margin-top:6px;"></div>
       </div>
