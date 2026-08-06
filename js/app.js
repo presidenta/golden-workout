@@ -1,17 +1,26 @@
 async function bootstrap() {
   try {
-    await db.init();
-
-    // Load persisted settings
-    const saved = await db.get('settings', 'app');
-    if (saved && saved.value) {
-      store.setState(saved.value);
+    // База может быть недоступна: Safari в приватном режиме её запрещает,
+    // как и открытие страницы с диска в некоторых браузерах. Приложение
+    // должно работать и без неё — просто ничего не запоминая между заходами.
+    let dbReady = true;
+    try {
+      await db.init();
+    } catch (e) {
+      dbReady = false;
+      console.warn('[DB] недоступна, работаем без сохранения:', e);
     }
 
-    // Load persisted schedule
-    const sched = await db.get('settings', 'schedule');
-    if (sched && sched.value) {
-      store.setState({ schedule: sched.value });
+    if (dbReady) {
+      try {
+        const saved = await db.get('settings', 'app');
+        if (saved && saved.value) store.setState(saved.value);
+
+        const sched = await db.get('settings', 'schedule');
+        if (sched && sched.value) store.setState({ schedule: sched.value });
+      } catch (e) {
+        console.warn('[DB] настройки не прочитались:', e);
+      }
     }
 
     const state = store.getState();
@@ -64,5 +73,25 @@ document.addEventListener('dblclick', (e) => {
     e.preventDefault();
   }
 }, { passive: false });
+
+/* iPhone не даёт странице заговорить, пока человек по ней не нажал.
+   Поэтому при первом же касании произносим пустую фразу — этим
+   разрешение и выдаётся, дальше счёт и подсказки работают сами. */
+(function unlockSpeechOnFirstTouch() {
+  const unlock = () => {
+    try {
+      const synth = window.speechSynthesis;
+      if (synth) {
+        const u = new SpeechSynthesisUtterance(' ');
+        u.volume = 0;
+        synth.speak(u);
+      }
+    } catch (e) { /* нет синтеза речи — не беда */ }
+    document.removeEventListener('touchend', unlock);
+    document.removeEventListener('click', unlock);
+  };
+  document.addEventListener('touchend', unlock, { once: false });
+  document.addEventListener('click', unlock, { once: false });
+})();
 
 bootstrap();
