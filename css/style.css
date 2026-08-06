@@ -159,8 +159,8 @@ body {
 /* Программы */
 .program-selector {
   display: flex;
+  flex-wrap: wrap;      /* программ стало много — переносим, а не прячем за краем */
   gap: 8px;
-  overflow-x: auto;
   padding-bottom: 6px;
   margin-bottom: 14px;
   scrollbar-width: none;
