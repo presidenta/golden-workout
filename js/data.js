@@ -126,6 +126,45 @@
     ru: { name: "Суставная гимнастика (Голтис)", desc: "Импульсная микрокапилярная активация.", instructions: "Мягкие круговые движения в суставах без усилий. Дыхание спокойное. Не форсировать." },
     en: { name: "Goltis Joint Routine", desc: "Micro-capillary activation.", instructions: "Gentle circular joint movements without force. Breathe calmly. Don't push." },
     ua: { name: "Суглобова гімнастика (Голтис)", desc: "Імпульсна активація.", instructions: "М'які кругові рухи в суглобах. Дихання спокійне. Не форсувати." }
+  },
+
+  /* ===== СКЛАДНАЯ ДОСКА ДЛЯ ОТЖИМАНИЙ =====
+     Ручки переставляются по цветным гнёздам, и от цвета зависит,
+     какая мышца работает. Разметка с самой доски:
+     синий — грудь, зелёный — трицепс, красный — плечи, жёлтый — спина.
+     Ограничение по весу — около 100 кг. */
+
+  board_blue: {
+    id: 'board_blue', reps: 12, rest: 90,
+    muscles: ['chest'], equipment: 'push-up board', difficulty: 'beginner',
+    frames: ["assets/exercises/pushups/0.jpg", "assets/exercises/pushups/1.jpg"],
+    ru: { name: "Доска · Синий (грудь)", desc: "Большая грудная мышца. Базовое положение доски.", instructions: "Ручки в СИНИЕ гнёзда, чуть шире плеч, развёрнуты вдоль тела. Тело — прямая линия от пяток до макушки. Опускайтесь до касания грудью уровня ручек, локти уходят назад под 45°, не в стороны. Вверх — на выдохе. Лопатки сведены, поясница не провисает." },
+    en: { name: "Board · Blue (chest)", desc: "Pectoralis major. Base board position.", instructions: "Handles into BLUE slots, slightly wider than shoulders. Body straight. Lower chest to handle level, elbows back at 45°. Exhale up. Keep core tight." },
+    ua: { name: "Дошка · Синій (груди)", desc: "Великий грудний м'яз. Базове положення.", instructions: "Ручки в СИНІ гнізда, трохи ширше плечей. Тіло — пряма лінія. Опускайтесь грудьми до рівня ручок, лікті назад під 45°. Вгору — на видиху." }
+  },
+  board_green: {
+    id: 'board_green', reps: 10, rest: 90,
+    muscles: ['triceps'], equipment: 'push-up board', difficulty: 'intermediate',
+    frames: ["assets/exercises/pushups_diamond/0.jpg", "assets/exercises/pushups_diamond/1.jpg"],
+    ru: { name: "Доска · Зелёный (трицепс)", desc: "Трицепс, задняя поверхность руки.", instructions: "Ручки в ЗЕЛЁНЫЕ гнёзда — узко, под грудью. Локти прижаты к корпусу и скользят строго назад. Опускайтесь медленно, до лёгкого касания. Разводить локти в стороны нельзя — уйдёт нагрузка с трицепса и заболят плечи. Если тяжело — с колен." },
+    en: { name: "Board · Green (triceps)", desc: "Triceps focus.", instructions: "Handles into GREEN slots — narrow, under chest. Elbows tight to body, sliding straight back. Lower slowly. Never flare elbows out. Drop to knees if needed." },
+    ua: { name: "Дошка · Зелений (трицепс)", desc: "Трицепс.", instructions: "Ручки в ЗЕЛЕНІ гнізда — вузько, під грудьми. Лікті притиснуті до тіла, ковзають назад. Опускайтесь повільно. Не розводьте лікті." }
+  },
+  board_red: {
+    id: 'board_red', reps: 10, rest: 90,
+    muscles: ['shoulders'], equipment: 'push-up board', difficulty: 'intermediate',
+    frames: ["assets/exercises/board_red/0.jpg", "assets/exercises/board_red/1.jpg"],
+    ru: { name: "Доска · Красный (плечи)", desc: "Передняя и средняя дельта.", instructions: "Ручки в КРАСНЫЕ гнёзда, ближе к верху доски. Таз поднимите выше, тело углом — так нагрузка уходит с груди на плечи. Опускайтесь макушкой к полу перед ручками, локти под 45°. Ноги можно поставить на возвышение — станет тяжелее. Шею не роняйте, взгляд в пол." },
+    en: { name: "Board · Red (shoulders)", desc: "Front and side delts.", instructions: "Handles into RED slots, upper part of board. Hips high, body in a pike — this shifts load from chest to shoulders. Lower crown of head towards floor. Elevate feet to make it harder." },
+    ua: { name: "Дошка · Червоний (плечі)", desc: "Передня та середня дельта.", instructions: "Ручки в ЧЕРВОНІ гнізда, ближче до верху. Таз вище, тіло кутом — навантаження йде на плечі. Опускайтесь маківкою до підлоги." }
+  },
+  board_yellow: {
+    id: 'board_yellow', reps: 12, rest: 90,
+    muscles: ['back', 'lats'], equipment: 'push-up board', difficulty: 'intermediate',
+    frames: ["assets/exercises/board_yellow/0.jpg", "assets/exercises/board_yellow/1.jpg"],
+    ru: { name: "Доска · Жёлтый (спина)", desc: "Широчайшие и середина спины, осанка.", instructions: "Ручки в ЖЁЛТЫЕ гнёзда — широко, развёрнуты поперёк. Работайте лопатками: в нижней точке сводите их вместе, вверху разводите. Опускаться можно неглубоко — важнее движение лопаток, а не глубина. Именно этот хват выпрямляет осанку." },
+    en: { name: "Board · Yellow (back)", desc: "Lats and mid-back, posture.", instructions: "Handles into YELLOW slots — wide, turned across. Focus on the shoulder blades: squeeze together at the bottom, spread at the top. Depth matters less than blade movement." },
+    ua: { name: "Дошка · Жовтий (спина)", desc: "Найширші м'язи та середина спини.", instructions: "Ручки в ЖОВТІ гнізда — широко, розвернуті впоперек. Працюйте лопатками: внизу зводьте, вгорі розводьте. Глибина менш важлива." }
   }
 };
 
@@ -134,7 +173,52 @@ const DEFAULT_PROGRAMS = {
   glutes: { name: 'Ягодицы & Ноги', exercises: ['glute_bridge', 'romanian_dl', 'lunges_reverse', 'calf_raises'] },
   arms_chest: { name: 'Грудь & Руки', exercises: ['pushups_wide', 'biceps_curl', 'triceps_dips', 'pushups_diamond'] },
   cardio_core: { name: 'Кардио & Кор', exercises: ['mountain_climbers', 'squats', 'plank', 'crunches'] },
-  goltis: { name: 'Голтис Импульс', exercises: ['goltis_joint', 'squats', 'glute_bridge', 'plank'] }
+  goltis: { name: 'Голтис Импульс', exercises: ['goltis_joint', 'squats', 'glute_bridge', 'plank'] },
+  // Все четыре цвета доски за одну тренировку
+  push_board: { name: 'Доска (все цвета)', exercises: ['board_blue', 'board_green', 'board_red', 'board_yellow'] }
+};
+
+/* ===== БЕГОВАЯ ДОРОЖКА SPORTOP T5 WAVE DECK =====
+   План перехода от часовой ходьбы к получасу непрерывного бега.
+   Отправная точка: час ходьбы на 4–5 км/ч, при беге появляется одышка.
+   Три занятия в неделю, между ними день отдыха или ходьбы.
+   Скорости даны как ориентир — главный судья разговорный тест. */
+
+const TREADMILL = {
+  model: 'Sportop T5 Wave Deck',
+  specs: [
+    ['Скорость', 'до 18 км/ч'],
+    ['Наклон', '15 уровней, кнопки 3 / 6 / 9 / 12 %'],
+    ['Двигатель', '2–2.5 л.с.'],
+    ['Полотно', 'Wave Deck — шестисекционная амортизация, бережёт колени'],
+    ['Программы', '20 встроенных + 3 своих, пульсовые режимы']
+  ],
+  rule: 'Разговорный тест: во время бега вы должны выговаривать короткую фразу, не задыхаясь. Не получается — снижайте скорость на 0.5 км/ч. Одышка означает, что темп взят выше вашего сегодняшнего, а не что вы слабы.',
+  plan: [
+    { w: 1,  run: '1 мин · 6.5–7.0', walk: '2 мин · 5.0', sets: 8, total: 34, runTotal: 8,  note: 'Бег короткий специально. Задача недели — приучить сердце к смене темпа, а не устать.' },
+    { w: 2,  run: '2 мин · 6.5–7.0', walk: '2 мин · 5.0', sets: 6, total: 34, runTotal: 12, note: 'Если после первой недели ноги тяжёлые — повторите первую неделю ещё раз. Спешить некуда.' },
+    { w: 3,  run: '3 мин · 7.0',     walk: '2 мин · 5.0', sets: 5, total: 35, runTotal: 15, note: 'С этой недели бег суммарно обгоняет ходьбу по нагрузке. Следите за дыханием: вдох носом на два шага, выдох ртом на два.' },
+    { w: 4,  run: '5 мин · 7.0',     walk: '2 мин · 5.0', sets: 4, total: 38, runTotal: 20, note: 'Первый серьёзный рубеж. Пять минут подряд — это уже бег, а не пробежки между ходьбой.' },
+    { w: 5,  run: '7 мин · 7.0–7.5', walk: '2 мин · 5.0', sets: 3, total: 37, runTotal: 21, note: 'Отдых сокращается. Если тяжело — оставьте скорость 7.0 и не поднимайте.' },
+    { w: 6,  run: '10 мин · 7.0–7.5',walk: '3 мин · 5.0', sets: 2, total: 36, runTotal: 20, note: 'Десять минут без остановки. Психологически это сложнее, чем физически.' },
+    { w: 7,  run: '12 мин · 7.5',    walk: '3 мин · 5.0', sets: 2, total: 40, runTotal: 24, note: 'Предпоследний шаг к цели. Держите ровный темп, не разгоняйтесь в начале.' },
+    { w: 8,  run: '20 мин · 7.0–7.5',walk: '—',           sets: 1, total: 30, runTotal: 20, note: 'Двадцать минут непрерывно. Скорость можно снизить — важна непрерывность, а не быстрота.' },
+    { w: 9,  run: '25 мин · 7.5',    walk: '—',           sets: 1, total: 35, runTotal: 25, note: 'Почти цель. Если дыхание сбивается — сбросьте до 6.5 и добегите.' },
+    { w: 10, run: '30 мин · 7.5–8.0',walk: '—',           sets: 1, total: 40, runTotal: 30, note: 'Цель достигнута: полчаса непрерывного бега. Дальше можно наращивать скорость, а не время.' }
+  ],
+  walkDays: [
+    { title: 'Ходьба в горку', body: 'Час на 4.5–5.0 км/ч с наклоном 3–6 %. Пульс поднимается как при беге, а ударной нагрузки на колени нет. Лучший вариант в дни между беговыми.' },
+    { title: 'Длинная ровная', body: 'Час на 5.0–5.5 км/ч, наклон 0–2 %. То, что вы уже делаете. Хорошо восстанавливает после беговых дней.' },
+    { title: 'Переменная ходьба', body: '10 подходов: 2 минуты на наклоне 8–10 % (скорость 4.0–4.5), затем 2 минуты на ровном. Готовит сердце к интервалам без бега.' }
+  ],
+  tips: [
+    'Разминка и заминка обязательны: 5 минут спокойной ходьбы 4.0–4.5 км/ч до и после. Их время уже включено в общую длительность.',
+    'Наклон 1–2 % при беге делает дорожку ближе к улице и снимает нагрузку с голени.',
+    'При одышке снижайте скорость, но не переходите на шаг сразу — сначала попробуйте сбросить полкилометра в час.',
+    'Три занятия в неделю, между ними минимум один день без бега. Мышцы растут в отдыхе, а не на дорожке.',
+    'Боль в колене или голени — остановка и день отдыха. Терпеть нельзя.',
+    'Если пропустили неделю — вернитесь на шаг назад и повторите предыдущую.'
+  ]
 };
 
 const WARMUP_EXERCISES = ['goltis_joint', 'squats'];

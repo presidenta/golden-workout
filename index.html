@@ -16,6 +16,7 @@
     <div class="nav-tabs">
       <button class="nav-tab active" data-tab="workout" id="tabBtnWorkout">Тренировка</button>
       <button class="nav-tab" data-tab="constructor" id="tabBtnConstructor">Конструктор</button>
+      <button class="nav-tab" data-tab="treadmill" id="tabBtnTreadmill">Дорожка</button>
       <button class="nav-tab" data-tab="schedule" id="tabBtnSchedule">Расписание</button>
       <button class="nav-tab" data-tab="stats" id="tabBtnStats">Статистика</button>
     </div>
@@ -237,6 +238,27 @@
       <div style="font-size:0.78rem; color:var(--gold-light); margin-bottom:6px; font-weight:700;">Выберите упражнения:</div>
       <div class="exercise-list" id="constructorExercisesList" style="max-height:220px;"></div>
       <button class="btn-gold" id="btnSaveCustom">Сохранить в программы</button>
+    </div>
+
+    <!-- ВКЛАДКА: БЕГОВАЯ ДОРОЖКА -->
+    <div id="tabContentTreadmill" class="hidden">
+      <div class="tm-head">
+        <div class="tm-model" id="tmModel">—</div>
+        <div class="tm-goal">От часа ходьбы — к 30 минутам бега</div>
+      </div>
+
+      <div class="stats-card tm-specs" id="tmSpecs"></div>
+
+      <div class="tm-rule" id="tmRule"></div>
+
+      <div class="tm-section-title">План по неделям</div>
+      <div class="tm-weeks" id="tmWeeks"></div>
+
+      <div class="tm-section-title">Дни без бега</div>
+      <div class="tm-walk" id="tmWalk"></div>
+
+      <div class="tm-section-title">Правила</div>
+      <ul class="tm-tips" id="tmTips"></ul>
     </div>
 
     <!-- ВКЛАДКА 3: РАСПИСАНИЕ -->

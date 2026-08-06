@@ -118,7 +118,7 @@ class UI {
   _switchTab(tabId) {
     store.setState({ currentTab: tabId });
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
-    ['workout', 'constructor', 'schedule', 'stats'].forEach(t => {
+    ['workout', 'constructor', 'treadmill', 'schedule', 'stats'].forEach(t => {
       document.getElementById('tabContent' + this._cap(t)).classList.toggle('hidden', t !== tabId);
     });
     if (tabId === 'stats') this._renderStats();
@@ -130,6 +130,7 @@ class UI {
     document.getElementById('ui_subtitle').textContent = this.t.subtitle;
     document.getElementById('tabBtnWorkout').textContent = this.t.tabs.workout;
     document.getElementById('tabBtnConstructor').textContent = this.t.tabs.constructor;
+    document.getElementById('tabBtnTreadmill').textContent = this.t.tabs.treadmill;
     document.getElementById('tabBtnSchedule').textContent = this.t.tabs.schedule;
     document.getElementById('tabBtnStats').textContent = this.t.tabs.stats;
     document.getElementById('ui_set_title').textContent = this.t.settings;
@@ -144,7 +145,46 @@ class UI {
     this._renderPlanList();
     this._renderConstructor();
     this._renderSchedule();
+    this._renderTreadmill();
     this._renderStats();
+  }
+
+  /* ----- Беговая дорожка ----- */
+
+  _renderTreadmill() {
+    document.getElementById('tmModel').textContent = TREADMILL.model;
+
+    document.getElementById('tmSpecs').innerHTML = TREADMILL.specs
+      .map(([k, v]) => `<div class="tm-spec-row"><span>${this._esc(k)}</span><span>${this._esc(v)}</span></div>`)
+      .join('');
+
+    document.getElementById('tmRule').textContent = TREADMILL.rule;
+
+    document.getElementById('tmWeeks').innerHTML = TREADMILL.plan.map(p => {
+      const walk = p.walk === '—'
+        ? '<span class="tm-chip">без остановок</span>'
+        : `<span class="tm-chip walk">ходьба ${this._esc(p.walk)}</span>`;
+      const sets = p.sets > 1 ? `<span class="tm-chip">× ${p.sets} раза</span>` : '';
+      return `
+        <div class="tm-week${p.runTotal >= 30 ? ' reached' : ''}">
+          <div class="tm-week-head">
+            <span class="tm-week-no">Неделя ${p.w}</span>
+            <span class="tm-week-total">всего ${p.total} мин · бега ${p.runTotal}</span>
+          </div>
+          <div class="tm-week-body">
+            <span class="tm-chip run">бег ${this._esc(p.run)}</span>
+            ${walk}${sets}
+          </div>
+          <div class="tm-week-note">${this._esc(p.note)}</div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('tmWalk').innerHTML = TREADMILL.walkDays
+      .map(w => `<div class="tm-walk-item"><b>${this._esc(w.title)}</b><div>${this._esc(w.body)}</div></div>`)
+      .join('');
+
+    document.getElementById('tmTips').innerHTML = TREADMILL.tips
+      .map(t => `<li>${this._esc(t)}</li>`).join('');
   }
 
   _renderPrograms() {

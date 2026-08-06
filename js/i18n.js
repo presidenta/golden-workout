@@ -1,7 +1,7 @@
 const I18N = {
   ru: {
     subtitle: "Architect Pro v4.0",
-    tabs: { workout: "Тренировка", constructor: "Конструктор", schedule: "Расписание", stats: "Статистика" },
+    tabs: { workout: "Тренировка", constructor: "Конструктор", treadmill: "Дорожка", schedule: "Расписание", stats: "Статистика" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
     start: "Старт подхода", pause: "Пауза", resume: "Продолжить", finish: "Завершить", stop: "Стоп",
@@ -32,7 +32,7 @@ const I18N = {
   },
   en: {
     subtitle: "Architect Pro v4.0",
-    tabs: { workout: "Workout", constructor: "Builder", schedule: "Schedule", stats: "Stats" },
+    tabs: { workout: "Workout", constructor: "Builder", treadmill: "Treadmill", schedule: "Schedule", stats: "Stats" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
     start: "Start Set", pause: "Pause", resume: "Resume", finish: "Finish", stop: "Stop",
@@ -63,7 +63,7 @@ const I18N = {
   },
   ua: {
     subtitle: "Architect Pro v4.0",
-    tabs: { workout: "Тренування", constructor: "Конструктор", schedule: "Розклад", stats: "Статистика" },
+    tabs: { workout: "Тренування", constructor: "Конструктор", treadmill: "Доріжка", schedule: "Розклад", stats: "Статистика" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
     start: "Старт підходу", pause: "Пауза", resume: "Продовжити", finish: "Завершити", stop: "Стоп",
