@@ -358,6 +358,32 @@ body {
   font-size: 2.8rem; font-weight: 900; color: var(--gold-light);
 }
 
+/* Карточка упражнения (просмотр перед началом) */
+.preview-title {
+  color: var(--gold-primary);
+  margin-bottom: 2px;
+  font-size: 1.05rem;
+}
+.preview-plan {
+  font-size: 0.78rem;
+  color: var(--gold-light);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.preview-media {
+  margin-bottom: 12px;
+}
+.preview-media img {
+  width: 100%;
+  display: block;
+  border-radius: 10px;
+}
+.preview-desc {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  margin-bottom: 10px;
+}
+
 /* Подходы текущего упражнения: одна полоска — один подход.
    Активная убывает по мере повторов, выполненные остаются пустыми. */
 .set-progress {

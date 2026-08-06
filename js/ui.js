@@ -81,6 +81,14 @@ class UI {
     // Rest
     on('btnSkipRest', 'click', () => this._skipRest());
     on('btnFinishSession', 'click', () => this._finishEarly());
+
+    // Карточка упражнения
+    on('btnPreviewStart', 'click', () => this._startFromPreview());
+    on('btnPreviewClose', 'click', () => this._closePreview());
+    on('previewModal', 'click', (e) => {
+      // Клик по затемнению вокруг карточки — закрыть
+      if (e.target.id === 'previewModal') this._closePreview();
+    });
     on('btnRestMinus', 'click', () => { if (this.restTimer) this.restTimer.addSeconds(-10); });
     on('btnRestPlus', 'click', () => { if (this.restTimer) this.restTimer.addSeconds(10); });
 
@@ -173,7 +181,9 @@ class UI {
         </div>
         <div class="exercise-status">⭕</div>
       `;
-      item.onclick = () => this._startExercise(idx);
+      // Сначала показываем карточку: что за упражнение и как его делать.
+      // Начать можно оттуда.
+      item.onclick = () => this._openPreview(idx);
       box.appendChild(item);
       // В списке показываем первый кадр упражнения
       const img = item.querySelector('img');
@@ -204,21 +214,30 @@ class UI {
     return s.globalSets;
   }
 
+  // index — номер упражнения в плане. В движке перед основными идёт
+  // разминка, поэтому номер сдвигаем на её длину.
   _startExercise(index) {
     const state = store.getState();
     this.engine.start(state.currentProgram, true);
-    // advance to selected exercise
-    while (this.engine.currentExIndex < index && this.engine.phase !== 'complete') {
+    const target = this.engine.warmupCount() + index;
+    while (this.engine.currentExIndex < target && this.engine.phase !== 'complete') {
       this.engine.nextExercise();
     }
     this._showWorkoutScreen();
     this._refreshWorkoutUI();
   }
 
+  // Тренировка целиком, с самого начала — то есть с разминки
+  _startSession() {
+    const state = store.getState();
+    this.engine.start(state.currentProgram, true);
+    this._showWorkoutScreen();
+    this._refreshWorkoutUI();
+  }
+
+  // Большая кнопка внизу плана — полная тренировка от разминки
   _startNext() {
-    const prog = this.programs[store.getState().currentProgram];
-    const firstIdx = 0;
-    this._startExercise(firstIdx);
+    this._startSession();
   }
 
   _showWorkoutScreen() {
@@ -424,6 +443,62 @@ class UI {
     document.getElementById('restScreen').classList.add('hidden');
     document.getElementById('screenWorkout').classList.remove('hidden');
     this._refreshWorkoutUI();
+  }
+
+  /* ----- Карточка упражнения ----- */
+
+  _openPreview(idx) {
+    const prog = this.programs[store.getState().currentProgram];
+    if (!prog) return;
+    const ex = EXERCISE_DB[prog.exercises[idx]];
+    if (!ex) return;
+
+    const loc = ex[this.currentLang] || ex.ru;
+    this.previewIndex = idx;
+
+    document.getElementById('previewName').textContent = loc.name;
+    document.getElementById('previewPlan').textContent =
+      `${this._getEffectiveSets()} ${this.t.setsShort} × ${ex.reps} ${this.t.reps} · ${this.t.restBetween(ex.rest)}`;
+    document.getElementById('previewDesc').textContent = loc.desc;
+    document.getElementById('previewInstructions').innerHTML =
+      `<strong>${this.t.instructions}:</strong> ${this._esc(loc.instructions)}`;
+    document.getElementById('btnPreviewStart').textContent = this.t.previewStart;
+    document.getElementById('btnPreviewClose').textContent = this.t.close;
+
+    // Кадры листаем и здесь, чтобы движение было видно до начала
+    const img = document.getElementById('previewImg');
+    this.previewFrames = ex.frames || [];
+    this.previewFrameIndex = 0;
+    this._stopPreviewLoop();
+    if (this.previewFrames.length) {
+      img.style.display = '';
+      img.src = this.previewFrames[0];
+      if (this.previewFrames.length > 1) {
+        this.previewTimer = setInterval(() => {
+          this.previewFrameIndex = (this.previewFrameIndex + 1) % this.previewFrames.length;
+          img.src = this.previewFrames[this.previewFrameIndex];
+        }, 900);
+      }
+    } else {
+      img.style.display = 'none';
+    }
+
+    document.getElementById('previewModal').classList.remove('hidden');
+  }
+
+  _closePreview() {
+    this._stopPreviewLoop();
+    document.getElementById('previewModal').classList.add('hidden');
+  }
+
+  _stopPreviewLoop() {
+    if (this.previewTimer) { clearInterval(this.previewTimer); this.previewTimer = null; }
+  }
+
+  _startFromPreview() {
+    const idx = this.previewIndex;
+    this._closePreview();
+    if (typeof idx === 'number') this._startExercise(idx);
   }
 
   /* ----- Анимация упражнения -----

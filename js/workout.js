@@ -51,6 +51,13 @@ class WorkoutEngine {
     return base;
   }
 
+  // Сколько упражнений занимает разминка в общем списке.
+  // Нужно, чтобы номер упражнения из плана совпал с номером в движке.
+  warmupCount() {
+    if (!this.withWarmup) return 0;
+    return WARMUP_EXERCISES.map(id => EXERCISE_DB[id]).filter(Boolean).length;
+  }
+
   /* ----- Общий объём тренировки ----- */
 
   // Сколько подходов у упражнения по его номеру.
