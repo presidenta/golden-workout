@@ -1,6 +1,7 @@
 ﻿const EXERCISE_DB = {
   pushups: {
     id: 'pushups', reps: 15, rest: 90,
+    breath: 'press',
     muscles: ['chest', 'triceps', 'core'], equipment: 'bodyweight', difficulty: 'beginner',
     frames: ["assets/exercises/pushups/0.jpg", "assets/exercises/pushups/1.jpg"],
     ru: { name: "Классические отжимания", desc: "Грудные мышцы, трицепс и кор.", instructions: "Ладони на ширине плеч. Тело — прямая линия. Опускайтесь, касаясь грудью пола. Локти идут назад под 45°." },
@@ -9,6 +10,7 @@
   },
   pushups_wide: {
     id: 'pushups_wide', reps: 12, rest: 90,
+    breath: 'press',
     muscles: ['chest', 'shoulders'], equipment: 'bodyweight', difficulty: 'beginner',
     frames: ["assets/exercises/pushups_wide/0.jpg", "assets/exercises/pushups_wide/1.jpg"],
     ru: { name: "Отжимания (Широкий хват)", desc: "Акцент на внешнюю часть груди.", instructions: "Ладони шире плеч на 1.5 ладони. Локти в стороны." },
@@ -17,6 +19,7 @@
   },
   pushups_diamond: {
     id: 'pushups_diamond', reps: 10, rest: 90,
+    breath: 'press',
     muscles: ['triceps', 'chest'], equipment: 'bodyweight', difficulty: 'intermediate',
     frames: ["assets/exercises/pushups_diamond/0.jpg", "assets/exercises/pushups_diamond/1.jpg"],
     ru: { name: "Алмазные отжимания", desc: "Максимальная нагрузка на трицепс.", instructions: "Большие пальцы и указательные пальцы касаются, образуя ромб. Локти прижаты к телу." },
@@ -25,6 +28,7 @@
   },
   squats: {
     id: 'squats', reps: 20, rest: 90,
+    breath: 'squat',
     muscles: ['quads', 'glutes'], equipment: 'bodyweight', difficulty: 'beginner',
     frames: ["assets/exercises/squats/0.jpg", "assets/exercises/squats/1.jpg"],
     ru: { name: "Классические приседания", desc: "Квадрицепсы и ягодицы.", instructions: "Ноги на ширине плеч. Спина прямая. Колени идут в стороны пальцев ног. Ягодицы ниже колен." },
@@ -33,6 +37,7 @@
   },
   lunges: {
     id: 'lunges', reps: 16, rest: 90,
+    breath: 'squat',
     muscles: ['quads', 'glutes', 'calves'], equipment: 'bodyweight', difficulty: 'beginner',
     frames: ["assets/exercises/lunges/0.jpg", "assets/exercises/lunges/1.jpg"],
     ru: { name: "Выпады вперед", desc: "Ноги и динамический баланс.", instructions: "Шаг вперед на длину стопы. Заднее колено почти касается пола. Торс вертикально." },
@@ -41,6 +46,7 @@
   },
   lunges_reverse: {
     id: 'lunges_reverse', reps: 16, rest: 90,
+    breath: 'squat',
     muscles: ['glutes', 'quads'], equipment: 'bodyweight', difficulty: 'beginner',
     frames: ["assets/exercises/lunges_reverse/0.jpg", "assets/exercises/lunges_reverse/1.jpg"],
     ru: { name: "Обратные выпады", desc: "Безопасная нагрузка на ягодицы.", instructions: "Шаг назад. Вес на передней ноге. Ягодицы передней ноги работают активнее." },
@@ -49,6 +55,7 @@
   },
   glute_bridge: {
     id: 'glute_bridge', reps: 20, rest: 60,
+    breath: 'bridge',
     muscles: ['glutes', 'hamstrings'], equipment: 'bodyweight', difficulty: 'beginner',
     frames: ["assets/exercises/glute_bridge/0.jpg", "assets/exercises/glute_bridge/1.jpg"],
     ru: { name: "Ягодичный мостик", desc: "Изолированная прокачка ягодиц.", instructions: "Лопатки на полу. Поднимайте таз, сжимая ягодицы. В верхней точке пауза 1 сек." },
@@ -57,6 +64,7 @@
   },
   romanian_dl: {
     id: 'romanian_dl', reps: 15, rest: 90,
+    breath: 'hinge',
     muscles: ['glutes', 'hamstrings', 'back'], equipment: 'dumbbell', difficulty: 'intermediate',
     frames: ["assets/exercises/romanian_dl/0.jpg", "assets/exercises/romanian_dl/1.jpg"],
     ru: { name: "Румынская тяга (гантели)", desc: "Мощный рост ягодиц и бицепса бедра.", instructions: "Спина нейтральная. Гантели близко к голеням. Таз отводится назад. Опускать до растяжения подколенных сухожилий." },
@@ -65,6 +73,7 @@
   },
   crunches: {
     id: 'crunches', reps: 20, rest: 60,
+    breath: 'core',
     muscles: ['abs'], equipment: 'bodyweight', difficulty: 'beginner',
     frames: ["assets/exercises/crunches/0.jpg", "assets/exercises/crunches/1.jpg"],
     ru: { name: "Скручивания на пресс", desc: "Проработка мышц живота.", instructions: "Руки за головой, не тяните шею. Лопатки отрываются от пола. Поясница прижата." },
@@ -73,6 +82,7 @@
   },
   biceps_curl: {
     id: 'biceps_curl', reps: 15, rest: 60,
+    breath: 'curl',
     muscles: ['biceps'], equipment: 'dumbbell', difficulty: 'beginner',
     frames: ["assets/exercises/biceps_curl/0.jpg", "assets/exercises/biceps_curl/1.jpg"],
     ru: { name: "Сгибания на бицепс", desc: "Проработка рук с гантелями.", instructions: "Локти не отрывать от тела. Предплечья двигаются строго вертикально. В верхней точке супинация (ладони вверх)." },
@@ -81,6 +91,7 @@
   },
   shoulder_press: {
     id: 'shoulder_press', reps: 12, rest: 90,
+    breath: 'press',
     muscles: ['shoulders', 'triceps'], equipment: 'dumbbell', difficulty: 'intermediate',
     frames: ["assets/exercises/shoulder_press/0.jpg", "assets/exercises/shoulder_press/1.jpg"],
     ru: { name: "Жим гантелей стоя", desc: "Развитие плечевого пояса.", instructions: "Гантели у плеч. Ладони вперед. Жим строго вверх, не разводя локти в стороны." },
@@ -89,6 +100,7 @@
   },
   plank: {
     id: 'plank', reps: 60, rest: 60,
+    breath: 'static',
     muscles: ['core', 'shoulders'], equipment: 'bodyweight', difficulty: 'beginner',
     frames: ["assets/exercises/plank/0.jpg", "assets/exercises/plank/1.jpg"],
     ru: { name: "Планка (сек)", desc: "Статический кор и стабилизаторы.", instructions: "Локти под плечами. Тело — прямая доска. Не провисать поясницей. Дышать." },
@@ -97,6 +109,7 @@
   },
   mountain_climbers: {
     id: 'mountain_climbers', reps: 30, rest: 60,
+    breath: 'cardio',
     muscles: ['core', 'shoulders', 'legs'], equipment: 'bodyweight', difficulty: 'intermediate',
     frames: ["assets/exercises/mountain_climbers/0.jpg", "assets/exercises/mountain_climbers/1.jpg"],
     ru: { name: "Скалолаз", desc: "Динамический пресс и выносливость.", instructions: "Планка. Колени поочередно к груди. Таз не поднимать. Ритмично." },
@@ -105,6 +118,7 @@
   },
   calf_raises: {
     id: 'calf_raises', reps: 25, rest: 60,
+    breath: 'simple',
     muscles: ['calves'], equipment: 'bodyweight', difficulty: 'beginner',
     frames: ["assets/exercises/calf_raises/0.jpg", "assets/exercises/calf_raises/1.jpg"],
     ru: { name: "Подъемы на носки", desc: "Икроножные мышцы.", instructions: "На полу или возвышении. Поднимайтесь на носки максимально высоко. Пауза вверху. Медленно вниз." },
@@ -113,6 +127,7 @@
   },
   triceps_dips: {
     id: 'triceps_dips', reps: 12, rest: 90,
+    breath: 'press',
     muscles: ['triceps', 'chest'], equipment: 'bodyweight', difficulty: 'beginner',
     frames: ["assets/exercises/triceps_dips/0.jpg", "assets/exercises/triceps_dips/1.jpg"],
     ru: { name: "Обратные отжимания от скамьи", desc: "Мощная проработка трицепса.", instructions: "Спина близко к скамье. Локти назад, не в стороны. Опускайтесь до 90° в локтях." },
@@ -121,6 +136,7 @@
   },
   goltis_joint: {
     id: 'goltis_joint', reps: 15, rest: 30,
+    breath: 'mobility',
     muscles: ['joints', 'mobility'], equipment: 'bodyweight', difficulty: 'beginner',
     frames: ["assets/exercises/goltis_joint/0.jpg", "assets/exercises/goltis_joint/1.jpg"],
     ru: { name: "Суставная гимнастика (Голтис)", desc: "Импульсная микрокапилярная активация.", instructions: "Мягкие круговые движения в суставах без усилий. Дыхание спокойное. Не форсировать." },
@@ -136,6 +152,7 @@
 
   board_blue: {
     id: 'board_blue', reps: 12, rest: 90,
+    breath: 'press',
     muscles: ['chest'], equipment: 'push-up board', difficulty: 'beginner',
     frames: [],
     board: { color: 'blue', slot: 'blue', grip: 'along' },
@@ -157,6 +174,7 @@
   },
   board_green: {
     id: 'board_green', reps: 10, rest: 90,
+    breath: 'press',
     muscles: ['triceps'], equipment: 'push-up board', difficulty: 'intermediate',
     frames: [],
     board: { color: 'green', slot: 'green', grip: 'along' },
@@ -178,6 +196,7 @@
   },
   board_red: {
     id: 'board_red', reps: 10, rest: 90,
+    breath: 'press',
     muscles: ['shoulders'], equipment: 'push-up board', difficulty: 'intermediate',
     frames: [],
     board: { color: 'red', slot: 'red', grip: 'along' },
@@ -199,6 +218,7 @@
   },
   board_yellow: {
     id: 'board_yellow', reps: 12, rest: 90,
+    breath: 'pull',
     muscles: ['back', 'lats'], equipment: 'push-up board', difficulty: 'intermediate',
     frames: [],
     board: { color: 'yellow', slot: 'yellow', grip: 'across' },

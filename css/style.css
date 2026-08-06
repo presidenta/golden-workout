@@ -373,6 +373,20 @@ body {
   display: block;
   border-radius: 8px;
 }
+/* Блок про дыхание в карточке упражнения */
+.breathing-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent-blue);
+  background: rgba(52, 152, 219, 0.08);
+  border-radius: 0 8px 8px 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+.breathing-box:empty { display: none; }
+.breathing-box strong { color: #7fc4f0; }
+
 /* Планка поверх фотографии: лежит на обоих гнёздах под нужным углом */
 .board-overlay {
   position: absolute;

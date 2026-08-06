@@ -445,11 +445,16 @@ class UI {
     const tick = () => {
       const st = store.getState();
       const breath = st.breathMode || 'inhale';
+      const counting = st.countAloud !== false;
       this.currentRep++;
       const rep = this.currentRep;
       document.getElementById('repDisplay').textContent = rep;
       this._updateSetProgress();
-      if (this.speech && st.countAloud !== false) this.speech.speak(String(rep));
+      // Счёт говорим первым и не обрываем — он задаёт ритм
+      if (this.speech && counting) this.speech.speak(String(rep));
+
+      // Команду дыхания даём с задержкой, чтобы цифра успела прозвучать
+      const breathDelay = counting ? Math.min(900, half - 200) : 350;
 
       // Первая половина цикла — опускание. На нём делается вдох,
       // поэтому и кадр здесь нижний.
@@ -469,7 +474,7 @@ class UI {
           overlay.className = 'breath-overlay show inhale';
         }
         if (this.speech) this.speech.speak(this.t.inhale);
-      }, 400);
+      }, breathDelay);
 
       // Вторая половина — подъём, усилие. Выдох и верхний кадр.
       setTimeout(() => {
@@ -501,6 +506,8 @@ class UI {
   _pauseRepTimer() {
     if (this.repTimer) { clearInterval(this.repTimer); this.repTimer = null; }
     document.getElementById('breathOverlay').className = 'breath-overlay';
+    // Обрываем недоговорённое, иначе счёт продолжится уже на паузе
+    if (this.speech) this.speech.stopSpeaking();
     this._startFrameLoop();
   }
 
@@ -596,6 +603,13 @@ class UI {
     document.getElementById('previewDesc').textContent = loc.desc;
     document.getElementById('previewInstructions').innerHTML =
       `<strong>${this.t.instructions}:</strong> ${this._esc(loc.instructions)}`;
+
+    // Как дышать в этом движении и почему именно так
+    const breathBox = document.getElementById('previewBreathing');
+    const guide = this.t.breathingGuide[ex.breath];
+    breathBox.innerHTML = guide
+      ? `<strong>${this.t.breathingTitle}:</strong> ${this._esc(guide)}`
+      : '';
     document.getElementById('btnPreviewStart').textContent = this.t.previewStart;
     document.getElementById('btnPreviewClose').textContent = this.t.close;
 

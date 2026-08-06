@@ -1,6 +1,6 @@
 const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 9",
+    subtitle: "Architect Pro · сборка 10",
     tabs: { workout: "Тренировка", constructor: "Конструктор", treadmill: "Дорожка", schedule: "Расписание", stats: "Статистика" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -40,6 +40,20 @@ const I18N = {
     cardioTitle: "Кардио & Беговая дорожка",
     cardioHint: "Рекомендация: 30-40 мин бега / ходьбы ежедневно.",
     logCardio: "Записать",
+    breathingTitle: "Дыхание",
+    breathingGuide: {
+      press: "Вдох — когда опускаетесь, выдох — когда выжимаете себя вверх. Правило простое: выдох всегда на усилии. Так делают потому, что на выдохе включается брюшной пресс и растёт внутрибрюшное давление — оно держит позвоночник жёстким и даёт опору для толчка. Дыхание не задерживайте: при задержке давление в грудной клетке подскакивает, приток крови к сердцу падает, и в глазах темнеет.",
+      pull: "Вдох — когда опускаетесь и сводите лопатки, выдох — когда отталкиваетесь и разводите их. Вдох здесь помогает раскрыть грудную клетку: рёбра расходятся, лопаткам становится куда сойтись. Поэтому в нижней точке имеет смысл задержаться на полсекунды — на полном вдохе.",
+      squat: "Вдох — на опускании, выдох — на подъёме. Перед тем как опуститься, наберите воздух и слегка напрягите живот: это создаёт вокруг позвоночника «пояс» из давления и удерживает поясницу от прогиба. Выдыхайте не резко в самом низу, а по мере подъёма.",
+      hinge: "Вдох стоя, до наклона. Пока опускаетесь, воздух держите в себе — спина остаётся жёсткой именно за счёт этого. Выдох начинайте, когда прошли самую тяжёлую часть подъёма. Выдох в наклоне «роняет» корпус и скругляет поясницу.",
+      bridge: "Выдох — когда поднимаете таз, вдох — когда опускаете. Выдох тут не просто ритм: он опускает рёбра вниз и включает нижний пресс, а без этого таз поднимают поясницей, и она забивается вместо ягодиц.",
+      core: "Выдох — на скручивании, вдох — при возврате. На вдохе пресс сократиться полностью не может: диафрагма опущена, живот раздут. Поэтому выдыхайте всё до конца в верхней точке — именно на выдохе прямая мышца живота сжимается сильнее всего.",
+      curl: "Выдох — на подъёме, вдох — на опускании. Движение маленькое, поэтому дышите спокойно и не задерживайте: задержка на мелких упражнениях без нужды поднимает давление.",
+      static: "Дыхание не останавливается ни на секунду. Считайте про себя: три счёта вдох носом, три счёта выдох ртом. Дышите животом, а не грудью. Задержка в статике быстро поднимает давление и выключает мышцы — вы упадёте не от усталости, а от нехватки воздуха.",
+      cardio: "Ритм два на два: два движения — вдох, два движения — выдох. Вдох носом, выдох ртом. Если сбились и начали хватать воздух — сбавьте темп, а не терпите: восстановить ритм на ходу почти невозможно.",
+      simple: "Выдох — на усилии, вдох — на возврате. Движение простое, следите просто за тем, чтобы не задерживать дыхание.",
+      mobility: "Дыхание свободное и непрерывное, в своём темпе. Ничего не задерживайте и не подстраивайте под движение — задача разминки в том, чтобы разогнать кровь, а не нагрузить."
+    },
     boardCaption: "Планка в два обведённых гнезда",
     boardGrip: { along: "вдоль тела", across: "поперёк" },
     formCaption: "Локти",
@@ -72,7 +86,7 @@ const I18N = {
     warmup: "🔥 Разминка", cooldown: "❄️ Заминка"
   },
   en: {
-    subtitle: "Architect Pro · build 9",
+    subtitle: "Architect Pro · build 10",
     tabs: { workout: "Workout", constructor: "Builder", treadmill: "Treadmill", schedule: "Schedule", stats: "Stats" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -111,6 +125,20 @@ const I18N = {
     cardioTitle: "Cardio & Treadmill",
     cardioHint: "Recommended: 30-40 min of running or walking daily.",
     logCardio: "Log",
+    breathingTitle: "Breathing",
+    breathingGuide: {
+      press: "Inhale as you lower, exhale as you push yourself up. The rule is simple: exhale on the effort. On the exhale the abs engage and intra-abdominal pressure rises — it keeps the spine rigid and gives the push something to work against. Never hold your breath: pressure in the chest spikes, blood return to the heart drops, and your vision goes dark.",
+      pull: "Inhale as you lower and squeeze the shoulder blades together, exhale as you push away. The inhale opens the ribcage here, giving the blades room to meet. That is why a half-second pause at the bottom, on a full breath, is worth it.",
+      squat: "Inhale on the way down, exhale on the way up. Before descending take air in and brace the belly slightly: that builds a belt of pressure around the spine and stops the lower back from rounding. Release the breath gradually as you rise, not in one burst at the bottom.",
+      hinge: "Inhale standing, before the hinge. Keep the air in while you lower — that is what keeps the back rigid. Start the exhale once past the hardest part of the lift. Exhaling in the bent position drops the torso and rounds the lower back.",
+      bridge: "Exhale as you lift the hips, inhale as you lower. The exhale is not just rhythm: it pulls the ribs down and engages the lower abs. Without it people lift with the lower back and it takes the load instead of the glutes.",
+      core: "Exhale on the crunch, inhale on the way back. The abs cannot fully shorten on an inhale — the diaphragm is down and the belly is full. Empty the lungs at the top: that is when the rectus abdominis contracts hardest.",
+      curl: "Exhale on the way up, inhale on the way down. The movement is small, so breathe calmly and never hold — holding on small exercises raises pressure for no benefit.",
+      static: "Breathing never stops. Count it: three counts in through the nose, three counts out through the mouth. Breathe into the belly, not the chest. Holding your breath in a static hold raises pressure fast and shuts the muscles down — you fail from lack of air, not fatigue.",
+      cardio: "Two by two: two movements in, two movements out. In through the nose, out through the mouth. If the rhythm breaks and you start gasping, slow down rather than push on — rhythm is almost impossible to recover on the move.",
+      simple: "Exhale on the effort, inhale on the return. Simple movement — just make sure you do not hold your breath.",
+      mobility: "Breathe freely and continuously, at your own pace. Do not hold it or sync it with the movement — warm-up is about moving blood, not loading the body."
+    },
     boardCaption: "Bar into the two circled slots",
     boardGrip: { along: "along the body", across: "across" },
     formCaption: "Elbows",
@@ -143,7 +171,7 @@ const I18N = {
     warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 9",
+    subtitle: "Architect Pro · збірка 10",
     tabs: { workout: "Тренування", constructor: "Конструктор", treadmill: "Доріжка", schedule: "Розклад", stats: "Статистика" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -182,6 +210,20 @@ const I18N = {
     cardioTitle: "Кардіо & Бігова доріжка",
     cardioHint: "Рекомендація: 30-40 хв бігу / ходьби щодня.",
     logCardio: "Записати",
+    breathingTitle: "Дихання",
+    breathingGuide: {
+      press: "Вдих — коли опускаєтесь, видих — коли виштовхуєте себе вгору. Правило просте: видих завжди на зусиллі. Так роблять тому, що на видиху вмикається черевний прес і зростає внутрішньочеревний тиск — він тримає хребет жорстким і дає опору для поштовху. Дихання не затримуйте: при затримці тиск у грудній клітці підскакує, приплив крові до серця падає, і в очах темніє.",
+      pull: "Вдих — коли опускаєтесь і зводите лопатки, видих — коли відштовхуєтесь. Вдих тут допомагає розкрити грудну клітку: ребра розходяться, лопаткам є куди зійтися. Тому внизу варто затриматись на пів секунди — на повному вдиху.",
+      squat: "Вдих — на опусканні, видих — на підйомі. Перед тим як опуститись, наберіть повітря і злегка напружте живіт: це створює навколо хребта «пояс» із тиску й утримує поперек від прогину. Видихайте не різко внизу, а поступово під час підйому.",
+      hinge: "Вдих стоячи, до нахилу. Поки опускаєтесь, повітря тримайте в собі — спина залишається жорсткою саме завдяки цьому. Видих починайте, коли пройшли найважчу частину підйому. Видих у нахилі «роняє» корпус і округлює поперек.",
+      bridge: "Видих — коли піднімаєте таз, вдих — коли опускаєте. Видих тут не просто ритм: він опускає ребра вниз і вмикає нижній прес, а без цього таз піднімають попереком, і він забивається замість сідниць.",
+      core: "Видих — на скручуванні, вдих — при поверненні. На вдиху прес не може скоротитись повністю: діафрагма опущена, живіт роздутий. Тому видихайте все до кінця у верхній точці — саме на видиху прямий м'яз живота стискається найсильніше.",
+      curl: "Видих — на підйомі, вдих — на опусканні. Рух маленький, тому дихайте спокійно і не затримуйте: затримка на дрібних вправах без потреби піднімає тиск.",
+      static: "Дихання не зупиняється ані на секунду. Рахуйте подумки: три рахунки вдих носом, три рахунки видих ротом. Дихайте животом, а не грудьми. Затримка у статиці швидко піднімає тиск і вимикає м'язи.",
+      cardio: "Ритм два на два: два рухи — вдих, два рухи — видих. Вдих носом, видих ротом. Якщо збилися і почали хапати повітря — збавте темп, а не терпіть.",
+      simple: "Видих — на зусиллі, вдих — на поверненні. Рух простий, стежте лише за тим, щоб не затримувати дихання.",
+      mobility: "Дихання вільне й безперервне, у своєму темпі. Нічого не затримуйте — завдання розминки розігнати кров, а не навантажити."
+    },
     boardCaption: "Планка у два обведені гнізда",
     boardGrip: { along: "вздовж тіла", across: "упоперек" },
     formCaption: "Лікті",

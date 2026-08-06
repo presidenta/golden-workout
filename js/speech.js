@@ -8,16 +8,24 @@ class SpeechController {
     this.onCommand = null;
   }
 
-  speak(text) {
+  // interrupt=false — фраза встаёт в очередь и не обрывает предыдущую.
+  // Иначе команда «вдох» перебивала счёт, и цифры было не слышно.
+  speak(text, interrupt = false) {
     if (!this.enabled || !this.synth) return;
     try {
-      this.synth.cancel();
+      if (interrupt) this.synth.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = this.lang;
-      u.rate = 1.05;
+      u.rate = 1.15;   // чуть быстрее: короткие слова должны успевать за темпом
       u.pitch = 1.0;
       this.synth.speak(u);
     } catch (e) { console.warn('TTS error', e); }
+  }
+
+  // Оборвать всё сказанное — при паузе и выходе из подхода
+  stopSpeaking() {
+    if (!this.synth) return;
+    try { this.synth.cancel(); } catch (e) {}
   }
 
   initRecognition() {
