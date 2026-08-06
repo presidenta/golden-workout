@@ -358,6 +358,55 @@ body {
   font-size: 2.8rem; font-weight: 900; color: var(--gold-light);
 }
 
+/* Подходы текущего упражнения: одна полоска — один подход.
+   Активная убывает по мере повторов, выполненные остаются пустыми. */
+.set-progress {
+  width: 100%;
+  margin: 0 0 12px 0;
+}
+.set-progress-bars {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+.set-bar {
+  flex: 1;
+  height: 10px;
+  border-radius: 5px;
+  background: #1e1e26;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  overflow: hidden;
+}
+.set-bar-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 4px;
+  background: var(--gold-gradient);
+  transition: width 0.35s ease;
+}
+/* Подход, который идёт сейчас */
+.set-bar.current {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.35);
+}
+/* Уже закрытые подходы */
+.set-bar.done .set-bar-fill {
+  width: 0;
+}
+.set-progress-label {
+  margin-top: 7px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gold-light);
+  letter-spacing: 0.5px;
+  min-height: 18px;
+}
+.set-progress-label .muted {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
 /* Общий прогресс тренировки.
    Полоса убывает: показывает, сколько подходов ещё осталось. */
 .session-progress {

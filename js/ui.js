@@ -5,6 +5,7 @@ class UI {
     this.speech = null;
     this.restTimer = null;
     this.repTimer = null;
+    this.currentRep = 0;
     this.programs = { ...DEFAULT_PROGRAMS };
     this.currentLang = 'ru';
     this.t = null;
@@ -244,6 +245,10 @@ class UI {
     document.getElementById('breathOverlay').className = 'breath-overlay';
     document.getElementById('counterCircle').className = 'counter-circle';
 
+    // Новый подход — счётчик повторов с нуля, полоски перерисовываем
+    this.currentRep = 0;
+    this._updateSetProgress();
+
     // Phase badge
     const pb = document.getElementById('phaseBadge');
     pb.className = 'phase-badge' + (this.engine.phase === 'warmup' ? ' warmup' : this.engine.phase === 'cooldown' ? ' cooldown' : '');
@@ -292,13 +297,17 @@ class UI {
   _startRepTimer() {
     const ex = this.engine.getCurrentExercise();
     if (!ex) return;
-    let rep = 0;
+    // Счётчик хранится на объекте, а не в локальной переменной:
+    // иначе после паузы отсчёт начинался бы заново с нуля.
+    if (typeof this.currentRep !== 'number') this.currentRep = 0;
     const tempo = store.getState().globalTempo;
     const half = tempo * 500;
 
     const tick = () => {
-      rep++;
+      this.currentRep++;
+      const rep = this.currentRep;
       document.getElementById('repDisplay').textContent = rep;
+      this._updateSetProgress();
       if (this.speech) this.speech.speak(String(rep));
 
       // Inhale
@@ -336,6 +345,7 @@ class UI {
   }
 
   _finishSet() {
+    this.currentRep = 0;
     document.getElementById('actionBtn').dataset.mode = '';
     document.getElementById('actionBtn').textContent = this.t.start;
     document.getElementById('breathOverlay').className = 'breath-overlay';
@@ -406,6 +416,48 @@ class UI {
     document.getElementById('restScreen').classList.add('hidden');
     document.getElementById('screenWorkout').classList.remove('hidden');
     this._refreshWorkoutUI();
+  }
+
+  /* ----- Прогресс по текущему упражнению ----- */
+
+  // Полосок столько, сколько подходов у упражнения. Та, что идёт сейчас,
+  // убывает с каждым повтором; закрытые остаются пустыми.
+  _updateSetProgress() {
+    const bars = document.getElementById('setProgressBars');
+    const label = document.getElementById('setProgressLabel');
+    const ex = this.engine.getCurrentExercise();
+    if (!ex) { bars.innerHTML = ''; label.textContent = ''; return; }
+
+    const totalSets = this.engine.setsForIndex(this.engine.currentExIndex);
+    const currentSet = this.engine.currentSet;
+    const totalReps = ex.reps || 0;
+    const doneReps = Math.min(this.currentRep || 0, totalReps);
+    const leftReps = Math.max(0, totalReps - doneReps);
+
+    // Перерисовываем полоски только когда меняется их количество,
+    // иначе плавное убывание сбрасывалось бы на каждом повторе.
+    if (bars.childElementCount !== totalSets) {
+      bars.innerHTML = '';
+      for (let i = 0; i < totalSets; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'set-bar';
+        bar.innerHTML = '<div class="set-bar-fill"></div>';
+        bars.appendChild(bar);
+      }
+    }
+
+    Array.from(bars.children).forEach((bar, i) => {
+      const fill = bar.firstElementChild;
+      bar.classList.toggle('current', i === currentSet - 1);
+      bar.classList.toggle('done', i < currentSet - 1);
+      if (i < currentSet - 1) fill.style.width = '0%';
+      else if (i === currentSet - 1) fill.style.width = totalReps > 0 ? `${(leftReps / totalReps) * 100}%` : '100%';
+      else fill.style.width = '100%';
+    });
+
+    const setsLeft = totalSets - currentSet;
+    const tail = totalSets > 1 ? ` <span class="muted">· ${this.t.setsLeftShort(setsLeft)}</span>` : '';
+    label.innerHTML = this.t.repsLeft(leftReps, totalReps) + tail;
   }
 
   /* ----- Общий прогресс тренировки ----- */
