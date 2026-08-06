@@ -54,9 +54,13 @@ class UI {
       if (el) { el.addEventListener(ev, fn); this._boundHandlers[id + ev] = fn; }
     };
 
-    // Tabs
+    // Tabs. Берём кнопку, а не то, по чему попали пальцем:
+    // внутри лежат иконка и подпись, у них своего data-tab нет.
     document.querySelectorAll('.nav-tab').forEach(tab => {
-      tab.addEventListener('click', (e) => this._switchTab(e.target.dataset.tab));
+      tab.addEventListener('click', (e) => {
+        const btn = e.currentTarget;
+        this._switchTab(btn.dataset.tab);
+      });
     });
 
     // Volume
@@ -71,6 +75,13 @@ class UI {
     // Переключение языка прямо из шапки
     document.querySelectorAll('.lang-btn').forEach(btn => {
       btn.addEventListener('click', () => this._setLang(btn.dataset.lang));
+    });
+
+    // Выбор программы
+    on('btnOpenPrograms', 'click', () => this._openPrograms());
+    on('btnClosePrograms', 'click', () => this._closePrograms());
+    on('programSheet', 'click', (e) => {
+      if (e.target.id === 'programSheet') this._closePrograms();
     });
 
     // Settings
@@ -180,11 +191,17 @@ class UI {
     this._syncLangButtons();
     this._applyMarkupTexts();
     document.getElementById('ui_subtitle').textContent = this.t.subtitle;
-    document.getElementById('tabBtnWorkout').textContent = this.t.tabs.workout;
-    document.getElementById('tabBtnConstructor').textContent = this.t.tabs.constructor;
-    document.getElementById('tabBtnTreadmill').textContent = this.t.tabs.treadmill;
-    document.getElementById('tabBtnSchedule').textContent = this.t.tabs.schedule;
-    document.getElementById('tabBtnStats').textContent = this.t.tabs.stats;
+    // Меняем только подпись — иконку внутри кнопки трогать нельзя
+    const tabLabel = (id, text) => {
+      const el = document.getElementById(id);
+      const lbl = el && el.querySelector('.nav-label');
+      if (lbl) lbl.textContent = text;
+    };
+    tabLabel('tabBtnWorkout', this.t.tabs.workout);
+    tabLabel('tabBtnConstructor', this.t.tabs.constructor);
+    tabLabel('tabBtnTreadmill', this.t.tabs.treadmill);
+    tabLabel('tabBtnSchedule', this.t.tabs.schedule);
+    tabLabel('tabBtnStats', this.t.tabs.stats);
     document.getElementById('ui_set_title').textContent = this.t.settings;
     document.getElementById('btnStartNext').textContent = this.t.start;
     document.getElementById('actionBtn').textContent = this.t.start;
@@ -258,16 +275,61 @@ class UI {
       .map(t => `<li>${this._esc(t)}</li>`).join('');
   }
 
+  /* ----- Выбор программы -----
+     На экране только текущая программа, весь список — в окне снизу.
+     Программы можно добавлять сколько угодно: список прокручивается,
+     а главный экран от этого не растёт. */
+
+  // Из чего состоит программа — показываем под названием
+  _progMeta(prog) {
+    if (!prog || !prog.exercises) return '';
+    const count = prog.exercises.length;
+    const names = prog.exercises
+      .map(k => EXERCISE_DB[k])
+      .filter(Boolean)
+      .map(ex => (ex[this.currentLang] || ex.ru).name.split(/[·(]/)[0].trim());
+    const short = names.slice(0, 3).join(' · ');
+    return `${count} ${this.t.setsShortEx} · ${short}${names.length > 3 ? '…' : ''}`;
+  }
+
   _renderPrograms() {
-    const box = document.getElementById('programChips');
-    box.innerHTML = '';
-    Object.keys(this.programs).forEach(key => {
-      const chip = document.createElement('div');
-      chip.className = 'prog-chip' + (store.getState().currentProgram === key ? ' active' : '');
-      chip.textContent = this._progName(this.programs[key]);
-      chip.onclick = () => { store.setState({ currentProgram: key }); this._renderPrograms(); this._renderPlanList(); };
-      box.appendChild(chip);
+    const key = store.getState().currentProgram;
+    const prog = this.programs[key];
+
+    document.getElementById('currentProgName').textContent = this._progName(prog);
+    document.getElementById('currentProgMeta').textContent = this._progMeta(prog);
+
+    const list = document.getElementById('programList');
+    list.innerHTML = '';
+    Object.keys(this.programs).forEach(k => {
+      const p = this.programs[k];
+      const row = document.createElement('button');
+      row.className = 'prog-row' + (k === key ? ' current' : '');
+      row.innerHTML = `
+        <span class="prog-row-dot"></span>
+        <span class="prog-row-body">
+          <span class="prog-row-name">${this._esc(this._progName(p))}</span>
+          <span class="prog-row-meta">${this._esc(this._progMeta(p))}</span>
+        </span>`;
+      row.onclick = () => this._pickProgram(k);
+      list.appendChild(row);
     });
+  }
+
+  _pickProgram(key) {
+    store.setState({ currentProgram: key });
+    this._renderPrograms();
+    this._renderPlanList();
+    this._closePrograms();
+  }
+
+  _openPrograms() {
+    this._renderPrograms();
+    document.getElementById('programSheet').classList.remove('hidden');
+  }
+
+  _closePrograms() {
+    document.getElementById('programSheet').classList.add('hidden');
   }
 
   _renderPlanList() {

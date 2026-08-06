@@ -1,6 +1,6 @@
 const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 11",
+    subtitle: "Architect Pro · сборка 12",
     tabs: { workout: "Тренировка", constructor: "Конструктор", treadmill: "Дорожка", schedule: "Расписание", stats: "Статистика" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -40,6 +40,9 @@ const I18N = {
     cardioTitle: "Кардио & Беговая дорожка",
     cardioHint: "Рекомендация: 30-40 мин бега / ходьбы ежедневно.",
     logCardio: "Записать",
+    programLabel: "Программа",
+    chooseProgram: "Выберите программу",
+    setsShortEx: "упражнения",
     breathingTitle: "Дыхание",
     breathingGuide: {
       press: "Вдох — когда опускаетесь, выдох — когда выжимаете себя вверх. Правило простое: выдох всегда на усилии. Так делают потому, что на выдохе включается брюшной пресс и растёт внутрибрюшное давление — оно держит позвоночник жёстким и даёт опору для толчка. Дыхание не задерживайте: при задержке давление в грудной клетке подскакивает, приток крови к сердцу падает, и в глазах темнеет.",
@@ -86,7 +89,7 @@ const I18N = {
     warmup: "🔥 Разминка", cooldown: "❄️ Заминка"
   },
   en: {
-    subtitle: "Architect Pro · build 11",
+    subtitle: "Architect Pro · build 12",
     tabs: { workout: "Workout", constructor: "Builder", treadmill: "Treadmill", schedule: "Schedule", stats: "Stats" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -125,6 +128,9 @@ const I18N = {
     cardioTitle: "Cardio & Treadmill",
     cardioHint: "Recommended: 30-40 min of running or walking daily.",
     logCardio: "Log",
+    programLabel: "Program",
+    chooseProgram: "Choose a program",
+    setsShortEx: "exercises",
     breathingTitle: "Breathing",
     breathingGuide: {
       press: "Inhale as you lower, exhale as you push yourself up. The rule is simple: exhale on the effort. On the exhale the abs engage and intra-abdominal pressure rises — it keeps the spine rigid and gives the push something to work against. Never hold your breath: pressure in the chest spikes, blood return to the heart drops, and your vision goes dark.",
@@ -171,7 +177,7 @@ const I18N = {
     warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 11",
+    subtitle: "Architect Pro · збірка 12",
     tabs: { workout: "Тренування", constructor: "Конструктор", treadmill: "Доріжка", schedule: "Розклад", stats: "Статистика" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -210,6 +216,9 @@ const I18N = {
     cardioTitle: "Кардіо & Бігова доріжка",
     cardioHint: "Рекомендація: 30-40 хв бігу / ходьби щодня.",
     logCardio: "Записати",
+    programLabel: "Програма",
+    chooseProgram: "Оберіть програму",
+    setsShortEx: "вправи",
     breathingTitle: "Дихання",
     breathingGuide: {
       press: "Вдих — коли опускаєтесь, видих — коли виштовхуєте себе вгору. Правило просте: видих завжди на зусиллі. Так роблять тому, що на видиху вмикається черевний прес і зростає внутрішньочеревний тиск — він тримає хребет жорстким і дає опору для поштовху. Дихання не затримуйте: при затримці тиск у грудній клітці підскакує, приплив крові до серця падає, і в очах темніє.",
