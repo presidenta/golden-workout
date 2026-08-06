@@ -78,6 +78,9 @@ class UI {
       btn.addEventListener('click', () => this._setLang(btn.dataset.lang));
     });
 
+    // Голос включается кнопкой прямо на экране упражнения
+    on('btnMic', 'click', () => this._toggleMic());
+
     // Выбор программы
     on('btnOpenPrograms', 'click', () => this._openPrograms());
     on('btnClosePrograms', 'click', () => this._closePrograms());
@@ -418,14 +421,13 @@ class UI {
     document.getElementById('screenPlan').classList.add('hidden');
     document.getElementById('screenWorkout').classList.remove('hidden');
     document.getElementById('restScreen').classList.add('hidden');
-    // Голосовые команды: включаем и сразу говорим, слышно ли нас
-    if (this.speech && store.getState().voiceControlEnabled) {
-      const mic = SpeechController.micAvailable();
-      if (mic === 'ok') {
-        this.speech.startListening();
-      } else {
-        this._showMicStatus(mic === 'insecure' ? 'insecure' : 'denied');
-      }
+    // Кнопка голоса: если в прошлый раз он был включён — поднимаем сразу
+    const mic = SpeechController.micAvailable();
+    if (mic !== 'ok') {
+      this._showMicStatus(mic);
+    } else if (this.speech && store.getState().voiceControlEnabled) {
+      this.speech.voiceCommandsEnabled = true;
+      this.speech.startListening();
     } else {
       this._showMicStatus('idle');
     }
@@ -996,25 +998,75 @@ class UI {
     if (this.speech) this.speech.stopListening();
   }
 
-  // Показываем, слышит ли программа команды. Без этого непонятно,
-  // молчит она потому что не расслышала, или микрофон вообще запрещён.
+  /* ----- Голосовые команды -----
+     Включаются кнопкой на самом экране упражнения. Так надо и браузеру
+     (доступ к микрофону он даёт только после нажатия), и человеку —
+     сразу видно, слушает программа или нет. */
+
   _showMicStatus(status) {
-    const badge = document.getElementById('micBadge');
+    const btn = document.getElementById('btnMic');
     const text = document.getElementById('micText');
-    if (!badge) return;
+    if (!btn) return;
 
     if (status === 'listening') {
-      badge.className = 'mic-badge';
+      btn.className = 'mic-btn on';
       text.textContent = this.t.micListening;
     } else if (status === 'denied') {
-      badge.className = 'mic-badge denied';
+      btn.className = 'mic-btn off';
       text.textContent = this.t.micDenied;
     } else if (status === 'insecure') {
-      badge.className = 'mic-badge denied';
+      btn.className = 'mic-btn off';
       text.textContent = this.t.micInsecure;
+    } else if (status === 'unsupported') {
+      btn.className = 'mic-btn off';
+      text.textContent = this.t.micUnsupported;
     } else {
-      badge.className = 'mic-badge hidden';
+      btn.className = 'mic-btn';
+      text.textContent = this.t.micOff;
     }
+  }
+
+  async _toggleMic() {
+    if (!this.speech) return;
+
+    // Уже слушаем — выключаем
+    if (this.speech.wantListening) {
+      this.speech.stopListening();
+      this.speech.voiceCommandsEnabled = false;
+      store.setState({ voiceControlEnabled: false });
+      this._persistSetting('voiceControlEnabled', false);
+      this._showMicStatus('idle');
+      return;
+    }
+
+    const mic = SpeechController.micAvailable();
+    if (mic !== 'ok') { this._showMicStatus(mic); return; }
+
+    // Просим микрофон явно: так браузер показывает понятный запрос,
+    // а мы узнаём об отказе сразу, а не через ошибку распознавания.
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(t => t.stop());
+      }
+    } catch (e) {
+      this._showMicStatus('denied');
+      return;
+    }
+
+    this.speech.voiceCommandsEnabled = true;
+    store.setState({ voiceControlEnabled: true });
+    this._persistSetting('voiceControlEnabled', true);
+    const chk = document.getElementById('setVoiceControl');
+    if (chk) chk.checked = true;
+    this.speech.startListening();
+  }
+
+  // Сохранить одну настройку, не трогая остальные
+  _persistSetting(key, value) {
+    db.get('settings', 'app')
+      .then(saved => db.set('settings', 'app', { ...(saved || {}), [key]: value }))
+      .catch(() => {});
   }
 
   _onVoiceCommand(cmd) {
