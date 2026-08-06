@@ -128,11 +128,14 @@
     <div id="sessionProgress" class="session-progress hidden">
       <div class="session-progress-head">
         <span id="sessionLeftLabel">—</span>
-        <span id="sessionDoneLabel"></span>
+        <!-- Завершить можно в любой момент тренировки: кнопка здесь,
+             а этот блок виден и в подходе, и на отдыхе -->
+        <button class="session-finish-btn" id="btnFinishSession">Закончить</button>
       </div>
       <div class="session-progress-track">
         <div class="session-progress-fill" id="sessionProgressFill"></div>
       </div>
+      <div class="session-progress-foot"><span id="sessionDoneLabel"></span></div>
     </div>
 
     <!-- ЭКРАН ОТДЫХА -->
@@ -151,7 +154,6 @@
         <button class="btn-gold" id="btnSkipRest" style="width:auto;padding:10px 24px;">Пропустить отдых</button>
         <button class="icon-btn" id="btnRestPlus" title="+10 сек">+</button>
       </div>
-      <button class="btn-gold btn-secondary" id="btnExitFromRest" style="margin-top:14px;">Закончить тренировку</button>
     </div>
 
     <!-- ВКЛАДКА 1: ТРЕНИРОВКА -->

@@ -79,7 +79,7 @@ class UI {
 
     // Rest
     on('btnSkipRest', 'click', () => this._skipRest());
-    on('btnExitFromRest', 'click', () => this._finishEarly());
+    on('btnFinishSession', 'click', () => this._finishEarly());
     on('btnRestMinus', 'click', () => { if (this.restTimer) this.restTimer.addSeconds(-10); });
     on('btnRestPlus', 'click', () => { if (this.restTimer) this.restTimer.addSeconds(10); });
 
@@ -127,7 +127,7 @@ class UI {
     document.getElementById('btnStartNext').textContent = this.t.start;
     document.getElementById('actionBtn').textContent = this.t.start;
     document.getElementById('btnExportCSV').textContent = this.t.exportCSV;
-    document.getElementById('btnExitFromRest').textContent = this.t.finishWorkout;
+    document.getElementById('btnFinishSession').textContent = this.t.finishWorkout;
     document.querySelector('[data-vol="min"]').textContent = this.t.volume.min;
     document.querySelector('[data-vol="norm"]').textContent = this.t.volume.norm;
     document.querySelector('[data-vol="max"]').textContent = this.t.volume.max;

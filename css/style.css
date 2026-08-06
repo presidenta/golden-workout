@@ -366,7 +366,8 @@ body {
 .session-progress-head {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 6px;
   font-size: 0.72rem;
   letter-spacing: 0.5px;
@@ -376,9 +377,32 @@ body {
   font-weight: 700;
   text-transform: uppercase;
 }
-#sessionDoneLabel {
+.session-progress-foot {
+  margin-top: 5px;
+  font-size: 0.68rem;
   color: var(--text-muted);
 }
+/* Завершение тренировки — доступно на любом экране */
+.session-finish-btn {
+  flex-shrink: 0;
+  padding: 5px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(231, 76, 60, 0.5);
+  background: rgba(231, 76, 60, 0.08);
+  color: #ff8c7a;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.session-finish-btn:hover {
+  background: rgba(231, 76, 60, 0.2);
+  border-color: var(--accent-red);
+  color: #fff;
+}
+.session-finish-btn:active { transform: scale(0.96); }
 .session-progress-track {
   height: 6px;
   border-radius: 3px;
