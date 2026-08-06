@@ -95,14 +95,6 @@
     en: { name: "Plank (sec)", desc: "Static core stability.", instructions: "Elbows under shoulders. Body straight plank. Don't sag lower back. Breathe." },
     ua: { name: "Планка (сек)", desc: "Статичний кор.", instructions: "Лікті під плечима. Тіло — пряма дошка. Не провисати поясницею. Дихайте." }
   },
-  burpees: {
-    id: 'burpees', reps: 10, rest: 120,
-    muscles: ['fullbody'], equipment: 'bodyweight', difficulty: 'advanced',
-    frames: [],
-    ru: { name: "Бёрпи", desc: "Взрывная кардио-сила всего тела.", instructions: "Присед, прыжок в планку, отжимание, прыжок к рукам, взрывной прыжок вверх." },
-    en: { name: "Burpees", desc: "Full-body explosive cardio.", instructions: "Squat, jump to plank, push-up, jump to hands, explosive jump up." },
-    ua: { name: "Берпі", desc: "Вибухова кардіо-сила.", instructions: "Присід, стрибок у планку, віджимання, стрибок до рук, вибуховий стрибок." }
-  },
   mountain_climbers: {
     id: 'mountain_climbers', reps: 30, rest: 60,
     muscles: ['core', 'shoulders', 'legs'], equipment: 'bodyweight', difficulty: 'intermediate',
@@ -141,7 +133,7 @@ const DEFAULT_PROGRAMS = {
   fullbody: { name: 'Full-Body База', exercises: ['pushups', 'squats', 'lunges', 'crunches'] },
   glutes: { name: 'Ягодицы & Ноги', exercises: ['glute_bridge', 'romanian_dl', 'lunges_reverse', 'calf_raises'] },
   arms_chest: { name: 'Грудь & Руки', exercises: ['pushups_wide', 'biceps_curl', 'triceps_dips', 'pushups_diamond'] },
-  cardio_core: { name: 'Кардио & Кор', exercises: ['burpees', 'mountain_climbers', 'plank', 'crunches'] },
+  cardio_core: { name: 'Кардио & Кор', exercises: ['mountain_climbers', 'squats', 'plank', 'crunches'] },
   goltis: { name: 'Голтис Импульс', exercises: ['goltis_joint', 'squats', 'glute_bridge', 'plank'] }
 };
 
