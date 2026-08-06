@@ -57,9 +57,15 @@ class SpeechController {
       // Смотрим все варианты распознавания: короткие слова вроде «старт»
       // браузер часто ставит не на первое место.
       const res = e.results[e.results.length - 1];
-      for (let i = 0; i < res.length; i++) {
+      let matched = false;
+      for (let i = 0; i < res.length && !matched; i++) {
         const said = res[i].transcript.toLowerCase().trim();
-        if (this.handleCommand(said)) break;
+        matched = this.handleCommand(said);
+      }
+      // Даже если команду не узнали, показываем расслышанное —
+      // так видно, что микрофон работает, и понятно, что сказать иначе
+      if (!matched && res[0] && this.onHeard) {
+        this.onHeard(res[0].transcript.toLowerCase().trim(), false);
       }
     };
 
@@ -119,17 +125,29 @@ class SpeechController {
   handleCommand(cmd) {
     if (!this.onCommand || !cmd) return false;
 
-    const rules = [
-      ['start',    /\b(старт|стард|сталь|старт[аеы]|начали|начинай|поехали|погнали|start|go)\b/],
-      ['pause',    /\b(пауза|паузу|стоп|стой|подожди|хватит|pause|stop|wait)\b/],
-      ['complete', /\b(готово|готов|всё|все|закончил|закончить|дальше|следующ\w*|done|finish|next)\b/],
-      ['rest',     /\b(отдых|отдыхать|перерыв|rest|break)\b/]
-    ];
+    this.lastHeard = cmd;
+    if (this.onHeard) this.onHeard(cmd);
 
-    for (const [name, re] of rules) {
-      if (re.test(cmd)) {
-        this.onCommand(name);
-        return true;
+    // Фразу режем на слова и сверяем каждое.
+    // Раньше здесь стояли регулярные выражения с границей слова \b,
+    // но в JavaScript она считается только по латинским буквам —
+    // с кириллицей такое условие не выполняется никогда, поэтому
+    // «старт» не срабатывал вообще.
+    const words = cmd.split(/[^0-9a-zа-яёіїєґ]+/i).filter(Boolean);
+
+    const dict = {
+      start:    ['старт','стард','сталь','страт','старта','старты','стар','начали','начало','начинай','поехали','погнали','пошли','start','go'],
+      pause:    ['пауза','паузу','пауз','стоп','стой','подожди','хватит','замри','pause','stop','wait'],
+      complete: ['готово','готов','всё','все','закончил','закончили','закончить','дальше','следующее','следующий','done','finish','next'],
+      rest:     ['отдых','отдыхать','отдохнуть','перерыв','rest','break']
+    };
+
+    for (const w of words) {
+      for (const name of Object.keys(dict)) {
+        if (dict[name].includes(w)) {
+          this.onCommand(name);
+          return true;
+        }
       }
     }
     return false;

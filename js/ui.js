@@ -27,6 +27,7 @@ class UI {
       this.speech.initRecognition();
       this.speech.onCommand = (cmd) => this._onVoiceCommand(cmd);
       this.speech.onStatus = (s) => this._showMicStatus(s);
+      this.speech.onHeard = (text, ok) => this._showHeard(text, ok);
     }
   }
 
@@ -1024,6 +1025,18 @@ class UI {
       btn.className = 'mic-btn';
       text.textContent = this.t.micOff;
     }
+  }
+
+  // Показать, что именно расслышал телефон. Если слово не подошло —
+  // видно, какое пришло, и можно сказать иначе.
+  _showHeard(text, ok = true) {
+    const el = document.getElementById('micText');
+    if (!el || !text) return;
+    el.textContent = ok ? `✓ ${text}` : `«${text}»`;
+    clearTimeout(this._heardTimer);
+    this._heardTimer = setTimeout(() => {
+      if (this.speech && this.speech.wantListening) el.textContent = this.t.micListening;
+    }, 2500);
   }
 
   async _toggleMic() {
