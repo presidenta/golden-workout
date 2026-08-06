@@ -26,6 +26,7 @@ class UI {
     if (this.speech) {
       this.speech.initRecognition();
       this.speech.onCommand = (cmd) => this._onVoiceCommand(cmd);
+      this.speech.onStatus = (s) => this._showMicStatus(s);
     }
   }
 
@@ -417,7 +418,17 @@ class UI {
     document.getElementById('screenPlan').classList.add('hidden');
     document.getElementById('screenWorkout').classList.remove('hidden');
     document.getElementById('restScreen').classList.add('hidden');
-    if (this.speech && store.getState().voiceControlEnabled) this.speech.startListening();
+    // Голосовые команды: включаем и сразу говорим, слышно ли нас
+    if (this.speech && store.getState().voiceControlEnabled) {
+      const mic = SpeechController.micAvailable();
+      if (mic === 'ok') {
+        this.speech.startListening();
+      } else {
+        this._showMicStatus(mic === 'insecure' ? 'insecure' : 'denied');
+      }
+    } else {
+      this._showMicStatus('idle');
+    }
   }
 
   _refreshWorkoutUI() {
@@ -981,7 +992,29 @@ class UI {
     document.getElementById('restScreen').classList.add('hidden');
     document.getElementById('screenPlan').classList.remove('hidden');
     this._hideSessionProgress();
+    this._showMicStatus('idle');
     if (this.speech) this.speech.stopListening();
+  }
+
+  // Показываем, слышит ли программа команды. Без этого непонятно,
+  // молчит она потому что не расслышала, или микрофон вообще запрещён.
+  _showMicStatus(status) {
+    const badge = document.getElementById('micBadge');
+    const text = document.getElementById('micText');
+    if (!badge) return;
+
+    if (status === 'listening') {
+      badge.className = 'mic-badge';
+      text.textContent = this.t.micListening;
+    } else if (status === 'denied') {
+      badge.className = 'mic-badge denied';
+      text.textContent = this.t.micDenied;
+    } else if (status === 'insecure') {
+      badge.className = 'mic-badge denied';
+      text.textContent = this.t.micInsecure;
+    } else {
+      badge.className = 'mic-badge hidden';
+    }
   }
 
   _onVoiceCommand(cmd) {

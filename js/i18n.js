@@ -1,6 +1,6 @@
 const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 12",
+    subtitle: "Architect Pro · сборка 13",
     tabs: { workout: "Тренировка", constructor: "Конструктор", treadmill: "Дорожка", schedule: "Расписание", stats: "Статистика" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -40,6 +40,9 @@ const I18N = {
     cardioTitle: "Кардио & Беговая дорожка",
     cardioHint: "Рекомендация: 30-40 мин бега / ходьбы ежедневно.",
     logCardio: "Записать",
+    micListening: "Слушаю: «старт», «пауза», «готово»",
+    micDenied: "Микрофон недоступен",
+    micInsecure: "Голос работает только по защищённой ссылке",
     programLabel: "Программа",
     chooseProgram: "Выберите программу",
     setsShortEx: "упражнения",
@@ -89,7 +92,7 @@ const I18N = {
     warmup: "🔥 Разминка", cooldown: "❄️ Заминка"
   },
   en: {
-    subtitle: "Architect Pro · build 12",
+    subtitle: "Architect Pro · build 13",
     tabs: { workout: "Workout", constructor: "Builder", treadmill: "Treadmill", schedule: "Schedule", stats: "Stats" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -128,6 +131,9 @@ const I18N = {
     cardioTitle: "Cardio & Treadmill",
     cardioHint: "Recommended: 30-40 min of running or walking daily.",
     logCardio: "Log",
+    micListening: "Listening: «start», «pause», «done»",
+    micDenied: "Microphone unavailable",
+    micInsecure: "Voice needs a secure link",
     programLabel: "Program",
     chooseProgram: "Choose a program",
     setsShortEx: "exercises",
@@ -177,7 +183,7 @@ const I18N = {
     warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 12",
+    subtitle: "Architect Pro · збірка 13",
     tabs: { workout: "Тренування", constructor: "Конструктор", treadmill: "Доріжка", schedule: "Розклад", stats: "Статистика" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -216,6 +222,9 @@ const I18N = {
     cardioTitle: "Кардіо & Бігова доріжка",
     cardioHint: "Рекомендація: 30-40 хв бігу / ходьби щодня.",
     logCardio: "Записати",
+    micListening: "Слухаю: «старт», «пауза», «готово»",
+    micDenied: "Мікрофон недоступний",
+    micInsecure: "Голос працює лише за захищеним посиланням",
     programLabel: "Програма",
     chooseProgram: "Оберіть програму",
     setsShortEx: "вправи",

@@ -433,6 +433,36 @@ body {
   font-weight: 400;
 }
 
+/* Метка «слушаю голос» на экране упражнения */
+.mic-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 auto 10px auto;
+  padding: 5px 12px;
+  border-radius: 14px;
+  background: rgba(46, 204, 113, 0.1);
+  border: 1px solid rgba(46, 204, 113, 0.4);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent-green);
+}
+.mic-badge.denied {
+  background: rgba(231, 76, 60, 0.1);
+  border-color: rgba(231, 76, 60, 0.4);
+  color: #ff9b8c;
+}
+.mic-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: currentColor;
+  animation: micPulse 1.4s ease-in-out infinite;
+}
+.mic-badge.denied .mic-dot { animation: none; }
+@keyframes micPulse {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%      { opacity: 0.35; transform: scale(0.8); }
+}
+
 /* ===== Панель разделов внизу экрана ===== */
 .bottom-nav {
   position: fixed;
