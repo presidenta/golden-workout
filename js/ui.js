@@ -601,9 +601,26 @@ class UI {
 
     // Кадры листаем и здесь, чтобы движение было видно до начала
     const img = document.getElementById('previewImg');
+    const mediaBox = img.parentElement;
+    const oldBoard = mediaBox.querySelector('.board-figure');
+    if (oldBoard) oldBoard.remove();
+
     this.previewFrames = ex.frames || [];
     this.previewFrameIndex = 0;
     this._stopPreviewLoop();
+
+    // Для доски показываем схему: куда вставлять ручки и как их развернуть
+    if (ex.board) {
+      img.style.display = 'none';
+      const fig = document.createElement('div');
+      fig.className = 'board-figure';
+      fig.innerHTML = this._boardSvg(ex.board) +
+        `<div class="board-caption">${this.t.boardCaption}: ${this.t.boardGrip[ex.board.grip]}</div>`;
+      mediaBox.appendChild(fig);
+      document.getElementById('previewModal').classList.remove('hidden');
+      return;
+    }
+
     if (this.previewFrames.length) {
       img.style.display = '';
       img.src = this.previewFrames[0];
@@ -635,6 +652,63 @@ class UI {
     if (typeof idx === 'number') this._startExercise(idx);
   }
 
+  /* ----- Схема доски для отжиманий -----
+     Рисуем саму доску сверху: цветные зоны, все гнёзда и подсветку тех,
+     куда ставить ручки для текущего упражнения. Своя схема надёжнее
+     чужих картинок — совпадает с доской и работает без интернета. */
+
+  // Координаты гнёзд на доске (система координат 200 x 104)
+  static get BOARD_SLOTS() {
+    return {
+      yellowL: { x: 24,  y: 82, c: '#e8c400' },
+      yellowR: { x: 176, y: 82, c: '#e8c400' },
+      blueL:   { x: 30,  y: 50, c: '#3f7fd4' },
+      blueR:   { x: 170, y: 50, c: '#3f7fd4' },
+      greenL:  { x: 68,  y: 44, c: '#2ecc71' },
+      greenR:  { x: 132, y: 44, c: '#2ecc71' },
+      redL:    { x: 86,  y: 20, c: '#e74c3c' },
+      redR:    { x: 114, y: 20, c: '#e74c3c' }
+    };
+  }
+
+  _boardSvg(board) {
+    if (!board) return '';
+    const all = UI.BOARD_SLOTS;
+    const active = new Set(board.slots || []);
+
+    const dots = Object.entries(all).map(([key, s]) => {
+      const on = active.has(key);
+      return `<circle cx="${s.x}" cy="${s.y}" r="${on ? 7.5 : 4.5}"
+        fill="${on ? s.c : '#2a2a33'}"
+        stroke="${on ? '#fff' : '#3a3a44'}" stroke-width="${on ? 2 : 1}"
+        ${on ? 'class="board-slot-on"' : ''} />`;
+    }).join('');
+
+    // Ручка: вдоль тела или поперёк — от этого зависит, какие мышцы тянет
+    const handles = (board.slots || []).map(k => {
+      const s = all[k];
+      if (!s) return '';
+      const w = board.grip === 'across' ? 30 : 11;
+      const h = board.grip === 'across' ? 11 : 30;
+      return `<rect x="${s.x - w / 2}" y="${s.y - h / 2}" width="${w}" height="${h}"
+        rx="5" fill="none" stroke="${s.c}" stroke-width="2.5" opacity="0.9" />`;
+    }).join('');
+
+    return `
+      <svg viewBox="0 0 200 104" class="board-svg" role="img">
+        <rect x="1" y="1" width="198" height="102" rx="10" fill="#15151b" stroke="#33333d"/>
+        <line x1="100" y1="4" x2="100" y2="100" stroke="#33333d" stroke-width="1" stroke-dasharray="3 3"/>
+        <path d="M6 96 L48 96 L6 66 Z"      fill="#e8c400" opacity="0.16"/>
+        <path d="M194 96 L152 96 L194 66 Z" fill="#e8c400" opacity="0.16"/>
+        <path d="M8 62 L52 30 L58 44 L14 76 Z"      fill="#3f7fd4" opacity="0.16"/>
+        <path d="M192 62 L148 30 L142 44 L186 76 Z" fill="#3f7fd4" opacity="0.16"/>
+        <path d="M56 60 L80 30 L88 38 L64 68 Z"     fill="#2ecc71" opacity="0.18"/>
+        <path d="M144 60 L120 30 L112 38 L136 68 Z" fill="#2ecc71" opacity="0.18"/>
+        <path d="M94 46 L94 14 L100 8 L106 14 L106 46 Z" fill="#e74c3c" opacity="0.22"/>
+        ${dots}${handles}
+      </svg>`;
+  }
+
   /* ----- Анимация упражнения -----
      Кадров два: начало и конец движения. Чередуя их, получаем анимацию.
      Пока идёт подход, кадры переключаются по командам «вдох» и «выдох»,
@@ -645,9 +719,23 @@ class UI {
     const box = img.parentElement;
     const oldFb = box.querySelector('.img-fallback');
     if (oldFb) oldFb.remove();
+    const oldBoard = box.querySelector('.board-figure');
+    if (oldBoard) oldBoard.remove();
 
     this.frames = (ex && ex.frames) || [];
     this.frameIndex = 0;
+
+    // Упражнения на доске: вместо фото показываем схему постановки ручек
+    if (ex && ex.board) {
+      this._stopFrameLoop();
+      img.style.display = 'none';
+      const fig = document.createElement('div');
+      fig.className = 'board-figure';
+      fig.innerHTML = this._boardSvg(ex.board) +
+        `<div class="board-caption">${this.t.boardCaption}: ${this.t.boardGrip[ex.board.grip]}</div>`;
+      box.appendChild(fig);
+      return;
+    }
 
     if (!this.frames.length) {
       // Упражнение без картинок — показываем подпись вместо пустоты

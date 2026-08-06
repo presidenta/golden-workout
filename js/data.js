@@ -137,34 +137,107 @@
   board_blue: {
     id: 'board_blue', reps: 12, rest: 90,
     muscles: ['chest'], equipment: 'push-up board', difficulty: 'beginner',
-    frames: ["assets/exercises/pushups/0.jpg", "assets/exercises/pushups/1.jpg"],
-    ru: { name: "Доска · Синий (грудь)", desc: "Большая грудная мышца. Базовое положение доски.", instructions: "Ручки в СИНИЕ гнёзда, чуть шире плеч, развёрнуты вдоль тела. Тело — прямая линия от пяток до макушки. Опускайтесь до касания грудью уровня ручек, локти уходят назад под 45°, не в стороны. Вверх — на выдохе. Лопатки сведены, поясница не провисает." },
-    en: { name: "Board · Blue (chest)", desc: "Pectoralis major. Base board position.", instructions: "Handles into BLUE slots, slightly wider than shoulders. Body straight. Lower chest to handle level, elbows back at 45°. Exhale up. Keep core tight." },
-    ua: { name: "Дошка · Синій (груди)", desc: "Великий грудний м'яз. Базове положення.", instructions: "Ручки в СИНІ гнізда, трохи ширше плечей. Тіло — пряма лінія. Опускайтесь грудьми до рівня ручок, лікті назад під 45°. Вгору — на видиху." }
+    frames: [],
+    board: { color: 'blue', slots: ['blueL', 'blueR'], grip: 'along' },
+    ru: {
+      name: "Доска · Синий (грудь)",
+      desc: "Большая грудная мышца, средний и нижний пучок.",
+      instructions: "СИНИЕ гнёзда — широкие, по краям доски. Ручки вставьте вдоль тела, вырезом к себе. Ладони под плечами или чуть шире. Тело прямое от пяток до макушки. Опускайтесь, пока грудь не окажется на уровне ручек — доска позволяет уйти ниже пола, в этом её смысл: грудная мышца растягивается сильнее, чем при обычных отжиманиях. Локти уходят назад под 45°, не в стороны. Вверх на выдохе, до конца, но локти не защёлкивайте."
+    },
+    en: {
+      name: "Board · Blue (chest)",
+      desc: "Pectoralis major, mid and lower fibres.",
+      instructions: "BLUE slots — the wide ones at the edges. Handles along the body. Palms under or slightly wider than shoulders. Body straight. Lower until the chest is level with the handles — the board lets you go below floor level, which stretches the chest further than a normal push-up. Elbows back at 45°, not out. Push up on the exhale without locking the elbows."
+    },
+    ua: {
+      name: "Дошка · Синій (груди)",
+      desc: "Великий грудний м'яз, середній і нижній пучок.",
+      instructions: "СИНІ гнізда — широкі, по краях дошки. Ручки вставте вздовж тіла. Долоні під плечима або трохи ширше. Тіло пряме. Опускайтесь, доки груди не будуть на рівні ручок — дошка дозволяє піти нижче підлоги, у цьому її сенс. Лікті назад під 45°, не в боки. Вгору на видиху."
+    }
+  },
+  board_blue_wide: {
+    id: 'board_blue_wide', reps: 10, rest: 90,
+    muscles: ['chest'], equipment: 'push-up board', difficulty: 'intermediate',
+    frames: [],
+    board: { color: 'blue', slots: ['blueL', 'blueR'], grip: 'across' },
+    ru: {
+      name: "Доска · Синий широкий (внешняя грудь)",
+      desc: "Внешний край грудных, зона подмышки.",
+      instructions: "Те же СИНИЕ гнёзда, но ручки разверните поперёк, вырезом наружу. Руки шире плеч на полторы ладони. Амплитуда короче обычной — не гонитесь за глубиной, следите за натяжением по внешнему краю груди. Локти разводятся шире, но не до прямого угла с телом: плечо этого не любит. Вариант тяжелее базового, поэтому повторов меньше."
+    },
+    en: {
+      name: "Board · Blue wide (outer chest)",
+      desc: "Outer chest, the area near the armpit.",
+      instructions: "Same BLUE slots, but turn the handles across, opening outwards. Hands wider than shoulders. Shorter range than the base version — chase the stretch along the outer chest, not the depth. Elbows open wider but never to a right angle with the body."
+    },
+    ua: {
+      name: "Дошка · Синій широкий (зовнішні груди)",
+      desc: "Зовнішній край грудних, зона пахви.",
+      instructions: "Ті самі СИНІ гнізда, але ручки розверніть упоперек. Руки ширше плечей. Амплітуда коротша — стежте за натягом по зовнішньому краю грудей, а не за глибиною."
+    }
   },
   board_green: {
     id: 'board_green', reps: 10, rest: 90,
     muscles: ['triceps'], equipment: 'push-up board', difficulty: 'intermediate',
-    frames: ["assets/exercises/pushups_diamond/0.jpg", "assets/exercises/pushups_diamond/1.jpg"],
-    ru: { name: "Доска · Зелёный (трицепс)", desc: "Трицепс, задняя поверхность руки.", instructions: "Ручки в ЗЕЛЁНЫЕ гнёзда — узко, под грудью. Локти прижаты к корпусу и скользят строго назад. Опускайтесь медленно, до лёгкого касания. Разводить локти в стороны нельзя — уйдёт нагрузка с трицепса и заболят плечи. Если тяжело — с колен." },
-    en: { name: "Board · Green (triceps)", desc: "Triceps focus.", instructions: "Handles into GREEN slots — narrow, under chest. Elbows tight to body, sliding straight back. Lower slowly. Never flare elbows out. Drop to knees if needed." },
-    ua: { name: "Дошка · Зелений (трицепс)", desc: "Трицепс.", instructions: "Ручки в ЗЕЛЕНІ гнізда — вузько, під грудьми. Лікті притиснуті до тіла, ковзають назад. Опускайтесь повільно. Не розводьте лікті." }
+    frames: [],
+    board: { color: 'green', slots: ['greenL', 'greenR'], grip: 'along' },
+    ru: {
+      name: "Доска · Зелёный (трицепс)",
+      desc: "Трицепс — задняя поверхность руки, все три головки.",
+      instructions: "ЗЕЛЁНЫЕ гнёзда — узкие, ближе к центру доски. Ручки вдоль тела, кисти почти под грудиной, между ладонями ладонь расстояния. Локти прижаты к рёбрам и скользят строго назад вдоль тела — это главное условие, иначе нагрузка уйдёт в грудь и плечи. Опускайтесь медленно, на три счёта, вверх быстрее. Плечи не поднимайте к ушам. Тяжело — делайте с колен, техника важнее числа."
+    },
+    en: {
+      name: "Board · Green (triceps)",
+      desc: "Triceps, all three heads.",
+      instructions: "GREEN slots — narrow, closer to the centre. Handles along the body, hands almost under the sternum. Elbows pinned to the ribs, sliding straight back — this is the whole point, otherwise the load shifts to chest and shoulders. Lower slowly on a count of three, push up faster. Do it from the knees if needed."
+    },
+    ua: {
+      name: "Дошка · Зелений (трицепс)",
+      desc: "Трицепс — задня поверхня руки, усі три головки.",
+      instructions: "ЗЕЛЕНІ гнізда — вузькі, ближче до центру. Ручки вздовж тіла, кисті майже під грудиною. Лікті притиснуті до ребер і ковзають назад — інакше навантаження піде в груди. Опускайтесь повільно, на три рахунки. Важко — робіть з колін."
+    }
   },
   board_red: {
     id: 'board_red', reps: 10, rest: 90,
     muscles: ['shoulders'], equipment: 'push-up board', difficulty: 'intermediate',
-    frames: ["assets/exercises/board_red/0.jpg", "assets/exercises/board_red/1.jpg"],
-    ru: { name: "Доска · Красный (плечи)", desc: "Передняя и средняя дельта.", instructions: "Ручки в КРАСНЫЕ гнёзда, ближе к верху доски. Таз поднимите выше, тело углом — так нагрузка уходит с груди на плечи. Опускайтесь макушкой к полу перед ручками, локти под 45°. Ноги можно поставить на возвышение — станет тяжелее. Шею не роняйте, взгляд в пол." },
-    en: { name: "Board · Red (shoulders)", desc: "Front and side delts.", instructions: "Handles into RED slots, upper part of board. Hips high, body in a pike — this shifts load from chest to shoulders. Lower crown of head towards floor. Elevate feet to make it harder." },
-    ua: { name: "Дошка · Червоний (плечі)", desc: "Передня та середня дельта.", instructions: "Ручки в ЧЕРВОНІ гнізда, ближче до верху. Таз вище, тіло кутом — навантаження йде на плечі. Опускайтесь маківкою до підлоги." }
+    frames: [],
+    board: { color: 'red', slots: ['redL', 'redR'], grip: 'along' },
+    ru: {
+      name: "Доска · Красный (плечи)",
+      desc: "Передняя и средняя дельта, верх груди.",
+      instructions: "КРАСНЫЕ гнёзда — центральные, вдоль красной стрелки. Встаньте так, чтобы таз был выше плеч, тело углом — чем острее угол, тем больше работы уходит с груди на плечи. Опускайтесь макушкой к полу перед ручками, а не грудью вниз. Локти под 45°. Взгляд в пол между ладонями, шею не роняйте и не задирайте. Мало нагрузки — поставьте ноги на диван, станет заметно тяжелее."
+    },
+    en: {
+      name: "Board · Red (shoulders)",
+      desc: "Front and side delts, upper chest.",
+      instructions: "RED slots — central, along the red arrow. Set up with hips above shoulders, body in a pike — the sharper the angle, the more the load moves from chest to shoulders. Lower the crown of your head towards the floor in front of the handles, not your chest down. Elbows at 45°. Put your feet on a sofa to make it harder."
+    },
+    ua: {
+      name: "Дошка · Червоний (плечі)",
+      desc: "Передня та середня дельта, верх грудей.",
+      instructions: "ЧЕРВОНІ гнізда — центральні, вздовж червоної стрілки. Таз вище плечей, тіло кутом — що гостріший кут, то більше роботи йде на плечі. Опускайтесь маківкою до підлоги перед ручками. Лікті під 45°. Ноги на диван — стане важче."
+    }
   },
   board_yellow: {
     id: 'board_yellow', reps: 12, rest: 90,
     muscles: ['back', 'lats'], equipment: 'push-up board', difficulty: 'intermediate',
-    frames: ["assets/exercises/board_yellow/0.jpg", "assets/exercises/board_yellow/1.jpg"],
-    ru: { name: "Доска · Жёлтый (спина)", desc: "Широчайшие и середина спины, осанка.", instructions: "Ручки в ЖЁЛТЫЕ гнёзда — широко, развёрнуты поперёк. Работайте лопатками: в нижней точке сводите их вместе, вверху разводите. Опускаться можно неглубоко — важнее движение лопаток, а не глубина. Именно этот хват выпрямляет осанку." },
-    en: { name: "Board · Yellow (back)", desc: "Lats and mid-back, posture.", instructions: "Handles into YELLOW slots — wide, turned across. Focus on the shoulder blades: squeeze together at the bottom, spread at the top. Depth matters less than blade movement." },
-    ua: { name: "Дошка · Жовтий (спина)", desc: "Найширші м'язи та середина спини.", instructions: "Ручки в ЖОВТІ гнізда — широко, розвернуті впоперек. Працюйте лопатками: внизу зводьте, вгорі розводьте. Глибина менш важлива." }
+    frames: [],
+    board: { color: 'yellow', slots: ['yellowL', 'yellowR'], grip: 'across' },
+    ru: {
+      name: "Доска · Жёлтый (спина и осанка)",
+      desc: "Широчайшие, ромбовидные, трапеция — то, что держит осанку.",
+      instructions: "ЖЁЛТЫЕ гнёзда — самые нижние и широкие. Ручки разверните поперёк. Работа идёт не руками, а лопатками: опускаясь, сводите лопатки вместе, будто зажимаете между ними карандаш; поднимаясь, разводите и толкайте пол от себя. Глубина здесь не главное — можно опускаться наполовину, лишь бы лопатки двигались. Именно этот хват разгибает сутулую спину, поэтому делайте его медленно и с паузой внизу."
+    },
+    en: {
+      name: "Board · Yellow (back and posture)",
+      desc: "Lats, rhomboids, traps — the muscles that hold your posture.",
+      instructions: "YELLOW slots — the lowest and widest. Turn the handles across. The work is done by the shoulder blades, not the arms: squeeze them together as you lower, as if holding a pencil between them; spread them and push the floor away as you rise. Depth is secondary — half range is fine as long as the blades move."
+    },
+    ua: {
+      name: "Дошка · Жовтий (спина та постава)",
+      desc: "Найширші, ромбоподібні, трапеція — м'язи постави.",
+      instructions: "ЖОВТІ гнізда — найнижчі та найширші. Ручки розверніть упоперек. Працюють не руки, а лопатки: опускаючись, зводьте їх разом; піднімаючись, розводьте. Глибина другорядна — головне рух лопаток. Саме цей хват розгинає сутулу спину."
+    }
   }
 };
 
@@ -194,6 +267,10 @@ const DEFAULT_PROGRAMS = {
   push_board: {
     name: { ru: 'Доска (все цвета)', en: 'Board (all colours)', ua: 'Дошка (всі кольори)' },
     exercises: ['board_blue', 'board_green', 'board_red', 'board_yellow']
+  },
+  push_board_chest: {
+    name: { ru: 'Доска · Грудь и трицепс', en: 'Board · Chest & triceps', ua: 'Дошка · Груди і трицепс' },
+    exercises: ['board_blue', 'board_blue_wide', 'board_green', 'board_yellow']
   }
 };
 
