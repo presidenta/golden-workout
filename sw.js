@@ -1,18 +1,20 @@
-const CACHE_NAME = 'golden-workout-v4';
+// Пути относительные: приложение может жить не в корне домена,
+// а в подпапке — с абсолютными "/..." там ничего бы не нашлось.
+const CACHE_NAME = 'golden-workout-v5';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/css/style.css',
-  '/js/app.js',
-  '/js/db.js',
-  '/js/store.js',
-  '/js/i18n.js',
-  '/js/data.js',
-  '/js/timer.js',
-  '/js/speech.js',
-  '/js/workout.js',
-  '/js/ui.js'
+  './',
+  './index.html',
+  './manifest.json',
+  './css/style.css',
+  './js/app.js',
+  './js/db.js',
+  './js/store.js',
+  './js/i18n.js',
+  './js/data.js',
+  './js/timer.js',
+  './js/speech.js',
+  './js/workout.js',
+  './js/ui.js'
 ];
 
 self.addEventListener('install', e => {
@@ -39,6 +41,18 @@ self.addEventListener('fetch', e => {
   if (url.origin === location.origin && request.destination !== 'image') {
     e.respondWith(
       caches.match(request).then(cached => cached || fetch(request))
+    );
+    return;
+  }
+
+  // Свои картинки лежат рядом и не меняются — берём из кэша сразу
+  if (request.destination === 'image' && url.origin === location.origin) {
+    e.respondWith(
+      caches.match(request).then(cached => cached || fetch(request).then(response => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+        return response;
+      }))
     );
     return;
   }

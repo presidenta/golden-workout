@@ -166,7 +166,7 @@ class UI {
       const item = document.createElement('div');
       item.className = 'exercise-item';
       item.innerHTML = `
-        <img class="exercise-thumb lazy" data-src="${ex.gif}" alt="" loading="lazy">
+        <img class="exercise-thumb lazy" alt="" loading="lazy">
         <div class="exercise-info">
           <div class="exercise-name">${this._esc(loc.name)}</div>
           <div class="exercise-details">${effSets} ${this.t.setsShort} × ${ex.reps} ${this.t.reps} | ${this._esc(loc.desc)}</div>
@@ -175,15 +175,16 @@ class UI {
       `;
       item.onclick = () => this._startExercise(idx);
       box.appendChild(item);
-      // Lazy load with fallback
+      // В списке показываем первый кадр упражнения
       const img = item.querySelector('img');
-      this._loadImage(img, ex.gif);
+      this._loadImage(img, (ex.frames && ex.frames[0]) || '');
     });
 
     document.getElementById('sessionProgressLabel').textContent = `${this.t.streak.split(' ')[0]}: ${done}/${prog.exercises.length}`;
   }
 
   _loadImage(img, url) {
+    if (!url) { img.style.display = 'none'; return; }
     const test = new Image();
     test.onload = () => { img.src = url; img.classList.remove('lazy'); };
     test.onerror = () => {
@@ -238,7 +239,7 @@ class UI {
 
     document.getElementById('activeExTitle').textContent = loc.name;
     document.getElementById('activeSetBadge').textContent = t.setInfo(st.set, st.totalSets);
-    document.getElementById('activeMediaImg').src = ex.gif;
+    this._setFrames(ex);
     document.getElementById('repDisplay').textContent = '0';
     document.getElementById('phaseDisplay').textContent = t.ready;
     document.getElementById('actionBtn').textContent = t.start;
@@ -303,6 +304,9 @@ class UI {
     const tempo = store.getState().globalTempo;
     const half = tempo * 500;
 
+    // Пока идёт подход, кадрами управляют фазы дыхания
+    this._stopFrameLoop();
+
     const tick = () => {
       this.currentRep++;
       const rep = this.currentRep;
@@ -316,6 +320,7 @@ class UI {
         document.getElementById('breathOverlayText').textContent = this.t.inhale;
         document.getElementById('breathOverlay').className = 'breath-overlay show inhale';
         document.getElementById('counterCircle').className = 'counter-circle state-inhale';
+        this._showFrame(0);
         if (this.speech && store.getState().voiceEnabled) this.speech.speak(this.t.inhale);
       }, 400);
 
@@ -325,6 +330,7 @@ class UI {
         document.getElementById('breathOverlayText').textContent = this.t.exhale;
         document.getElementById('breathOverlay').className = 'breath-overlay show exhale';
         document.getElementById('counterCircle').className = 'counter-circle state-exhale';
+        this._showFrame(1);
         if (this.speech && store.getState().voiceEnabled) this.speech.speak(this.t.exhale);
       }, half + 200);
 
@@ -342,10 +348,12 @@ class UI {
   _pauseRepTimer() {
     if (this.repTimer) { clearInterval(this.repTimer); this.repTimer = null; }
     document.getElementById('breathOverlay').className = 'breath-overlay';
+    this._startFrameLoop();
   }
 
   _finishSet() {
     this.currentRep = 0;
+    this._startFrameLoop();
     document.getElementById('actionBtn').dataset.mode = '';
     document.getElementById('actionBtn').textContent = this.t.start;
     document.getElementById('breathOverlay').className = 'breath-overlay';
@@ -416,6 +424,53 @@ class UI {
     document.getElementById('restScreen').classList.add('hidden');
     document.getElementById('screenWorkout').classList.remove('hidden');
     this._refreshWorkoutUI();
+  }
+
+  /* ----- Анимация упражнения -----
+     Кадров два: начало и конец движения. Чередуя их, получаем анимацию.
+     Пока идёт подход, кадры переключаются по командам «вдох» и «выдох»,
+     то есть в темпе самого упражнения. В покое — сами по себе. */
+
+  _setFrames(ex) {
+    const img = document.getElementById('activeMediaImg');
+    const box = img.parentElement;
+    const oldFb = box.querySelector('.img-fallback');
+    if (oldFb) oldFb.remove();
+
+    this.frames = (ex && ex.frames) || [];
+    this.frameIndex = 0;
+
+    if (!this.frames.length) {
+      // Упражнение без картинок — показываем подпись вместо пустоты
+      this._stopFrameLoop();
+      img.style.display = 'none';
+      const fb = document.createElement('div');
+      fb.className = 'img-fallback';
+      fb.textContent = this.t.fallbackImg;
+      box.appendChild(fb);
+      return;
+    }
+
+    img.style.display = '';
+    img.src = this.frames[0];
+    this._startFrameLoop();
+  }
+
+  _showFrame(i) {
+    if (!this.frames || !this.frames.length) return;
+    this.frameIndex = i % this.frames.length;
+    document.getElementById('activeMediaImg').src = this.frames[this.frameIndex];
+  }
+
+  // Спокойное чередование, когда подход не идёт
+  _startFrameLoop() {
+    this._stopFrameLoop();
+    if (!this.frames || this.frames.length < 2) return;
+    this.frameTimer = setInterval(() => this._showFrame(this.frameIndex + 1), 900);
+  }
+
+  _stopFrameLoop() {
+    if (this.frameTimer) { clearInterval(this.frameTimer); this.frameTimer = null; }
   }
 
   /* ----- Прогресс по текущему упражнению ----- */
@@ -492,6 +547,7 @@ class UI {
   }
 
   _finishWorkout(record) {
+    this._stopFrameLoop();
     document.getElementById('screenWorkout').classList.add('hidden');
     document.getElementById('screenPlan').classList.remove('hidden');
     document.getElementById('restScreen').classList.add('hidden');
@@ -507,6 +563,7 @@ class UI {
   _exitWorkout() {
     if (this.repTimer) { clearInterval(this.repTimer); this.repTimer = null; }
     if (this.restTimer) { this.restTimer.stop(); this.restTimer = null; }
+    this._stopFrameLoop();
     document.getElementById('screenWorkout').classList.add('hidden');
     document.getElementById('restScreen').classList.add('hidden');
     document.getElementById('screenPlan').classList.remove('hidden');
