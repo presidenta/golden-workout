@@ -34,10 +34,26 @@ class UI {
   async _loadPrograms() {
     try {
       const progs = await db.getAll('programs');
-      progs.forEach(p => { this.programs[p.id] = p; });
+      progs.forEach(p => { if (p && p.id) this.programs[p.id] = p; });
     } catch (e) {
       console.warn('[UI] Failed to load custom programs:', e);
     }
+
+    // Программы выбранной методики не хранятся в базе: генератор при
+    // тех же ответах всегда соберёт ту же неделю. Достаточно помнить,
+    // какая методика выбрана и на каком уровне.
+    const st = store.getState();
+    if (st.planMethod && typeof METHODS !== 'undefined' && METHODS[st.planMethod]) {
+      const plan = buildWeekPlan(st.planMethod, st.level);
+      if (plan) Object.assign(this.programs, plan.programs);
+    }
+
+    // Программа могла исчезнуть вместе со сменой плана — тогда
+    // возвращаемся к базовой, иначе экран останется пустым.
+    if (!this.programs[st.currentProgram]) {
+      store.setState({ currentProgram: Object.keys(this.programs)[0] || 'fullbody' });
+    }
+
     // Движок берёт программы из store, поэтому список нужно продублировать туда.
     store.setState({ programs: this.programs });
   }
@@ -120,13 +136,33 @@ class UI {
 
     // Constructor
     on('btnSaveCustom', 'click', () => this._saveCustomProgram());
+    on('btnOpenSettings2', 'click', () => this._toggleSettings(true));
 
     // Schedule
     on('btnSaveSchedule', 'click', () => this._saveSchedule());
 
+    // План недели: два вопроса и карточки методик
+    document.querySelectorAll('#planDaysRow .chip').forEach(chip => {
+      chip.addEventListener('click', () => this._pickPlanDays(Number(chip.dataset.days)));
+    });
+    document.querySelectorAll('#planLevelRow .chip').forEach(chip => {
+      chip.addEventListener('click', () => this._pickPlanLevel(chip.dataset.level));
+    });
+    on('btnApplyPlan', 'click', () => this._applyPlan());
+
+    // Глаза
+    on('btnStartEyes', 'click', () => this._startEyes());
+    on('btnToggleEyesList', 'click', () => this._toggleEyesList());
+    on('btnEyesExit', 'click', () => this._exitEyes());
+    on('btnEyesPrev', 'click', () => this._prevEyesStep());
+    on('btnEyesNext', 'click', () => this._nextEyesStep());
+    on('btnEyesToggle', 'click', () => this._toggleEyesPause());
+
     // Stats
     on('btnLogCardio', 'click', () => this._logCardio());
     on('btnExportCSV', 'click', () => this._exportCSV());
+    on('btnCalPrev', 'click', () => this._calShift(-1));
+    on('btnCalNext', 'click', () => this._calShift(1));
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
@@ -139,10 +175,13 @@ class UI {
   _switchTab(tabId) {
     store.setState({ currentTab: tabId });
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
-    ['workout', 'constructor', 'treadmill', 'schedule', 'stats'].forEach(t => {
-      document.getElementById('tabContent' + this._cap(t)).classList.toggle('hidden', t !== tabId);
+    ['workout', 'plan', 'health', 'stats', 'more'].forEach(t => {
+      const el = document.getElementById('tabContent' + this._cap(t));
+      if (el) el.classList.toggle('hidden', t !== tabId);
     });
     if (tabId === 'stats') this._renderStats();
+    if (tabId === 'health') this._renderHealth();
+    if (tabId === 'plan') this._renderPlanTab();
   }
 
   _cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -203,10 +242,10 @@ class UI {
       if (lbl) lbl.textContent = text;
     };
     tabLabel('tabBtnWorkout', this.t.tabs.workout);
-    tabLabel('tabBtnConstructor', this.t.tabs.constructor);
-    tabLabel('tabBtnTreadmill', this.t.tabs.treadmill);
-    tabLabel('tabBtnSchedule', this.t.tabs.schedule);
+    tabLabel('tabBtnPlan', this.t.tabs.plan);
+    tabLabel('tabBtnHealth', this.t.tabs.health);
     tabLabel('tabBtnStats', this.t.tabs.stats);
+    tabLabel('tabBtnMore', this.t.tabs.more);
     document.getElementById('ui_set_title').textContent = this.t.settings;
     document.getElementById('btnStartNext').textContent = this.t.start;
     document.getElementById('actionBtn').textContent = this.t.start;
@@ -231,6 +270,8 @@ class UI {
     this._renderConstructor();
     this._renderSchedule();
     this._renderTreadmill();
+    this._renderPlanTab();
+    this._renderHealth();
     this._renderStats();
   }
 
@@ -285,16 +326,42 @@ class UI {
      Программы можно добавлять сколько угодно: список прокручивается,
      а главный экран от этого не растёт. */
 
-  // Из чего состоит программа — показываем под названием
+  /* Из чего состоит программа. Показываем группы мышц, а не названия
+     упражнений: у доски все названия начинаются одинаково («Доска ·
+     Синий», «Доска · Жёлтый»), и подпись превращалась в «Доска · Доска».
+     Мышцы отвечают на настоящий вопрос — что сегодня будет работать. */
   _progMeta(prog) {
     if (!prog || !prog.exercises) return '';
-    const count = prog.exercises.length;
-    const names = prog.exercises
-      .map(k => EXERCISE_DB[k])
-      .filter(Boolean)
-      .map(ex => (ex[this.currentLang] || ex.ru).name.split(/[·(]/)[0].trim());
-    const short = names.slice(0, 3).join(' · ');
-    return `${count} ${this.t.setsShortEx} · ${short}${names.length > 3 ? '…' : ''}`;
+    const dict = this.t.muscleNames || {};
+    const groups = [];
+    prog.exercises.forEach(k => {
+      const ex = EXERCISE_DB[k];
+      if (!ex) return;
+      (ex.muscles || []).forEach(m => {
+        if (dict[m] && !groups.includes(dict[m])) groups.push(dict[m]);
+      });
+    });
+    const short = groups.slice(0, 4).join(' · ');
+    return `${this.t.exCount(prog.exercises.length)} · ${short}${groups.length > 4 ? '…' : ''}`;
+  }
+
+  /* Программ стало много, поэтому в окне выбора они разложены по
+     разделам: сначала то, что назначено планом на эту неделю, потом
+     Голтис, доска, готовые наборы и свои. */
+  _programGroups() {
+    const keys = Object.keys(this.programs);
+    const isAuto = k => k.startsWith('auto_');
+    const isGoltis = k => k === 'goltis' || k.startsWith('auto_goltis_way');
+    const isBoard = k => k.startsWith('push_board');
+    const isCustom = k => k.startsWith('custom_');
+
+    return [
+      { title: this.t.groupPlan,   keys: keys.filter(k => isAuto(k) && !isGoltis(k)) },
+      { title: this.t.groupGoltis, keys: keys.filter(isGoltis) },
+      { title: this.t.groupBoard,  keys: keys.filter(isBoard) },
+      { title: this.t.groupReady,  keys: keys.filter(k => !isAuto(k) && !isGoltis(k) && !isBoard(k) && !isCustom(k)) },
+      { title: this.t.groupMine,   keys: keys.filter(isCustom) }
+    ].filter(g => g.keys.length);
   }
 
   _renderPrograms() {
@@ -306,19 +373,36 @@ class UI {
 
     const list = document.getElementById('programList');
     list.innerHTML = '';
-    Object.keys(this.programs).forEach(k => {
-      const p = this.programs[k];
-      const row = document.createElement('button');
-      row.className = 'prog-row' + (k === key ? ' current' : '');
-      row.innerHTML = `
-        <span class="prog-row-dot"></span>
-        <span class="prog-row-body">
-          <span class="prog-row-name">${this._esc(this._progName(p))}</span>
-          <span class="prog-row-meta">${this._esc(this._progMeta(p))}</span>
-        </span>`;
-      row.onclick = () => this._pickProgram(k);
-      list.appendChild(row);
+
+    this._programGroups().forEach(group => {
+      const head = document.createElement('div');
+      head.className = 'prog-group-title';
+      head.textContent = group.title;
+      list.appendChild(head);
+
+      group.keys.forEach(k => {
+        const p = this.programs[k];
+        const row = document.createElement('button');
+        row.className = 'prog-row' + (k === key ? ' current' : '');
+        row.innerHTML = `
+          <span class="prog-row-dot"></span>
+          <span class="prog-row-body">
+            <span class="prog-row-name">${this._esc(this._progName(p))}</span>
+            <span class="prog-row-meta">${this._esc(this._progMeta(p))}</span>
+          </span>`;
+        row.onclick = () => this._pickProgram(k);
+        list.appendChild(row);
+      });
     });
+
+    // Свой комплекс собирается во вкладке «Ещё» — ведём туда отсюда,
+    // чтобы конструктор не потерялся
+    const add = document.createElement('button');
+    add.className = 'prog-row prog-row-add';
+    add.innerHTML = `<span class="prog-row-plus">＋</span>
+      <span class="prog-row-body"><span class="prog-row-name">${this._esc(this.t.createOwn)}</span></span>`;
+    add.onclick = () => { this._closePrograms(); this._switchTab('more'); };
+    list.appendChild(add);
   }
 
   _pickProgram(key) {
@@ -990,6 +1074,12 @@ class UI {
   _exitWorkout() {
     if (this.repTimer) { clearInterval(this.repTimer); this.repTimer = null; }
     if (this.restTimer) { this.restTimer.stop(); this.restTimer = null; }
+    // Уходим со сделанными подходами — записываем их. Раньше выход
+    // с середины стирал всю работу, и в календаре день оставался пустым.
+    if (this.engine && this.engine.logs && this.engine.logs.length) {
+      this.engine.finish(true);
+      this._renderStats();
+    }
     this._stopFrameLoop();
     document.getElementById('screenWorkout').classList.add('hidden');
     document.getElementById('restScreen').classList.add('hidden');
@@ -1077,8 +1167,14 @@ class UI {
 
   // Сохранить одну настройку, не трогая остальные
   _persistSetting(key, value) {
-    db.get('settings', 'app')
-      .then(saved => db.set('settings', 'app', { ...(saved || {}), [key]: value }))
+    return this._persistSettings({ [key]: value });
+  }
+
+  // Несколько настроек разом: по одной их пришлось бы писать
+  // параллельно, и последняя запись затёрла бы предыдущие
+  _persistSettings(patch) {
+    return db.get('settings', 'app')
+      .then(saved => db.set('settings', 'app', { ...(saved || {}), ...patch }))
       .catch(() => {});
   }
 
@@ -1087,6 +1183,187 @@ class UI {
     else if (cmd === 'pause') this._pauseRepTimer();
     else if (cmd === 'complete') this._finishSet();
     else if (cmd === 'rest') this._skipRest();
+  }
+
+  /* ----- План недели -----
+     Два вопроса — сколько дней и какой уровень — и приложение само
+     раскладывает неделю по методике. Ручная правка осталась ниже,
+     для тех, кто хочет по-своему. */
+
+  _renderPlanTab() {
+    const st = store.getState();
+    if (!this.planLevel) this.planLevel = st.level || 'beginner';
+    if (!this.planDays) {
+      this.planDays = st.planMethod && METHODS[st.planMethod]
+        ? METHODS[st.planMethod].days
+        : 3;
+    }
+    // Неделя показывается сразу: пустой экран с вопросами ничего не
+    // объясняет, а готовый план видно и можно просто пролистать
+    if (!this.planPreviewId) {
+      this.planPreviewId = (st.planMethod && METHODS[st.planMethod])
+        ? st.planMethod
+        : (Object.keys(METHODS).find(id => METHODS[id].days === this.planDays) || 'fullbody3');
+    }
+
+    document.getElementById('planQDays').textContent = this.t.planQDays;
+    document.getElementById('planQLevel').textContent = this.t.planQLevel;
+    document.getElementById('planQMethod').textContent = this.t.planQMethod;
+    document.getElementById('planQWeek').textContent = this.t.planQWeek;
+    document.getElementById('btnApplyPlan').textContent = this.t.applyWeek;
+    document.getElementById('manualSchedTitle').textContent = this.t.manualSchedule;
+
+    document.querySelectorAll('#planDaysRow .chip').forEach(c => {
+      c.textContent = this.t.daysShort(Number(c.dataset.days));
+      c.classList.toggle('active', Number(c.dataset.days) === this.planDays);
+    });
+    document.querySelectorAll('#planLevelRow .chip').forEach(c => {
+      const lvl = LEVELS[c.dataset.level];
+      c.textContent = lvl ? lvl[this.currentLang].name : c.dataset.level;
+      c.classList.toggle('active', c.dataset.level === this.planLevel);
+    });
+
+    this._renderMethodList();
+    this._renderPlanPreview();
+    document.getElementById('planPreview').classList.remove('hidden');
+  }
+
+  // Карточки методик. Сначала те, что совпали с выбранным числом дней,
+  // остальные ниже — их всё равно видно и можно выбрать.
+  _renderMethodList() {
+    const box = document.getElementById('methodList');
+    box.innerHTML = '';
+    const st = store.getState();
+
+    const ids = Object.keys(METHODS).sort((a, b) => {
+      const da = Math.abs(METHODS[a].days - this.planDays);
+      const dbb = Math.abs(METHODS[b].days - this.planDays);
+      return da - dbb || METHODS[a].days - METHODS[b].days;
+    });
+
+    ids.forEach(id => {
+      const m = METHODS[id];
+      const loc = m[this.currentLang] || m.ru;
+      const fits = m.days === this.planDays;
+      const active = this.planPreviewId === id;
+      const applied = st.planMethod === id;
+
+      const card = document.createElement('div');
+      card.className = 'method-card'
+        + (fits ? ' fits' : '')
+        + (active ? ' open' : '')
+        + (applied ? ' applied' : '');
+      card.innerHTML = `
+        <div class="method-top">
+          <span class="method-name">${this._esc(loc.name)}</span>
+          <span class="method-days">${this._esc(this.t.daysShort(m.days))}</span>
+        </div>
+        <div class="method-author">${this._esc(loc.author)}</div>
+        <div class="method-short">${this._esc(loc.short)}</div>
+        <div class="method-body">
+          <div class="method-desc">${this._esc(loc.desc)}</div>
+          <div class="method-for"><b>${this._esc(this.t.forWhom)}</b> ${this._esc(loc.forWhom)}</div>
+        </div>
+        ${applied ? `<div class="method-applied">✓ ${this._esc(this.t.planApplied)}</div>` : ''}`;
+      card.onclick = () => this._previewMethod(id);
+      box.appendChild(card);
+    });
+  }
+
+  _previewMethod(id) {
+    this.planPreviewId = id;
+    this._renderMethodList();
+    this._renderPlanPreview();
+    document.getElementById('planPreview').classList.remove('hidden');
+    document.getElementById('planPreview').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  _renderPlanPreview() {
+    const plan = buildWeekPlan(this.planPreviewId, this.planLevel);
+    if (!plan) return;
+    this._previewPlan = plan;
+
+    const box = document.getElementById('planWeek');
+    box.innerHTML = '';
+    const todayDow = new Date().getDay();
+
+    // Показываем с понедельника — так неделя читается привычнее
+    plan.days.slice().sort((a, b) => a.order - b.order).forEach(day => {
+      const focus = FOCUS[day.focus];
+      const loc = focus[this.currentLang] || focus.ru;
+      const row = document.createElement('div');
+      row.className = 'week-row' + (day.isRest ? ' easy' : '') + (day.dow === todayDow ? ' today' : '');
+      const minutes = estimateDayMinutes(day);
+      const meta = day.isRest
+        ? this.t.easyDayMeta
+        : `${this.t.exCount(day.exercises.length)} · ${day.sets} ${this.t.setsShort} · ~${minutes} ${this.t.min}`;
+      row.innerHTML = `
+        <span class="week-dow">${this._esc(this.t.weekdaysShort[day.dow])}</span>
+        <span class="week-body">
+          <span class="week-name">${this._esc(loc.name)}</span>
+          <span class="week-meta">${this._esc(meta)}</span>
+        </span>`;
+      row.onclick = () => alert(`${loc.name}\n\n${loc.note}`);
+      box.appendChild(row);
+    });
+
+    // Сколько раз за неделю достанется каждой группе мышц
+    const load = weekMuscleLoad(plan);
+    const lbox = document.getElementById('muscleLoad');
+    const names = this.t.muscleNames || {};
+    const items = Object.keys(load)
+      .filter(m => names[m])
+      .sort((a, b) => load[b] - load[a])
+      .map(m => `<span class="load-chip${load[m] >= 2 ? ' ok' : ''}">${this._esc(names[m])} ${load[m]}×</span>`);
+    lbox.innerHTML = `<div class="load-title">${this._esc(this.t.weekLoadTitle)}</div>
+      <div class="load-chips">${items.join('')}</div>
+      <div class="load-hint">${this._esc(this.t.weekLoadHint)}</div>`;
+  }
+
+  _pickPlanDays(days) {
+    this.planDays = days;
+    // Выбранная раньше методика могла не подойти под новое число дней
+    if (this.planPreviewId && METHODS[this.planPreviewId].days !== days) {
+      const match = Object.keys(METHODS).find(id => METHODS[id].days === days);
+      this.planPreviewId = match || this.planPreviewId;
+    }
+    this._renderPlanTab();
+  }
+
+  _pickPlanLevel(level) {
+    this.planLevel = level;
+    this._renderPlanTab();
+  }
+
+  _applyPlan() {
+    const plan = this._previewPlan;
+    if (!plan) return;
+
+    Object.assign(this.programs, plan.programs);
+
+    // Сегодняшний день плана становится текущей программой —
+    // чтобы с экрана тренировки можно было сразу начать
+    const todayKey = plan.schedule[new Date().getDay()];
+
+    store.setState({
+      programs: this.programs,
+      schedule: plan.schedule,
+      planMethod: plan.methodId,
+      level: plan.level,
+      currentProgram: todayKey || store.getState().currentProgram
+    });
+
+    this._persistSettings({ planMethod: plan.methodId, level: plan.level });
+    db.set('settings', 'schedule', plan.schedule).catch(() => {});
+
+    this._renderPrograms();
+    this._renderPlanList();
+    this._renderSchedule();
+    this._renderMethodList();
+
+    const loc = plan.method[this.currentLang] || plan.method.ru;
+    alert(`${this.t.planAppliedFull}\n\n${loc.name}`);
+    this._switchTab('workout');
   }
 
   /* ----- Constructor ----- */
@@ -1118,25 +1395,24 @@ class UI {
     const id = 'custom_' + Date.now();
     const prog = { id, name, exercises: checked };
     this.programs[id] = prog;
-    db.set('programs', id, prog).then(() => {
-      store.setState({ programs: this.programs, currentProgram: id });
-      this._renderPrograms();
-      this._renderPlanList();
-      this._switchTab('workout');
-    });
+    store.setState({ programs: this.programs, currentProgram: id });
+    this._renderPrograms();
+    this._renderPlanList();
+    this._switchTab('workout');
+    // Ключ у этого хранилища лежит внутри записи, поэтому программа
+    // кладётся целиком. Раньше здесь была обёртка {key, value} —
+    // база её отвергала, и свои комплексы пропадали при перезапуске.
+    db.putProgram(prog).catch(e => console.warn('[UI] программа не сохранилась:', e));
+    document.getElementById('customProgName').value = '';
+    document.querySelectorAll('#constructorExercisesList input:checked').forEach(cb => { cb.checked = false; });
   }
 
   /* ----- Schedule ----- */
   _renderSchedule() {
     const box = document.getElementById('scheduleList');
     box.innerHTML = '';
-    const days = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
-    const tdays = this.currentLang === 'en' 
-      ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
-      : this.currentLang === 'ua' ? ['Неділя','Понеділок','Вівторок','Середа','Четвер',"П'ятниця",'Субота']
-      : days;
     const sched = store.getState().schedule;
-    tdays.forEach((dayName, idx) => {
+    this.t.weekdays.forEach((dayName, idx) => {
       const wrap = document.createElement('div');
       wrap.className = 'exercise-item';
       wrap.style.flexDirection = 'column'; wrap.style.alignItems = 'flex-start'; wrap.style.gap = '4px'; wrap.style.cursor = 'default';
@@ -1155,43 +1431,373 @@ class UI {
   _saveSchedule() {
     const s = {};
     for (let i = 0; i < 7; i++) s[i] = document.getElementById('sched_day_' + i).value;
-    store.setState({ schedule: s });
-    db.set('settings', 'schedule', s).then(() => alert('Расписание сохранено'));
+    // Руками правленое расписание больше не принадлежит методике
+    store.setState({ schedule: s, planMethod: null });
+    this._persistSettings({ planMethod: null });
+    db.set('settings', 'schedule', s)
+      .then(() => alert(this.t.scheduleSaved))
+      .catch(() => alert(this.t.scheduleSaved));
+    this._renderMethodList();
+  }
+
+  /* ----- Здоровье: глаза, кардио, дорожка ----- */
+
+  async _renderHealth() {
+    const t = this.t;
+    document.getElementById('eyesTitle').textContent = t.eyesTitle;
+    document.getElementById('eyesMeta').textContent = t.eyesMeta(EYE_EXERCISES.length, eyeSetMinutes());
+    document.getElementById('btnStartEyes').textContent = t.eyesStart;
+    document.getElementById('btnToggleEyesList').textContent =
+      this._eyesListOpen ? t.eyesHideList : t.eyesShowList;
+    document.getElementById('eyesNote').textContent = t.eyesWarning;
+    this._renderEyesList();
+
+    // Отметки за сегодня — видно сразу, не заглядывая в календарь
+    const day = await db.getDay(dateKey()).catch(() => null);
+
+    const eyesBadge = document.getElementById('eyesTodayBadge');
+    const eyesDone = !!(day && day.eyes);
+    eyesBadge.textContent = eyesDone ? t.doneToday : t.notDoneToday;
+    eyesBadge.classList.toggle('done', eyesDone);
+
+    const cardioBadge = document.getElementById('cardioTodayBadge');
+    const mins = (day && day.cardioMin) || 0;
+    cardioBadge.textContent = mins ? `${mins} ${t.min}` : t.notDoneToday;
+    cardioBadge.classList.toggle('done', mins > 0);
+  }
+
+  _renderEyesList() {
+    const box = document.getElementById('eyesList');
+    box.classList.toggle('hidden', !this._eyesListOpen);
+    if (!this._eyesListOpen) return;
+    box.innerHTML = '';
+    EYE_EXERCISES.forEach((ex, i) => {
+      const loc = ex[this.currentLang] || ex.ru;
+      const amount = ex.type === 'time'
+        ? `${ex.value} ${this.t.sec}`
+        : `${ex.value} ${this.t.timesShort}`;
+      const row = document.createElement('div');
+      row.className = 'eye-item';
+      row.innerHTML = `
+        <div class="eye-item-head">
+          <span class="eye-item-num">${i + 1}</span>
+          <span class="eye-item-name">${this._esc(loc.name)}</span>
+          <span class="eye-item-amount">${this._esc(amount)}</span>
+        </div>
+        <div class="eye-item-desc">${this._esc(loc.desc)}</div>
+        <div class="eye-item-how">${this._esc(loc.how)}</div>
+        <div class="eye-item-src">${this._esc(this.t.bySource)} ${this._esc(ex.source)}</div>`;
+      box.appendChild(row);
+    });
+  }
+
+  _toggleEyesList() {
+    this._eyesListOpen = !this._eyesListOpen;
+    document.getElementById('btnToggleEyesList').textContent =
+      this._eyesListOpen ? this.t.eyesHideList : this.t.eyesShowList;
+    this._renderEyesList();
+  }
+
+  /* ----- Сессия гимнастики для глаз -----
+     Точка на экране ведёт взгляд по нужной траектории, снизу — сколько
+     осталось. Считать самому не нужно, глаза заняты другим. */
+
+  _startEyes() {
+    this.eyesIndex = 0;
+    this.eyesPaused = false;
+    document.getElementById('eyesScreen').classList.remove('hidden');
+    this._showEyesStep();
+  }
+
+  _showEyesStep() {
+    const ex = EYE_EXERCISES[this.eyesIndex];
+    if (!ex) { this._finishEyes(); return; }
+    const loc = ex[this.currentLang] || ex.ru;
+
+    document.getElementById('eyesStepCount').textContent =
+      `${this.eyesIndex + 1} / ${EYE_EXERCISES.length}`;
+    document.getElementById('eyesStepName').textContent = loc.name;
+    document.getElementById('eyesStepDesc').textContent = loc.desc;
+    document.getElementById('eyesStepHow').textContent = loc.how;
+    document.getElementById('btnEyesToggle').textContent = this.t.pause;
+
+    // Траекторию рисует CSS — здесь только говорим, какая нужна
+    const stage = document.getElementById('eyesStage');
+    stage.dataset.move = ex.id;
+    const isPalming = ex.id.startsWith('palming');
+    document.getElementById('eyesPalming').classList.toggle('hidden', !isPalming);
+    document.getElementById('eyesDot').classList.toggle('hidden', isPalming);
+
+    this._eyesTotal = eyeStepSeconds(ex);
+    this._eyesLeft = this._eyesTotal;
+    this._paintEyesTimer();
+
+    if (this.speech) this.speech.speak(loc.name);
+
+    this._stopEyesTimer();
+    this._eyesTimer = setInterval(() => {
+      if (this.eyesPaused) return;
+      this._eyesLeft--;
+      this._paintEyesTimer();
+      if (this._eyesLeft <= 0) this._nextEyesStep();
+    }, 1000);
+  }
+
+  _paintEyesTimer() {
+    document.getElementById('eyesTimer').textContent = `${Math.max(0, this._eyesLeft)} ${this.t.sec}`;
+    const pct = this._eyesTotal ? (this._eyesLeft / this._eyesTotal) * 100 : 0;
+    document.getElementById('eyesTrackFill').style.width = `${Math.max(0, pct)}%`;
+  }
+
+  _stopEyesTimer() {
+    if (this._eyesTimer) { clearInterval(this._eyesTimer); this._eyesTimer = null; }
+  }
+
+  _nextEyesStep() {
+    this._stopEyesTimer();
+    this.eyesIndex++;
+    if (this.eyesIndex >= EYE_EXERCISES.length) { this._finishEyes(); return; }
+    this._showEyesStep();
+  }
+
+  _prevEyesStep() {
+    this._stopEyesTimer();
+    this.eyesIndex = Math.max(0, this.eyesIndex - 1);
+    this._showEyesStep();
+  }
+
+  _toggleEyesPause() {
+    this.eyesPaused = !this.eyesPaused;
+    document.getElementById('btnEyesToggle').textContent =
+      this.eyesPaused ? this.t.resume : this.t.pause;
+    document.getElementById('eyesStage').classList.toggle('paused', this.eyesPaused);
+  }
+
+  // Выход посреди комплекса: отметку не ставим, но и не ругаемся
+  _exitEyes() {
+    this._stopEyesTimer();
+    document.getElementById('eyesScreen').classList.add('hidden');
+  }
+
+  async _finishEyes() {
+    this._stopEyesTimer();
+    document.getElementById('eyesScreen').classList.add('hidden');
+    if (this.speech) this.speech.speak(this.t.eyesDoneVoice);
+
+    await db.mergeDay(dateKey(), {
+      eyes: true,
+      eyesAt: Date.now(),
+      eyesVersion: EYE_SET_VERSION
+    }).catch(e => console.warn('[Eyes] отметка не сохранилась:', e));
+
+    alert(this.t.eyesDone);
+    this._renderHealth();
+    this._renderStats();
   }
 
   /* ----- Stats ----- */
+  /* Календарь помнит всё: тренировки, кардио и глаза. Месяцы листаются,
+     любой день открывается и показывает, что именно было сделано. */
   async _renderStats() {
     const now = new Date();
-    const year = now.getFullYear(), month = now.getMonth();
+    if (this.calYear === undefined) {
+      this.calYear = now.getFullYear();
+      this.calMonth = now.getMonth();
+    }
+    const year = this.calYear, month = this.calMonth;
+
     document.getElementById('statsMonthTitle').textContent = `${this._monthName(month)} ${year}`;
+
+    // Вперёд дальше текущего месяца ходить незачем
+    const atCurrent = year === now.getFullYear() && month === now.getMonth();
+    document.getElementById('btnCalNext').disabled = atCurrent;
+
+    const [workouts, days] = await Promise.all([
+      db.getAllWorkouts().catch(() => []),
+      db.getAllDays().catch(() => [])
+    ]);
+    this._workoutsByDate = {};
+    workouts.forEach(w => {
+      (this._workoutsByDate[w.date] = this._workoutsByDate[w.date] || []).push(w);
+    });
+    this._daysByDate = {};
+    days.forEach(d => { this._daysByDate[d.date] = d; });
+
+    // Шапка: неделя начинается с понедельника, как в жизни
+    const dow = document.getElementById('calDow');
+    dow.innerHTML = [1, 2, 3, 4, 5, 6, 0]
+      .map(i => `<span>${this._esc(this.t.weekdaysMin[i])}</span>`).join('');
+
     const grid = document.getElementById('calendarGrid');
     grid.innerHTML = '';
+
+    // Пустые клетки до первого числа, чтобы дни встали под своими днями недели
+    const firstDow = new Date(year, month, 1).getDay();
+    const offset = (firstDow + 6) % 7;
+    for (let i = 0; i < offset; i++) {
+      const pad = document.createElement('div');
+      pad.className = 'cal-day empty';
+      grid.appendChild(pad);
+    }
+
     const totalDays = new Date(year, month + 1, 0).getDate();
-    let streak = 0, maxStreak = 0;
-    const workouts = await db.getAllWorkouts().catch(() => []);
-    const dateMap = {};
-    workouts.forEach(w => { dateMap[w.date] = w; });
+    const todayKey = dateKey(now);
 
     for (let d = 1; d <= totalDays; d++) {
-      const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const ds = dateKey(new Date(year, month, d));
+      const w = this._workoutsByDate[ds];
+      const day = this._daysByDate[ds];
       const cell = document.createElement('div');
       cell.className = 'cal-day';
-      if (dateMap[ds]) { cell.classList.add('completed'); streak++; maxStreak = Math.max(maxStreak, streak); }
-      else { cell.classList.add('missed'); streak = 0; }
-      if (d === now.getDate()) cell.classList.add('today');
-      cell.innerHTML = `<div>${d}</div>`;
+      if (w && w.length) cell.classList.add('completed');
+      if (ds === todayKey) cell.classList.add('today');
+      if (ds === this._selectedDay) cell.classList.add('selected');
+      if (ds > todayKey) cell.classList.add('future');
+
+      const marks = [];
+      if (w && w.length) marks.push('<i class="m-w"></i>');
+      if (day && day.cardioMin) marks.push('<i class="m-c"></i>');
+      if (day && day.eyes) marks.push('<i class="m-e"></i>');
+
+      cell.innerHTML = `<div class="cal-num">${d}</div><div class="cal-marks">${marks.join('')}</div>`;
+      cell.onclick = () => this._showDayCard(ds);
       grid.appendChild(cell);
     }
-    document.getElementById('statsStreak').textContent = `${this.t.streak}: ${maxStreak} ${this.t.days}`;
 
-    // Weight progress (simple text list)
+    document.getElementById('calLegend').innerHTML =
+      `<span><i class="m-w"></i>${this._esc(this.t.legendWorkout)}</span>` +
+      `<span><i class="m-c"></i>${this._esc(this.t.legendCardio)}</span>` +
+      `<span><i class="m-e"></i>${this._esc(this.t.legendEyes)}</span>`;
+
+    document.getElementById('statsStreak').textContent =
+      `${this.t.streak}: ${this._currentStreak(now)} ${this.t.days}`;
+
+    if (this._selectedDay) this._showDayCard(this._selectedDay, true);
+
+    // Прогресс по весам — по последним записям, независимо от месяца
     const chart = document.getElementById('weightProgressChart');
     const last5 = workouts.slice(-5);
     if (!last5.length) { chart.textContent = this.t.noData; return; }
     chart.innerHTML = last5.map(w => {
-      const totalVol = w.exercises.reduce((sum, ex) => sum + (ex.weight * ex.actualReps), 0);
+      const totalVol = (w.exercises || []).reduce((sum, ex) => sum + (ex.weight * ex.actualReps), 0);
       return `<div style="margin-bottom:4px;">${w.date}: ${totalVol} ${this.t.kg}·${this.t.reps}</div>`;
     }).join('');
+  }
+
+  // Серия — сколько дней подряд подряд было хоть что-нибудь: тренировка,
+  // кардио или глаза. Обрывается на первом пустом дне, считая от сегодня.
+  _currentStreak(now) {
+    let streak = 0;
+    const cursor = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    for (let i = 0; i < 400; i++) {
+      const ds = dateKey(cursor);
+      const w = this._workoutsByDate[ds];
+      const day = this._daysByDate[ds];
+      const any = (w && w.length) || (day && (day.cardioMin || day.eyes));
+      if (any) streak++;
+      // Сегодняшний день ещё может состояться — пустой не обрывает серию
+      else if (i > 0) break;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+  }
+
+  _calShift(delta) {
+    const m = this.calMonth + delta;
+    this.calYear += Math.floor(m / 12);
+    this.calMonth = ((m % 12) + 12) % 12;
+    this._selectedDay = null;
+    document.getElementById('dayCard').classList.add('hidden');
+    this._renderStats();
+  }
+
+  // Карточка дня: то, чего раньше не было совсем — что именно
+  // сделано в конкретный день
+  _showDayCard(ds, keepOpen) {
+    const box = document.getElementById('dayCard');
+    if (this._selectedDay === ds && !keepOpen) {
+      this._selectedDay = null;
+      box.classList.add('hidden');
+      document.querySelectorAll('.cal-day.selected').forEach(c => c.classList.remove('selected'));
+      return;
+    }
+    this._selectedDay = ds;
+    document.querySelectorAll('.cal-day').forEach(c => c.classList.remove('selected'));
+
+    const workouts = (this._workoutsByDate || {})[ds] || [];
+    const day = (this._daysByDate || {})[ds];
+    const parts = [];
+
+    workouts.forEach(w => {
+      const prog = this.programs[w.program];
+      const title = prog ? this._progName(prog) : w.program;
+      const sets = (w.exercises || []).length;
+      const byEx = {};
+      (w.exercises || []).forEach(l => {
+        (byEx[l.exerciseId] = byEx[l.exerciseId] || []).push(l);
+      });
+      const lines = Object.keys(byEx).map(id => {
+        const ex = EXERCISE_DB[id];
+        const name = ex ? (ex[this.currentLang] || ex.ru).name : id;
+        const logs = byEx[id];
+        const reps = logs.map(l => l.actualReps).join('/');
+        const weight = logs.find(l => l.weight > 0);
+        return `<div class="day-ex"><span>${this._esc(name)}</span>
+          <span class="day-ex-num">${logs.length}×${this._esc(reps)}${weight ? ` · ${weight.weight} ${this.t.kg}` : ''}</span></div>`;
+      }).join('');
+
+      parts.push(`
+        <div class="day-block">
+          <div class="day-block-head">
+            <span class="day-tag w">${this._esc(this.t.legendWorkout)}</span>
+            <span class="day-block-title">${this._esc(title)}</span>
+            ${w.partial ? `<span class="day-partial">${this._esc(this.t.partialMark)}</span>` : ''}
+          </div>
+          <div class="day-block-meta">${sets} ${this._esc(this.t.setsShort)} · ${w.durationMin} ${this._esc(this.t.min)}</div>
+          ${lines}
+        </div>`);
+    });
+
+    if (day && day.cardioMin) {
+      parts.push(`<div class="day-block">
+        <div class="day-block-head">
+          <span class="day-tag c">${this._esc(this.t.legendCardio)}</span>
+          <span class="day-block-title">${day.cardioMin} ${this._esc(this.t.min)}</span>
+        </div></div>`);
+    }
+
+    if (day && day.eyes) {
+      const at = day.eyesAt ? new Date(day.eyesAt) : null;
+      const time = at ? `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}` : '';
+      parts.push(`<div class="day-block">
+        <div class="day-block-head">
+          <span class="day-tag e">${this._esc(this.t.legendEyes)}</span>
+          <span class="day-block-title">${this._esc(this.t.doneToday)}${time ? ` · ${time}` : ''}</span>
+        </div></div>`);
+    }
+
+    const d = new Date(ds + 'T00:00:00');
+    box.innerHTML = `
+      <div class="day-card-head">
+        <span>${d.getDate()} ${this._esc(this._monthNameGen(d.getMonth()))}, ${this._esc(this.t.weekdays[d.getDay()].toLowerCase())}</span>
+        <button class="sheet-close" id="btnCloseDay" aria-label="Закрыть">✕</button>
+      </div>
+      ${parts.length ? parts.join('') : `<div class="day-empty">${this._esc(this.t.dayEmpty)}</div>`}`;
+    box.classList.remove('hidden');
+    const close = document.getElementById('btnCloseDay');
+    if (close) close.onclick = () => {
+      this._selectedDay = null;
+      box.classList.add('hidden');
+      document.querySelectorAll('.cal-day.selected').forEach(c => c.classList.remove('selected'));
+    };
+
+    // Подсветить выбранную клетку
+    document.querySelectorAll('.cal-day').forEach(c => {
+      const num = c.querySelector('.cal-num');
+      if (num && Number(num.textContent) === d.getDate() && !c.classList.contains('empty')) {
+        c.classList.add('selected');
+      }
+    });
   }
 
   _monthName(m) {
@@ -1203,10 +1809,33 @@ class UI {
     return names[m];
   }
 
-  _logCardio() {
-    const mins = document.getElementById('cardioMinutesInput').value;
-    if (!mins) return;
-    document.getElementById('cardioLogStatus').textContent = `✓ ${mins} мин`;
+  // Месяц в родительном падеже: «10 августа», а не «10 август».
+  // В английском и украинском форма одна, поэтому там просто месяц.
+  _monthNameGen(m) {
+    if (this.currentLang !== 'ru') return this._monthName(m);
+    return ['января','февраля','марта','апреля','мая','июня',
+            'июля','августа','сентября','октября','ноября','декабря'][m];
+  }
+
+  // Кардио теперь действительно записывается: раньше кнопка просто
+  // рисовала надпись, и минуты пропадали вместе с закрытием страницы
+  async _logCardio() {
+    const input = document.getElementById('cardioMinutesInput');
+    const mins = parseInt(input.value, 10);
+    if (!mins || mins <= 0) return;
+
+    const key = dateKey();
+    const day = await db.getDay(key).catch(() => null);
+    const total = ((day && day.cardioMin) || 0) + mins;
+
+    await db.mergeDay(key, { cardioMin: total })
+      .catch(e => console.warn('[Cardio] запись не сохранилась:', e));
+
+    document.getElementById('cardioLogStatus').textContent =
+      `✓ ${total} ${this.t.min} ${this.t.today}`;
+    input.value = '';
+    this._renderHealth();
+    this._renderStats();
   }
 
   async _exportCSV() {

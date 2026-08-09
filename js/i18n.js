@@ -1,7 +1,7 @@
 const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 15",
-    tabs: { workout: "Тренировка", constructor: "Конструктор", treadmill: "Дорожка", schedule: "Расписание", stats: "Статистика" },
+    subtitle: "Architect Pro · сборка 16",
+    tabs: { workout: "Тренировка", plan: "План", health: "Здоровье", stats: "Календарь", more: "Ещё" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
     start: "Старт подхода", pause: "Пауза", resume: "Продолжить", finish: "Завершить", stop: "Стоп",
@@ -48,6 +48,7 @@ const I18N = {
     programLabel: "Программа",
     chooseProgram: "Выберите программу",
     setsShortEx: "упражнения",
+    exCount: (n) => `${n} ${n % 10 === 1 && n % 100 !== 11 ? 'упражнение' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'упражнения' : 'упражнений')}`,
     breathingTitle: "Дыхание",
     breathingGuide: {
       press: "Вдох — когда опускаетесь, выдох — когда выжимаете себя вверх. Правило простое: выдох всегда на усилии. Так делают потому, что на выдохе включается брюшной пресс и растёт внутрибрюшное давление — оно держит позвоночник жёстким и даёт опору для толчка. Дыхание не задерживайте: при задержке давление в грудной клетке подскакивает, приток крови к сердцу падает, и в глазах темнеет.",
@@ -91,11 +92,62 @@ const I18N = {
     reminderBanner: (time, prog) => `⏰ Время тренировки (${time})! Сегодня: ${prog}`,
     muscles: "Мышцы", equipment: "Инвентарь", instructions: "Техника",
     prevResult: "Прошлый результат", noData: "Нет данных",
-    warmup: "🔥 Разминка", cooldown: "❄️ Заминка"
+    warmup: "🔥 Разминка", cooldown: "❄️ Заминка",
+
+    /* ----- Сборка 16: план недели, здоровье, календарь ----- */
+    min: "мин", today: "сегодня", timesShort: "раз",
+    weekdays: ["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],
+    weekdaysShort: ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"],
+    weekdaysMin: ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"],
+
+    // Окно выбора программы
+    groupPlan: "План недели", groupGoltis: "Голтис", groupBoard: "Доска",
+    groupReady: "Готовые наборы", groupMine: "Мои комплексы",
+    createOwn: "Создать свой комплекс",
+
+    // Мастер плана
+    planQDays: "Сколько дней в неделю?",
+    planQLevel: "Ваш уровень",
+    planQMethod: "Варианты тренировок",
+    planQWeek: "Ваша неделя",
+    daysShort: (n) => `${n} ${n === 1 ? 'день' : (n >= 2 && n <= 4 ? 'дня' : 'дней')}`,
+    forWhom: "Кому:",
+    applyWeek: "Применить эту неделю",
+    planApplied: "выбрано сейчас",
+    planAppliedFull: "Неделя расставлена по дням. Расписание сохранено.",
+    manualSchedule: "Настроить дни вручную",
+    scheduleSaved: "Расписание сохранено",
+    easyDayMeta: "Суставная · 20–30 мин ходьбы · глаза",
+    weekLoadTitle: "Сколько раз за неделю работает каждая группа",
+    weekLoadHint: "Два раза в неделю на группу — то, к чему стоит стремиться.",
+    muscleNames: {
+      chest: "грудь", back: "спина", lats: "широчайшие", shoulders: "плечи",
+      biceps: "бицепс", triceps: "трицепс", abs: "пресс", core: "кор",
+      quads: "квадрицепс", hamstrings: "бицепс бедра", glutes: "ягодицы",
+      calves: "икры", legs: "ноги", joints: "суставы", mobility: "подвижность"
+    },
+
+    // Глаза
+    eyesTitle: "👁 Гимнастика для глаз",
+    eyesMeta: (n, m) => `${n} упражнений · около ${m} мин · каждый день`,
+    eyesStart: "Начать комплекс",
+    eyesShowList: "Показать упражнения",
+    eyesHideList: "Скрыть упражнения",
+    eyesWarning: "Нельзя без разрешения врача: высокая близорукость, отслойка или разрывы сетчатки, недавняя операция на глазах, воспаление. Гимнастика снимает усталость от экрана и возвращает подвижность глазным мышцам; возвращение остроты зрения методом Бейтса не доказано — это не замена очкам и врачу.",
+    eyesDone: "Комплекс выполнен. Отмечено в календаре.",
+    eyesDoneVoice: "Комплекс для глаз выполнен",
+    bySource: "по методу:",
+    doneToday: "✓ сделано",
+    notDoneToday: "не сделано",
+
+    // Календарь
+    legendWorkout: "Тренировка", legendCardio: "Кардио", legendEyes: "Глаза",
+    dayEmpty: "В этот день записей нет.",
+    partialMark: "не до конца"
   },
   en: {
-    subtitle: "Architect Pro · build 15",
-    tabs: { workout: "Workout", constructor: "Builder", treadmill: "Treadmill", schedule: "Schedule", stats: "Stats" },
+    subtitle: "Architect Pro · build 16",
+    tabs: { workout: "Workout", plan: "Plan", health: "Health", stats: "Calendar", more: "More" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
     start: "Start Set", pause: "Pause", resume: "Resume", finish: "Finish", stop: "Stop",
@@ -141,6 +193,7 @@ const I18N = {
     programLabel: "Program",
     chooseProgram: "Choose a program",
     setsShortEx: "exercises",
+    exCount: (n) => `${n} ${n === 1 ? 'exercise' : 'exercises'}`,
     breathingTitle: "Breathing",
     breathingGuide: {
       press: "Inhale as you lower, exhale as you push yourself up. The rule is simple: exhale on the effort. On the exhale the abs engage and intra-abdominal pressure rises — it keeps the spine rigid and gives the push something to work against. Never hold your breath: pressure in the chest spikes, blood return to the heart drops, and your vision goes dark.",
@@ -184,11 +237,58 @@ const I18N = {
     reminderBanner: (time, prog) => `⏰ Workout time (${time})! Today: ${prog}`,
     muscles: "Muscles", equipment: "Equipment", instructions: "Form",
     prevResult: "Previous", noData: "No data",
-    warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down"
+    warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down",
+
+    /* ----- Build 16: week plan, health, calendar ----- */
+    min: "min", today: "today", timesShort: "times",
+    weekdays: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+    weekdaysShort: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
+    weekdaysMin: ["S","M","T","W","T","F","S"],
+
+    groupPlan: "This week's plan", groupGoltis: "Goltis", groupBoard: "Push-up board",
+    groupReady: "Ready-made", groupMine: "My routines",
+    createOwn: "Create your own",
+
+    planQDays: "How many days a week?",
+    planQLevel: "Your level",
+    planQMethod: "Training options",
+    planQWeek: "Your week",
+    daysShort: (n) => `${n} ${n === 1 ? 'day' : 'days'}`,
+    forWhom: "For whom:",
+    applyWeek: "Apply this week",
+    planApplied: "currently selected",
+    planAppliedFull: "The week is laid out. Schedule saved.",
+    manualSchedule: "Set the days manually",
+    scheduleSaved: "Schedule saved",
+    easyDayMeta: "Joints · 20–30 min walk · eyes",
+    weekLoadTitle: "How often each group works this week",
+    weekLoadHint: "Twice a week per muscle group is what to aim for.",
+    muscleNames: {
+      chest: "chest", back: "back", lats: "lats", shoulders: "shoulders",
+      biceps: "biceps", triceps: "triceps", abs: "abs", core: "core",
+      quads: "quads", hamstrings: "hamstrings", glutes: "glutes",
+      calves: "calves", legs: "legs", joints: "joints", mobility: "mobility"
+    },
+
+    eyesTitle: "👁 Eye exercises",
+    eyesMeta: (n, m) => `${n} exercises · about ${m} min · every day`,
+    eyesStart: "Start the set",
+    eyesShowList: "Show exercises",
+    eyesHideList: "Hide exercises",
+    eyesWarning: "Not without a doctor's clearance: high myopia, retinal detachment or tears, recent eye surgery, inflammation. These exercises relieve screen fatigue and restore mobility to the eye muscles; recovering visual acuity through the Bates method is not proven — this replaces neither glasses nor a doctor.",
+    eyesDone: "Set complete. Marked in the calendar.",
+    eyesDoneVoice: "Eye set complete",
+    bySource: "method:",
+    doneToday: "✓ done",
+    notDoneToday: "not done",
+
+    legendWorkout: "Workout", legendCardio: "Cardio", legendEyes: "Eyes",
+    dayEmpty: "Nothing recorded on this day.",
+    partialMark: "partial"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 15",
-    tabs: { workout: "Тренування", constructor: "Конструктор", treadmill: "Доріжка", schedule: "Розклад", stats: "Статистика" },
+    subtitle: "Architect Pro · збірка 16",
+    tabs: { workout: "Тренування", plan: "План", health: "Здоров'я", stats: "Календар", more: "Ще" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
     start: "Старт підходу", pause: "Пауза", resume: "Продовжити", finish: "Завершити", stop: "Стоп",
@@ -234,6 +334,7 @@ const I18N = {
     programLabel: "Програма",
     chooseProgram: "Оберіть програму",
     setsShortEx: "вправи",
+    exCount: (n) => `${n} ${n % 10 === 1 && n % 100 !== 11 ? 'вправа' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'вправи' : 'вправ')}`,
     breathingTitle: "Дихання",
     breathingGuide: {
       press: "Вдих — коли опускаєтесь, видих — коли виштовхуєте себе вгору. Правило просте: видих завжди на зусиллі. Так роблять тому, що на видиху вмикається черевний прес і зростає внутрішньочеревний тиск — він тримає хребет жорстким і дає опору для поштовху. Дихання не затримуйте: при затримці тиск у грудній клітці підскакує, приплив крові до серця падає, і в очах темніє.",
@@ -277,6 +378,53 @@ const I18N = {
     reminderBanner: (time, prog) => `⏰ Час тренування (${time})! Сьогодні: ${prog}`,
     muscles: "М'язи", equipment: "Інвентар", instructions: "Техніка",
     prevResult: "Минулий результат", noData: "Немає даних",
-    warmup: "🔥 Розминка", cooldown: "❄️ Заминка"
+    warmup: "🔥 Розминка", cooldown: "❄️ Заминка",
+
+    /* ----- Збірка 16: план тижня, здоров'я, календар ----- */
+    min: "хв", today: "сьогодні", timesShort: "разів",
+    weekdays: ["Неділя","Понеділок","Вівторок","Середа","Четвер","П'ятниця","Субота"],
+    weekdaysShort: ["Нд","Пн","Вт","Ср","Чт","Пт","Сб"],
+    weekdaysMin: ["Нд","Пн","Вт","Ср","Чт","Пт","Сб"],
+
+    groupPlan: "План тижня", groupGoltis: "Голтіс", groupBoard: "Дошка",
+    groupReady: "Готові набори", groupMine: "Мої комплекси",
+    createOwn: "Створити свій комплекс",
+
+    planQDays: "Скільки днів на тиждень?",
+    planQLevel: "Ваш рівень",
+    planQMethod: "Варіанти тренувань",
+    planQWeek: "Ваш тиждень",
+    daysShort: (n) => `${n} ${n === 1 ? 'день' : (n >= 2 && n <= 4 ? 'дні' : 'днів')}`,
+    forWhom: "Кому:",
+    applyWeek: "Застосувати цей тиждень",
+    planApplied: "обрано зараз",
+    planAppliedFull: "Тиждень розставлено по днях. Розклад збережено.",
+    manualSchedule: "Налаштувати дні вручну",
+    scheduleSaved: "Розклад збережено",
+    easyDayMeta: "Суглобова · 20–30 хв ходьби · очі",
+    weekLoadTitle: "Скільки разів на тиждень працює кожна група",
+    weekLoadHint: "Двічі на тиждень на групу — те, до чого варто прагнути.",
+    muscleNames: {
+      chest: "груди", back: "спина", lats: "найширші", shoulders: "плечі",
+      biceps: "біцепс", triceps: "трицепс", abs: "прес", core: "кор",
+      quads: "квадрицепс", hamstrings: "біцепс стегна", glutes: "сідниці",
+      calves: "литки", legs: "ноги", joints: "суглоби", mobility: "рухливість"
+    },
+
+    eyesTitle: "👁 Гімнастика для очей",
+    eyesMeta: (n, m) => `${n} вправ · близько ${m} хв · щодня`,
+    eyesStart: "Почати комплекс",
+    eyesShowList: "Показати вправи",
+    eyesHideList: "Сховати вправи",
+    eyesWarning: "Не можна без дозволу лікаря: висока короткозорість, відшарування чи розриви сітківки, нещодавня операція на очах, запалення. Гімнастика знімає втому від екрана і повертає рухливість очним м'язам; повернення гостроти зору методом Бейтса не доведено — це не заміна окулярам і лікарю.",
+    eyesDone: "Комплекс виконано. Відмічено в календарі.",
+    eyesDoneVoice: "Комплекс для очей виконано",
+    bySource: "за методом:",
+    doneToday: "✓ зроблено",
+    notDoneToday: "не зроблено",
+
+    legendWorkout: "Тренування", legendCardio: "Кардіо", legendEyes: "Очі",
+    dayEmpty: "У цей день записів немає.",
+    partialMark: "не до кінця"
   }
 };

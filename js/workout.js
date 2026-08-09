@@ -148,18 +148,24 @@ class WorkoutEngine {
     return { phase: this.phase, exercise: this.getCurrentExercise(), set: this.currentSet };
   }
 
-  finish() {
+  // partial — вышли из тренировки на середине. Такой день всё равно
+  // считается сделанным: часть работы выполнена, и в календаре она
+  // должна остаться.
+  finish(partial = false) {
     this.phase = 'complete';
     const record = {
-      date: new Date().toISOString().split('T')[0],
+      date: dateKey(),
       program: this.programKey,
       startTime: this.startTime,
       endTime: Date.now(),
       durationMin: Math.round((Date.now() - this.startTime) / 60000),
       exercises: this.logs,
-      volumeLevel: store.getState().volumeLevel
+      volumeLevel: store.getState().volumeLevel,
+      partial: !!partial
     };
-    db.addWorkout(record);
+    // База может быть недоступна (Safari в приватном режиме) — тренировку
+    // тогда просто не запишем, но приложение падать не должно
+    db.addWorkout(record).catch(e => console.warn('[Workout] запись не сохранилась:', e));
     store.setState({ currentWorkout: null });
     return { phase: 'complete', record };
   }

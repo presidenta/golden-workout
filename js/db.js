@@ -1,5 +1,7 @@
 const DB_NAME = 'GoldenWorkoutDB';
-const DB_VERSION = 1;
+/* Версия 2 добавила хранилище daily — дневник дня: кардио, глаза, заметка.
+   Тренировки лежат отдельно, в workouts, и туда же попадают недоделанные. */
+const DB_VERSION = 2;
 
 class Database {
   constructor() {
@@ -29,6 +31,10 @@ class Database {
         }
         if (!db.objectStoreNames.contains('imageCache')) {
           db.createObjectStore('imageCache', { keyPath: 'url' });
+        }
+        // Кардио и глаза — по одной записи на дату
+        if (!db.objectStoreNames.contains('daily')) {
+          db.createObjectStore('daily', { keyPath: 'date' });
         }
       };
     });
@@ -62,6 +68,26 @@ class Database {
     });
   }
 
+  /* ----- Программы -----
+     У этого хранилища ключ лежит внутри записи (keyPath: 'id'), поэтому
+     обычный set() с обёрткой {key, value} сюда не подходит — база
+     отвергает запись без поля id. Программу кладём как есть. */
+  async putProgram(prog) {
+    return new Promise((resolve, reject) => {
+      const req = this._tx('programs', 'readwrite').put(prog);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async deleteProgram(id) {
+    return new Promise((resolve, reject) => {
+      const req = this._tx('programs', 'readwrite').delete(id);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  }
+
   async addWorkout(record) {
     return new Promise((resolve, reject) => {
       const req = this._tx('workouts', 'readwrite').add(record);
@@ -83,6 +109,36 @@ class Database {
     return new Promise((resolve, reject) => {
       const req = this._tx('workouts', 'readonly').getAll();
       req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  /* ----- Дневник дня -----
+     Кардио и гимнастика для глаз — не тренировки, но в календаре они
+     должны оставаться навсегда, наравне с ними. */
+  async getDay(date) {
+    return new Promise((resolve, reject) => {
+      const req = this._tx('daily', 'readonly').get(date);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  // Дописывает поля, не стирая то, что уже записано за этот день
+  async mergeDay(date, patch) {
+    const existing = await this.getDay(date).catch(() => null);
+    const record = { ...(existing || { date }), ...patch, date };
+    return new Promise((resolve, reject) => {
+      const req = this._tx('daily', 'readwrite').put(record);
+      req.onsuccess = () => resolve(record);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async getAllDays() {
+    return new Promise((resolve, reject) => {
+      const req = this._tx('daily', 'readonly').getAll();
+      req.onsuccess = () => resolve(req.result || []);
       req.onerror = () => reject(req.error);
     });
   }

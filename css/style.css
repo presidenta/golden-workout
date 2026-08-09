@@ -1009,3 +1009,492 @@ input:checked + .slider:before { transform: translateX(18px); }
 .exercise-list::-webkit-scrollbar { width: 6px; }
 .exercise-list::-webkit-scrollbar-track { background: transparent; }
 .exercise-list::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+/* ============================================================
+   СБОРКА 16: план недели, здоровье, гимнастика для глаз,
+   календарь с историей
+   ============================================================ */
+
+/* ----- Разделы в окне выбора программы ----- */
+.prog-group-title {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--gold-dark);
+  padding: 12px 4px 4px 4px;
+}
+.prog-group-title:first-child { padding-top: 2px; }
+.prog-row-add { justify-content: flex-start; }
+.prog-row-plus {
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold-primary);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* ----- Мастер плана ----- */
+.plan-question {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gold-light);
+  margin: 16px 0 8px 0;
+}
+.plan-question:first-child { margin-top: 0; }
+
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  flex: 1 1 auto;
+  min-width: 60px;
+  padding: 9px 10px;
+  background: #0f0f13;
+  border: 1px solid #2a2a35;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chip.active {
+  background: rgba(212, 175, 55, 0.14);
+  border-color: var(--gold-primary);
+  color: var(--gold-light);
+}
+.chip:active { transform: scale(0.96); }
+
+.method-list { display: flex; flex-direction: column; gap: 8px; }
+.method-card {
+  background: var(--card-bg);
+  border: 1px solid #24242e;
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.method-card.fits { border-color: var(--card-border); }
+.method-card.open { border-color: var(--gold-primary); background: #16161c; }
+.method-card.applied { box-shadow: inset 3px 0 0 var(--accent-green); }
+.method-top {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+}
+.method-name { font-size: 0.92rem; font-weight: 800; color: var(--text-main); }
+.method-card.open .method-name { color: var(--gold-light); }
+.method-days {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--gold-primary);
+  background: rgba(212, 175, 55, 0.1);
+  border-radius: 20px;
+  padding: 3px 9px;
+}
+.method-author {
+  font-size: 0.7rem;
+  color: var(--gold-dark);
+  margin-top: 3px;
+  font-style: italic;
+}
+.method-short { font-size: 0.78rem; color: var(--text-muted); margin-top: 6px; }
+/* Подробности раскрываются только у выбранной карточки —
+   иначе список методик не помещается на экран */
+.method-body { display: none; }
+.method-card.open .method-body { display: block; }
+.method-desc {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #c9c9d4;
+  margin-top: 10px;
+}
+.method-for { font-size: 0.76rem; color: var(--text-muted); margin-top: 8px; }
+.method-for b { color: var(--gold-light); font-weight: 700; }
+.method-applied {
+  margin-top: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent-green);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Неделя по дням */
+.plan-week { display: flex; flex-direction: column; gap: 5px; }
+.week-row {
+  display: flex; align-items: center; gap: 10px;
+  background: #0f0f13;
+  border: 1px solid #22222b;
+  border-left: 3px solid var(--gold-primary);
+  border-radius: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+.week-row.easy { border-left-color: #2f6f4f; opacity: 0.85; }
+.week-row.today { background: rgba(212, 175, 55, 0.08); }
+.week-dow {
+  width: 28px; flex-shrink: 0;
+  font-size: 0.72rem; font-weight: 800;
+  color: var(--gold-light);
+  text-transform: uppercase;
+}
+.week-body { display: flex; flex-direction: column; min-width: 0; }
+.week-name { font-size: 0.83rem; font-weight: 700; color: var(--text-main); }
+.week-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+
+.muscle-load {
+  background: #0f0f13;
+  border: 1px solid #22222b;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 12px;
+}
+.load-title {
+  font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--gold-light); margin-bottom: 8px;
+}
+.load-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.load-chip {
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: #17171f;
+  border: 1px solid #2a2a35;
+  color: var(--text-muted);
+}
+/* Зелёным то, что набрало норму — два раза в неделю */
+.load-chip.ok {
+  border-color: rgba(46, 204, 113, 0.5);
+  color: var(--accent-green);
+  background: rgba(46, 204, 113, 0.08);
+}
+.load-hint { font-size: 0.7rem; color: var(--text-muted); margin-top: 8px; }
+
+.manual-block {
+  margin-top: 18px;
+  background: #0d0d11;
+  border: 1px solid #1e1e26;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.manual-block summary {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gold-light);
+  cursor: pointer;
+  list-style: none;
+}
+.manual-block summary::-webkit-details-marker { display: none; }
+.manual-block[open] summary { margin-bottom: 10px; }
+
+/* ----- Здоровье ----- */
+.health-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.health-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.health-title { font-size: 0.88rem; font-weight: 800; color: var(--gold-primary); }
+.health-badge {
+  flex-shrink: 0;
+  font-size: 0.68rem; font-weight: 700;
+  padding: 3px 9px; border-radius: 20px;
+  background: #17171f; border: 1px solid #2a2a35;
+  color: var(--text-muted);
+}
+.health-badge.done {
+  color: var(--accent-green);
+  border-color: rgba(46, 204, 113, 0.5);
+  background: rgba(46, 204, 113, 0.1);
+}
+.health-sub { font-size: 0.76rem; color: var(--text-muted); margin: 6px 0 10px 0; }
+
+.eyes-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.eye-item {
+  background: #0f0f13;
+  border: 1px solid #22222b;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.eye-item-head { display: flex; align-items: baseline; gap: 8px; }
+.eye-item-num {
+  width: 20px; height: 20px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--gold-primary);
+  font-size: 0.66rem; font-weight: 800;
+}
+.eye-item-name { flex: 1; font-size: 0.83rem; font-weight: 700; color: var(--text-main); }
+.eye-item-amount { font-size: 0.72rem; color: var(--gold-light); font-weight: 700; }
+.eye-item-desc { font-size: 0.75rem; color: var(--gold-dark); margin-top: 5px; }
+.eye-item-how { font-size: 0.78rem; line-height: 1.5; color: #c2c2cd; margin-top: 6px; }
+.eye-item-src { font-size: 0.68rem; color: var(--text-muted); margin-top: 6px; font-style: italic; }
+.eyes-note {
+  margin-top: 12px;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  border-left: 2px solid var(--accent-red);
+  padding-left: 10px;
+}
+
+/* ----- Экран гимнастики для глаз ----- */
+.eyes-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: #050507;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: calc(14px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom)) 16px;
+  overflow-y: auto;
+}
+.eyes-screen.hidden { display: none; }
+.eyes-top {
+  width: 100%; max-width: 480px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.eyes-step-count { font-size: 0.75rem; font-weight: 800; color: var(--gold-dark); letter-spacing: 1px; }
+.eyes-name {
+  font-size: 1.15rem; font-weight: 800; color: var(--gold-light);
+  text-align: center; margin-top: 10px;
+}
+.eyes-desc {
+  font-size: 0.78rem; color: var(--text-muted);
+  text-align: center; margin-top: 4px; max-width: 420px;
+}
+
+/* Поле, по которому бегает точка-поводырь */
+.eyes-stage {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 3 / 2;
+  margin: 14px 0;
+  border: 1px solid #1c1c24;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(212,175,55,0.05) 0%, transparent 70%),
+    #0a0a0e;
+  overflow: hidden;
+}
+.eyes-dot {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 22px; height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  background: var(--gold-gradient);
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.8);
+}
+.eyes-dot.hidden { display: none; }
+.eyes-palming {
+  position: absolute;
+  inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.4rem;
+  animation: eyesBreathe 8s ease-in-out infinite;
+}
+.eyes-palming.hidden { display: none; }
+@keyframes eyesBreathe {
+  0%, 100% { transform: scale(1); opacity: 0.55; }
+  50%      { transform: scale(1.08); opacity: 0.9; }
+}
+
+/* Траектории: точка идёт ровно так, как должен двигаться глаз.
+   Проценты считаются от размера самой точки, поэтому размах задан
+   в процентах от поля — оно ограничено 420px по ширине. */
+.eyes-stage[data-move="up_down"]    .eyes-dot { animation: mvUpDown 4s ease-in-out infinite; }
+.eyes-stage[data-move="left_right"] .eyes-dot { animation: mvSides 4s ease-in-out infinite; }
+.eyes-stage[data-move="diagonals"]  .eyes-dot { animation: mvDiag 5s ease-in-out infinite; }
+.eyes-stage[data-move="rectangle"]  .eyes-dot { animation: mvRect 6s linear infinite; }
+.eyes-stage[data-move="clock"]      .eyes-dot { animation: mvClock 7s linear infinite; }
+.eyes-stage[data-move="snake"]      .eyes-dot { animation: mvSnake 8s ease-in-out infinite; }
+.eyes-stage[data-move="near_far"]   .eyes-dot { animation: mvNearFar 8s ease-in-out infinite; }
+.eyes-stage[data-move="blink"]      .eyes-dot { animation: mvBlink 1.6s steps(1) infinite; }
+.eyes-stage[data-move="massage"]    .eyes-dot { animation: mvBreathe 3s ease-in-out infinite; }
+.eyes-stage.paused .eyes-dot,
+.eyes-stage.paused .eyes-palming { animation-play-state: paused; }
+
+@keyframes mvUpDown {
+  0%, 100% { transform: translateY(-110px); }
+  50%      { transform: translateY(110px); }
+}
+@keyframes mvSides {
+  0%, 100% { transform: translateX(-170px); }
+  50%      { transform: translateX(170px); }
+}
+@keyframes mvDiag {
+  0%   { transform: translate(-170px, 110px); }
+  25%  { transform: translate(170px, -110px); }
+  50%  { transform: translate(170px, 110px); }
+  75%  { transform: translate(-170px, -110px); }
+  100% { transform: translate(-170px, 110px); }
+}
+@keyframes mvRect {
+  0%   { transform: translate(-170px, -110px); }
+  25%  { transform: translate(170px, -110px); }
+  50%  { transform: translate(170px, 110px); }
+  75%  { transform: translate(-170px, 110px); }
+  100% { transform: translate(-170px, -110px); }
+}
+@keyframes mvClock {
+  0%   { transform: rotate(0deg) translateX(105px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(105px) rotate(-360deg); }
+}
+@keyframes mvSnake {
+  0%   { transform: translate(-170px, -100px); }
+  14%  { transform: translate(-110px, 100px); }
+  28%  { transform: translate(-50px, -100px); }
+  42%  { transform: translate(10px, 100px); }
+  56%  { transform: translate(70px, -100px); }
+  70%  { transform: translate(130px, 100px); }
+  85%  { transform: translate(170px, -100px); }
+  100% { transform: translate(-170px, -100px); }
+}
+/* Близко-далеко: точка то наваливается, то уходит вглубь —
+   так видно, куда переводить взгляд */
+@keyframes mvNearFar {
+  0%, 100% { transform: scale(2.4); box-shadow: 0 0 30px rgba(212,175,55,0.9); }
+  50%      { transform: scale(0.4); box-shadow: 0 0 8px rgba(212,175,55,0.5); }
+}
+@keyframes mvBlink {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.1; }
+  100% { opacity: 1; }
+}
+@keyframes mvBreathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.4); }
+}
+
+.eyes-timer {
+  font-size: 2rem; font-weight: 800; color: var(--gold-primary);
+  font-variant-numeric: tabular-nums;
+}
+.eyes-track {
+  width: 100%; max-width: 420px; height: 4px;
+  background: #1a1a22; border-radius: 3px; overflow: hidden; margin-top: 8px;
+}
+.eyes-track-fill {
+  height: 100%; width: 100%;
+  background: var(--gold-gradient);
+  transition: width 1s linear;
+}
+.eyes-how {
+  max-width: 420px;
+  font-size: 0.8rem; line-height: 1.55; color: #c2c2cd;
+  text-align: left; margin-top: 14px;
+  background: #0d0d11; border: 1px solid #1c1c24;
+  border-radius: 12px; padding: 12px;
+}
+.eyes-controls {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 16px; width: 100%; max-width: 420px;
+  justify-content: center;
+}
+.eyes-controls .btn-gold { width: auto; padding: 11px 28px; margin-top: 0; }
+
+/* ----- Календарь с историей ----- */
+.cal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.85rem; font-weight: 800; color: var(--gold-light);
+}
+.cal-head .icon-btn { width: 30px; height: 30px; font-size: 1rem; }
+.cal-head .icon-btn:disabled { opacity: 0.25; cursor: default; }
+.cal-dow {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 4px; margin-top: 10px;
+}
+.cal-dow span {
+  text-align: center; font-size: 0.62rem; font-weight: 800;
+  color: var(--text-muted); text-transform: uppercase;
+}
+.cal-day {
+  position: relative;
+  gap: 3px;
+  cursor: pointer;
+}
+.cal-day.empty { background: transparent; border-color: transparent; cursor: default; }
+/* Пропущенный день больше не красный: исправить его уже нельзя,
+   а сплошная красная сетка отбивает желание открывать календарь */
+.cal-day.missed { background: #0f0f13; border-color: #222; color: var(--text-muted); }
+.cal-day.completed {
+  background: rgba(212, 175, 55, 0.12);
+  border-color: rgba(212, 175, 55, 0.45);
+  color: var(--gold-light);
+}
+.cal-day.future { opacity: 0.35; }
+.cal-day.selected {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 0 1px var(--gold-primary), 0 0 12px rgba(212,175,55,0.35);
+}
+.cal-num { font-size: 0.75rem; line-height: 1; }
+.cal-marks { display: flex; gap: 3px; height: 5px; }
+.cal-marks i, .cal-legend i {
+  width: 5px; height: 5px; border-radius: 50%; display: inline-block;
+}
+.m-w { background: var(--gold-primary); }
+.m-c { background: var(--accent-green); }
+.m-e { background: var(--accent-blue); }
+.cal-legend {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  margin-top: 10px; font-size: 0.68rem; color: var(--text-muted);
+}
+.cal-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.cal-streak {
+  margin-top: 8px; font-size: 0.78rem; font-weight: 700; color: var(--gold-light);
+}
+
+/* Карточка выбранного дня */
+.day-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 14px;
+  margin-top: 10px;
+}
+.day-card.hidden { display: none; }
+.day-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.85rem; font-weight: 800; color: var(--gold-light);
+  margin-bottom: 10px;
+}
+.day-block {
+  background: #0f0f13;
+  border: 1px solid #22222b;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.day-block:last-child { margin-bottom: 0; }
+.day-block-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.day-tag {
+  font-size: 0.62rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.5px; padding: 2px 7px; border-radius: 20px;
+}
+.day-tag.w { background: rgba(212,175,55,0.15); color: var(--gold-primary); }
+.day-tag.c { background: rgba(46,204,113,0.15); color: var(--accent-green); }
+.day-tag.e { background: rgba(52,152,219,0.15); color: var(--accent-blue); }
+.day-block-title { font-size: 0.82rem; font-weight: 700; color: var(--text-main); }
+.day-partial {
+  font-size: 0.62rem; color: var(--text-muted);
+  border: 1px solid #33333f; border-radius: 20px; padding: 1px 7px;
+}
+.day-block-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+.day-ex {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-size: 0.76rem; color: #c2c2cd;
+  padding: 4px 0; border-top: 1px solid #1a1a22; margin-top: 4px;
+}
+.day-ex-num { color: var(--gold-light); font-weight: 700; white-space: nowrap; }
+.day-empty { font-size: 0.78rem; color: var(--text-muted); }
+
+.more-divider { height: 1px; background: #1e1e26; margin: 18px 0 14px 0; }

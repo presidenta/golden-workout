@@ -1,6 +1,6 @@
 // Пути относительные: приложение может жить не в корне домена,
 // а в подпапке — с абсолютными "/..." там ничего бы не нашлось.
-const CACHE_NAME = 'golden-workout-v15';
+const CACHE_NAME = 'golden-workout-v16';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,8 @@ const STATIC_ASSETS = [
   './js/store.js',
   './js/i18n.js',
   './js/data.js',
+  './js/methodology.js',
+  './js/eyes.js',
   './js/timer.js',
   './js/speech.js',
   './js/workout.js',

@@ -16,8 +16,15 @@ class Store {
       voiceControlEnabled: false,
       reminderTime: '09:00',
       schedule: { 0: 'goltis', 1: 'fullbody', 2: 'glutes', 3: 'arms_chest', 4: 'cardio_core', 5: 'fullbody', 6: 'glutes' },
-      // Программы — стандартные плюс созданные в конструкторе.
-      // Наполняется из UI, отсюда их берёт WorkoutEngine при старте.
+      // Уровень подготовки: от него зависит и объём, и то, какие
+      // упражнения генератор вообще предложит.
+      level: 'beginner',
+      // Выбранная методика недели (ключ из METHODS) или null, если
+      // человек ведёт расписание вручную.
+      planMethod: null,
+      // Программы — стандартные, собранные генератором и созданные
+      // в конструкторе. Наполняется из UI, отсюда их берёт
+      // WorkoutEngine при старте.
       programs: {},
       currentWorkout: null,
       theme: 'dark'
@@ -44,3 +51,14 @@ class Store {
 }
 
 const store = new Store();
+
+/* Дата в виде YYYY-MM-DD по местному времени.
+   toISOString() отдаёт UTC — у того, кто занимается поздно вечером или
+   рано утром, запись уезжала в соседний день, и календарь показывал
+   тренировку не там, где она была. */
+function dateKey(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}

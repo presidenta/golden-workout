@@ -5,7 +5,13 @@ async function bootstrap() {
     // должно работать и без неё — просто ничего не запоминая между заходами.
     let dbReady = true;
     try {
-      await db.init();
+      // Бывает и хуже отказа: браузер не отвечает на запрос к базе
+      // вовсе, и приложение просто не открывается. Ждём три секунды
+      // и идём дальше без сохранения.
+      await Promise.race([
+        db.init(),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 3000))
+      ]);
     } catch (e) {
       dbReady = false;
       console.warn('[DB] недоступна, работаем без сохранения:', e);
@@ -13,11 +19,14 @@ async function bootstrap() {
 
     if (dbReady) {
       try {
+        // db.get уже разворачивает обёртку {key, value} и отдаёт сами
+        // настройки. Лишняя проверка saved.value раньше не проходила
+        // никогда — поэтому ничего и не восстанавливалось между заходами.
         const saved = await db.get('settings', 'app');
-        if (saved && saved.value) store.setState(saved.value);
+        if (saved && typeof saved === 'object') store.setState(saved);
 
         const sched = await db.get('settings', 'schedule');
-        if (sched && sched.value) store.setState({ schedule: sched.value });
+        if (sched && typeof sched === 'object') store.setState({ schedule: sched });
       } catch (e) {
         console.warn('[DB] настройки не прочитались:', e);
       }
