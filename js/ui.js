@@ -1569,6 +1569,22 @@
 
   /* ----- Здоровье: глаза, кардио, дорожка ----- */
 
+  // Часы и минуты отметки
+  _hhmm(ts) {
+    const d = new Date(ts);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+
+  /* Проходы комплекса за день. Записи прежних сборок хранили один флаг
+     на сутки — их разворачиваем в одну сессию, чтобы старые дни не
+     пропали из календаря. */
+  _eyesSessionsOf(day) {
+    if (!day) return [];
+    if (Array.isArray(day.eyesSessions) && day.eyesSessions.length) return day.eyesSessions;
+    if (day.eyes) return [{ at: day.eyesAt || null }];
+    return [];
+  }
+
   // Напоминание про глаза на главном экране: раздел «Здоровье» —
   // не первое место, куда смотрят, а дело это ежедневное
   async _renderDailyEyes() {
@@ -1582,9 +1598,9 @@
     meta.textContent = this.t.eyesMeta(EYE_EXERCISES.length, eyeSetMinutes(lvlId));
 
     const day = await db.getDay(dateKey()).catch(() => null);
-    const done = !!(day && day.eyes);
-    badge.textContent = done ? this.t.doneToday : this.t.startShort;
-    badge.classList.toggle('done', done);
+    const count = this._eyesSessionsOf(day).length;
+    badge.textContent = count ? this.t.doneTimes(count) : this.t.startShort;
+    badge.classList.toggle('done', count > 0);
   }
 
   // Длительность упражнений — своя для глаз, тренировки её не касаются
@@ -1626,9 +1642,11 @@
     const day = await db.getDay(dateKey()).catch(() => null);
 
     const eyesBadge = document.getElementById('eyesTodayBadge');
-    const eyesDone = !!(day && day.eyes);
-    eyesBadge.textContent = eyesDone ? t.doneToday : t.notDoneToday;
-    eyesBadge.classList.toggle('done', eyesDone);
+    const sessions = this._eyesSessionsOf(day);
+    eyesBadge.textContent = sessions.length
+      ? `${t.doneTimes(sessions.length)} · ${sessions.filter(s => s.at).map(s => this._hhmm(s.at)).join(', ')}`
+      : t.notDoneToday;
+    eyesBadge.classList.toggle('done', sessions.length > 0);
 
     const cardioBadge = document.getElementById('cardioTodayBadge');
     const mins = (day && day.cardioMin) || 0;
@@ -1677,6 +1695,7 @@
     this.eyesIndex = 0;
     this.eyesPaused = false;
     this._eyesRunning = true;
+    this._eyesStartedAt = Date.now();
 
     // Настрои идут своим чередом, через всё занятие, независимо от того,
     // какое сейчас упражнение
@@ -1935,13 +1954,32 @@
     if (this.speech) this.speech.speak(this.t.eyesDoneVoice, true);
     setTimeout(() => this._endEyesSession(), 2500);
 
-    await db.mergeDay(dateKey(), {
+    /* Комплекс делают два-три раза в день, и каждый проход — отдельная
+       запись со своим временем. Раньше стоял один флаг на день:
+       второе и третье занятие просто некуда было записать. */
+    const key = dateKey();
+    const now = Date.now();
+    const day = await db.getDay(key).catch(() => null);
+
+    let sessions = (day && Array.isArray(day.eyesSessions)) ? day.eyesSessions.slice() : [];
+    // Записи прежних сборок знали только одну отметку за день
+    if (!sessions.length && day && day.eyesAt) sessions.push({ at: day.eyesAt });
+
+    sessions.push({
+      at: now,
+      level: store.getState().eyesLevel || 'normal',
+      minutes: Math.max(1, Math.round((now - (this._eyesStartedAt || now)) / 60000)),
+      steps: (this.eyesSteps || []).length
+    });
+
+    await db.mergeDay(key, {
       eyes: true,
-      eyesAt: Date.now(),
+      eyesAt: now,
+      eyesSessions: sessions,
       eyesVersion: EYE_SET_VERSION
     }).catch(e => console.warn('[Eyes] отметка не сохранилась:', e));
 
-    alert(this.t.eyesDone);
+    alert(`${this.t.eyesDone}\n${this.t.eyesTodayCount(sessions.length)}`);
     this._renderHealth();
     this._renderDailyEyes();
     this._renderStats();
@@ -2099,6 +2137,11 @@
           <span class="day-ex-num">${logs.length}×${this._esc(reps)}${weight ? ` · ${weight.weight} ${this.t.kg}` : ''}</span></div>`;
       }).join('');
 
+      // Во сколько занимались — так же важно, как и что делали
+      const when = w.startTime
+        ? `${this._hhmm(w.startTime)}${w.endTime ? `–${this._hhmm(w.endTime)}` : ''} · `
+        : '';
+
       parts.push(`
         <div class="day-block">
           <div class="day-block-head">
@@ -2106,27 +2149,37 @@
             <span class="day-block-title">${this._esc(title)}</span>
             ${w.partial ? `<span class="day-partial">${this._esc(this.t.partialMark)}</span>` : ''}
           </div>
-          <div class="day-block-meta">${sets} ${this._esc(this.t.setsShort)} · ${w.durationMin} ${this._esc(this.t.min)}</div>
+          <div class="day-block-meta">${when}${sets} ${this._esc(this.t.setsShort)} · ${w.durationMin} ${this._esc(this.t.min)}</div>
           ${lines}
         </div>`);
     });
 
     if (day && day.cardioMin) {
+      const cardioRows = Array.isArray(day.cardioLog)
+        ? day.cardioLog.map((c, i) => `<div class="day-ex"><span>${i + 1}. ${this._esc(this._hhmm(c.at))}</span>
+            <span class="day-ex-num">${c.min} ${this._esc(this.t.min)}</span></div>`).join('')
+        : '';
       parts.push(`<div class="day-block">
         <div class="day-block-head">
           <span class="day-tag c">${this._esc(this.t.legendCardio)}</span>
           <span class="day-block-title">${day.cardioMin} ${this._esc(this.t.min)}</span>
-        </div></div>`);
+        </div>${cardioRows}</div>`);
     }
 
-    if (day && day.eyes) {
-      const at = day.eyesAt ? new Date(day.eyesAt) : null;
-      const time = at ? `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}` : '';
+    // Глаза: каждый проход отдельной строкой со своим временем
+    const eyesSessions = this._eyesSessionsOf(day);
+    if (eyesSessions.length) {
+      const rows = eyesSessions.map((s, i) => {
+        const time = s.at ? this._hhmm(s.at) : '—';
+        const extra = s.minutes ? ` · ${s.minutes} ${this.t.min}` : '';
+        return `<div class="day-ex"><span>${i + 1}. ${this._esc(time)}</span>
+          <span class="day-ex-num">${this._esc(this.t.eyesFullSet)}${extra}</span></div>`;
+      }).join('');
       parts.push(`<div class="day-block">
         <div class="day-block-head">
           <span class="day-tag e">${this._esc(this.t.legendEyes)}</span>
-          <span class="day-block-title">${this._esc(this.t.doneToday)}${time ? ` · ${time}` : ''}</span>
-        </div></div>`);
+          <span class="day-block-title">${this._esc(this.t.doneTimes(eyesSessions.length))}</span>
+        </div>${rows}</div>`);
     }
 
     const d = new Date(ds + 'T00:00:00');
@@ -2181,7 +2234,11 @@
     const day = await db.getDay(key).catch(() => null);
     const total = ((day && day.cardioMin) || 0) + mins;
 
-    await db.mergeDay(key, { cardioMin: total })
+    // Каждая запись со своим временем: кардио тоже бывает не раз в день
+    const log = (day && Array.isArray(day.cardioLog)) ? day.cardioLog.slice() : [];
+    log.push({ at: Date.now(), min: mins });
+
+    await db.mergeDay(key, { cardioMin: total, cardioLog: log })
       .catch(e => console.warn('[Cardio] запись не сохранилась:', e));
 
     document.getElementById('cardioLogStatus').textContent =

@@ -1,6 +1,6 @@
 ﻿const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 20",
+    subtitle: "Architect Pro · сборка 21",
     tabs: { workout: "Тренировка", plan: "План", health: "Здоровье", stats: "Календарь", more: "Ещё" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -94,7 +94,7 @@
     prevResult: "Прошлый результат", noData: "Нет данных",
     warmup: "🔥 Разминка", cooldown: "❄️ Заминка",
 
-    /* ----- сборка 20: план недели, здоровье, календарь ----- */
+    /* ----- сборка 21: план недели, здоровье, календарь ----- */
     min: "мин", today: "сегодня", timesShort: "раз",
     weekdays: ["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],
     weekdaysShort: ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -145,6 +145,9 @@
     bySource: "по методу:",
     doneToday: "✓ сделано",
     notDoneToday: "не сделано",
+    doneTimes: (n) => `✓ ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'раз' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'раза' : 'раз')}`,
+    eyesTodayCount: (n) => `Сегодня комплекс пройден ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'раз' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'раза' : 'раз')}.`,
+    eyesFullSet: "полный комплекс",
 
     // Календарь
     legendWorkout: "Тренировка", legendCardio: "Кардио", legendEyes: "Глаза",
@@ -152,7 +155,7 @@
     partialMark: "не до конца"
   },
   en: {
-    subtitle: "Architect Pro · build 20",
+    subtitle: "Architect Pro · build 21",
     tabs: { workout: "Workout", plan: "Plan", health: "Health", stats: "Calendar", more: "More" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -245,7 +248,7 @@
     prevResult: "Previous", noData: "No data",
     warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down",
 
-    /* ----- build 20: week plan, health, calendar ----- */
+    /* ----- build 21: week plan, health, calendar ----- */
     min: "min", today: "today", timesShort: "times",
     weekdays: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
     weekdaysShort: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
@@ -293,13 +296,16 @@
     bySource: "method:",
     doneToday: "✓ done",
     notDoneToday: "not done",
+    doneTimes: (n) => `✓ ${n}×`,
+    eyesTodayCount: (n) => `Done ${n} time${n === 1 ? '' : 's'} today.`,
+    eyesFullSet: "full set",
 
     legendWorkout: "Workout", legendCardio: "Cardio", legendEyes: "Eyes",
     dayEmpty: "Nothing recorded on this day.",
     partialMark: "partial"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 20",
+    subtitle: "Architect Pro · збірка 21",
     tabs: { workout: "Тренування", plan: "План", health: "Здоров'я", stats: "Календар", more: "Ще" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -392,7 +398,7 @@
     prevResult: "Минулий результат", noData: "Немає даних",
     warmup: "🔥 Розминка", cooldown: "❄️ Заминка",
 
-    /* ----- збірка 20: план тижня, здоров'я, календар ----- */
+    /* ----- збірка 21: план тижня, здоров'я, календар ----- */
     min: "хв", today: "сьогодні", timesShort: "разів",
     weekdays: ["Неділя","Понеділок","Вівторок","Середа","Четвер","П'ятниця","Субота"],
     weekdaysShort: ["Нд","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -440,6 +446,9 @@
     bySource: "за методом:",
     doneToday: "✓ зроблено",
     notDoneToday: "не зроблено",
+    doneTimes: (n) => `✓ ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'раз' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'рази' : 'разів')}`,
+    eyesTodayCount: (n) => `Сьогодні комплекс пройдено ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'раз' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'рази' : 'разів')}.`,
+    eyesFullSet: "повний комплекс",
 
     legendWorkout: "Тренування", legendCardio: "Кардіо", legendEyes: "Очі",
     dayEmpty: "У цей день записів немає.",

@@ -212,7 +212,7 @@ const EYE_EXERCISES = [
     }
   },
   {
-    id: 'up_down', type: 'reps', value: 8, pace: 4, source: 'Жданов',
+    id: 'up_down', type: 'reps', value: 8, pace: 4, source: 'Жданов', blinkAfter: true,
     ru: {
       name: 'Вверх — вниз',
       desc: 'Верхняя и нижняя прямые мышцы глаза.',
@@ -230,7 +230,7 @@ const EYE_EXERCISES = [
     }
   },
   {
-    id: 'left_right', type: 'reps', value: 8, pace: 4, source: 'Жданов',
+    id: 'left_right', type: 'reps', value: 8, pace: 4, source: 'Жданов', blinkAfter: true,
     ru: {
       name: 'Влево — вправо',
       desc: 'Боковые мышцы — те, что затекают сильнее всего за монитором.',
@@ -248,7 +248,7 @@ const EYE_EXERCISES = [
     }
   },
   {
-    id: 'diagonals', type: 'reps', value: 6, pace: 5, source: 'Жданов',
+    id: 'diagonals', type: 'reps', value: 6, pace: 5, source: 'Жданов', blinkAfter: true,
     ru: {
       name: 'Диагонали',
       desc: 'Косые мышцы, обе диагонали по очереди.',
@@ -266,7 +266,7 @@ const EYE_EXERCISES = [
     }
   },
   {
-    id: 'rectangle', type: 'reps', value: 5, pace: 6, source: 'Жданов',
+    id: 'rectangle', type: 'reps', value: 5, pace: 6, source: 'Жданов', blinkAfter: true,
     both: true,
     dirs: {
       ru: ['по часовой стрелке', 'против часовой стрелки'],
@@ -290,7 +290,7 @@ const EYE_EXERCISES = [
     }
   },
   {
-    id: 'clock', type: 'reps', value: 5, pace: 7, source: 'Жданов',
+    id: 'clock', type: 'reps', value: 5, pace: 7, source: 'Жданов', blinkAfter: true,
     both: true,
     dirs: {
       ru: ['по часовой стрелке', 'против часовой стрелки'],
@@ -314,7 +314,7 @@ const EYE_EXERCISES = [
     }
   },
   {
-    id: 'snake', type: 'reps', value: 4, pace: 8, source: 'Жданов',
+    id: 'snake', type: 'reps', value: 4, pace: 8, source: 'Жданов', blinkAfter: true,
     both: true,
     dirs: {
       ru: ['слева направо', 'справа налево'],
@@ -338,7 +338,7 @@ const EYE_EXERCISES = [
     }
   },
   {
-    id: 'near_far', type: 'reps', value: 10, pace: 6, source: 'Аветисов',
+    id: 'near_far', type: 'reps', value: 10, pace: 6, source: 'Аветисов', blinkAfter: true,
     ru: {
       name: 'Близко — далеко',
       desc: 'Метка на стекле. Единственное упражнение с доказанной пользой.',
@@ -407,6 +407,7 @@ function eyeStepSeconds(ex) {
    чтобы комплекс не стал вдвое длиннее. */
 function buildEyeSession(levelId) {
   const level = EYE_LEVELS[levelId] || EYE_LEVELS.normal;
+  const blink = EYE_EXERCISES.find(e => e.id === 'blink');
   const steps = [];
 
   EYE_EXERCISES.forEach(ex => {
@@ -418,6 +419,20 @@ function buildEyeSession(levelId) {
         pass,
         reverse: pass === 1,
         seconds: Math.max(6, Math.round(base * level.mul))
+      });
+    }
+
+    /* После каждого движения — короткое моргание. И у Бейтса, и у
+       Жданова оно стоит между упражнениями: мышца, которую только что
+       нагрузили, отпускается, а глаз заново смачивается слезой.
+       Без этих пауз комплекс превращается в непрерывное напряжение. */
+    if (ex.blinkAfter && blink) {
+      steps.push({
+        ex: blink,
+        pass: 0,
+        reverse: false,
+        micro: true,
+        seconds: Math.max(4, Math.round(6 * level.mul))
       });
     }
   });
