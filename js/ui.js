@@ -1,4 +1,4 @@
-class UI {
+﻿class UI {
   constructor(i18n) {
     this.i18n = i18n;
     this.engine = null;
@@ -163,6 +163,17 @@ class UI {
     on('btnEyesPrev', 'click', () => this._prevEyesStep());
     on('btnEyesNext', 'click', () => this._nextEyesStep());
     on('btnEyesToggle', 'click', () => this._toggleEyesPause());
+    on('btnEyesMinus', 'click', () => this._shiftEyesTime(-10));
+    on('btnEyesPlus', 'click', () => this._shiftEyesTime(10));
+
+    // Длительность упражнений для глаз и настрои вслух
+    document.querySelectorAll('#eyesLevelRow .chip').forEach(chip => {
+      chip.addEventListener('click', () => this._pickEyesLevel(chip.dataset.eyeslevel));
+    });
+    on('setEyesAffirmations', 'change', (e) => {
+      store.setState({ eyesAffirmations: e.target.checked });
+      this._persistSetting('eyesAffirmations', e.target.checked);
+    });
 
     // Stats
     on('btnLogCardio', 'click', () => this._logCardio());
@@ -460,11 +471,12 @@ class UI {
 
     const eyesRow = document.createElement('button');
     eyesRow.className = 'prog-row prog-row-daily';
+    const eyesLvl = store.getState().eyesLevel || 'normal';
     eyesRow.innerHTML = `
       <span class="prog-row-emoji">👁</span>
       <span class="prog-row-body">
         <span class="prog-row-name">${this._esc(this.t.eyesTitleShort)}</span>
-        <span class="prog-row-meta">${this._esc(this.t.eyesMeta(EYE_EXERCISES.length, eyeSetMinutes()))}</span>
+        <span class="prog-row-meta">${this._esc(this.t.eyesMeta(EYE_EXERCISES.length, eyeSetMinutes(eyesLvl)))}</span>
       </span>`;
     eyesRow.onclick = () => { this._closePrograms(); this._startEyes(); };
     list.appendChild(eyesRow);
@@ -598,6 +610,9 @@ class UI {
   }
 
   _showWorkoutScreen() {
+    // На тренировке к телефону тоже не прикасаются — экран гаснет
+    // ровно так же, как на упражнениях для глаз
+    this._keepScreenAwake();
     document.getElementById('screenPlan').classList.add('hidden');
     document.getElementById('screenWorkout').classList.remove('hidden');
     document.getElementById('restScreen').classList.add('hidden');
@@ -1154,6 +1169,7 @@ class UI {
 
   _finishWorkout(record) {
     this._stopFrameLoop();
+    this._releaseScreenAwake();
     document.getElementById('screenWorkout').classList.add('hidden');
     document.getElementById('screenPlan').classList.remove('hidden');
     document.getElementById('restScreen').classList.add('hidden');
@@ -1176,6 +1192,7 @@ class UI {
       this._renderStats();
     }
     this._stopFrameLoop();
+    this._releaseScreenAwake();
     document.getElementById('screenWorkout').classList.add('hidden');
     document.getElementById('restScreen').classList.add('hidden');
     document.getElementById('screenPlan').classList.remove('hidden');
@@ -1545,8 +1562,9 @@ class UI {
     const badge = document.getElementById('dailyEyesBadge');
     if (!name || !meta || !badge) return;
 
+    const lvlId = store.getState().eyesLevel || 'normal';
     name.textContent = this.t.eyesTitleShort;
-    meta.textContent = this.t.eyesMeta(EYE_EXERCISES.length, eyeSetMinutes());
+    meta.textContent = this.t.eyesMeta(EYE_EXERCISES.length, eyeSetMinutes(lvlId));
 
     const day = await db.getDay(dateKey()).catch(() => null);
     const done = !!(day && day.eyes);
@@ -1554,10 +1572,35 @@ class UI {
     badge.classList.toggle('done', done);
   }
 
+  // Длительность упражнений — своя для глаз, тренировки её не касаются
+  _pickEyesLevel(level) {
+    if (!EYE_LEVELS[level]) return;
+    store.setState({ eyesLevel: level });
+    this._persistSetting('eyesLevel', level);
+    this._renderHealth();
+    this._renderDailyEyes();
+  }
+
   async _renderHealth() {
     const t = this.t;
+    const st = store.getState();
+    const lvlId = EYE_LEVELS[st.eyesLevel] ? st.eyesLevel : 'normal';
+    const lvl = EYE_LEVELS[lvlId];
+
     document.getElementById('eyesTitle').textContent = t.eyesTitle;
-    document.getElementById('eyesMeta').textContent = t.eyesMeta(EYE_EXERCISES.length, eyeSetMinutes());
+    document.getElementById('eyesMeta').textContent =
+      t.eyesMeta(EYE_EXERCISES.length, eyeSetMinutes(lvlId));
+    document.getElementById('eyesLevelLabel').textContent = t.eyesLevelLabel;
+    document.getElementById('eyesAffLabel').textContent = t.eyesAffLabel;
+    document.getElementById('eyesLevelHint').textContent = (lvl[this.currentLang] || lvl.ru).hint;
+    document.querySelectorAll('#eyesLevelRow .chip').forEach(c => {
+      const l = EYE_LEVELS[c.dataset.eyeslevel];
+      if (l) c.textContent = (l[this.currentLang] || l.ru).name;
+      c.classList.toggle('active', c.dataset.eyeslevel === lvlId);
+    });
+    const affChk = document.getElementById('setEyesAffirmations');
+    if (affChk) affChk.checked = st.eyesAffirmations !== false;
+
     document.getElementById('btnStartEyes').textContent = t.eyesStart;
     document.getElementById('btnToggleEyesList').textContent =
       this._eyesListOpen ? t.eyesHideList : t.eyesShowList;
@@ -1615,44 +1658,82 @@ class UI {
      осталось. Считать самому не нужно, глаза заняты другим. */
 
   _startEyes() {
+    this.eyesSteps = buildEyeSession(store.getState().eyesLevel);
     this.eyesIndex = 0;
     this.eyesPaused = false;
+    this._affIndex = Math.floor(Math.random() * 5);
     document.getElementById('eyesScreen').classList.remove('hidden');
+    this._keepScreenAwake();
     this._showEyesStep();
   }
 
   _showEyesStep() {
-    const ex = EYE_EXERCISES[this.eyesIndex];
-    if (!ex) { this._finishEyes(); return; }
+    const step = (this.eyesSteps || [])[this.eyesIndex];
+    if (!step) { this._finishEyes(); return; }
+    const ex = step.ex;
     const loc = ex[this.currentLang] || ex.ru;
+    const dir = eyeDirLabel(step, this.currentLang);
 
     document.getElementById('eyesStepCount').textContent =
-      `${this.eyesIndex + 1} / ${EYE_EXERCISES.length}`;
-    document.getElementById('eyesStepName').textContent = loc.name;
+      `${this.eyesIndex + 1} / ${this.eyesSteps.length}`;
+    document.getElementById('eyesStepName').textContent =
+      dir ? `${loc.name} · ${dir}` : loc.name;
     document.getElementById('eyesStepDesc').textContent = loc.desc;
     document.getElementById('eyesStepHow').textContent = loc.how;
     document.getElementById('btnEyesToggle').textContent = this.t.pause;
+    document.getElementById('eyesAffirm').textContent = '';
 
-    // Траекторию рисует CSS — здесь только говорим, какая нужна
+    /* Траекторию рисует CSS. Второй проход — та же анимация, пущенная
+       задом наперёд: круг и прямоугольник обязаны идти в обе стороны,
+       иначе работает только одна пара мышц. */
     const stage = document.getElementById('eyesStage');
     stage.dataset.move = ex.id;
+    stage.classList.toggle('rev', !!step.reverse);
     const isPalming = ex.id.startsWith('palming');
     document.getElementById('eyesPalming').classList.toggle('hidden', !isPalming);
     document.getElementById('eyesDot').classList.toggle('hidden', isPalming);
 
-    this._eyesTotal = eyeStepSeconds(ex);
-    this._eyesLeft = this._eyesTotal;
+    this._eyesTotal = step.seconds;
+    this._eyesLeft = step.seconds;
     this._paintEyesTimer();
 
-    if (this.speech) this.speech.speak(loc.name);
+    // Голосом: название, направление и первая мысль о том, что делаем
+    if (this.speech) {
+      this.speech.speak(dir ? `${loc.name}. ${dir}` : loc.name);
+    }
+    this._eyesTick = 0;
 
     this._stopEyesTimer();
     this._eyesTimer = setInterval(() => {
       if (this.eyesPaused) return;
       this._eyesLeft--;
+      this._eyesTick++;
       this._paintEyesTimer();
+      // Настрой вслух: первый — когда человек уже вошёл в движение,
+      // дальше раз в двадцать секунд, чтобы не тараторить
+      if (this._eyesTick === 4 || (this._eyesTick > 4 && this._eyesTick % 20 === 0)) {
+        this._speakAffirmation();
+      }
       if (this._eyesLeft <= 0) this._nextEyesStep();
     }, 1000);
+  }
+
+  // Настрои по Жданову: их проговаривают, пока идёт упражнение
+  _speakAffirmation() {
+    if (!store.getState().eyesAffirmations) return;
+    const list = EYE_AFFIRMATIONS[this.currentLang] || EYE_AFFIRMATIONS.ru;
+    const text = list[(this._affIndex || 0) % list.length];
+    this._affIndex = (this._affIndex || 0) + 1;
+    document.getElementById('eyesAffirm').textContent = text;
+    if (this.speech) this.speech.speak(text);
+  }
+
+  // Подправить время текущего шага, не выходя из комплекса
+  _shiftEyesTime(delta) {
+    if (!this._eyesTotal) return;
+    this._eyesLeft = Math.max(3, this._eyesLeft + delta);
+    this._eyesTotal = Math.max(this._eyesTotal, this._eyesLeft);
+    this._paintEyesTimer();
   }
 
   _paintEyesTimer() {
@@ -1668,7 +1749,7 @@ class UI {
   _nextEyesStep() {
     this._stopEyesTimer();
     this.eyesIndex++;
-    if (this.eyesIndex >= EYE_EXERCISES.length) { this._finishEyes(); return; }
+    if (this.eyesIndex >= (this.eyesSteps || []).length) { this._finishEyes(); return; }
     this._showEyesStep();
   }
 
@@ -1688,12 +1769,45 @@ class UI {
   // Выход посреди комплекса: отметку не ставим, но и не ругаемся
   _exitEyes() {
     this._stopEyesTimer();
+    this._releaseScreenAwake();
     document.getElementById('eyesScreen').classList.add('hidden');
     this._updateBackButton();
   }
 
+  /* ----- Экран не должен гаснуть -----
+     Во время упражнения к телефону не прикасаются, и он через полминуты
+     тушит экран — становится непонятно, идёт ещё подход или уже нет.
+     Wake Lock просит систему этого не делать; после сворачивания
+     приложения система снимает блокировку сама, поэтому по возвращении
+     берём её заново. */
+  async _keepScreenAwake() {
+    if (!('wakeLock' in navigator)) return;
+    try {
+      this._wakeLock = await navigator.wakeLock.request('screen');
+      if (!this._wakeReacquire) {
+        this._wakeReacquire = () => {
+          if (document.visibilityState === 'visible' && this._wakeWanted) this._keepScreenAwake();
+        };
+        document.addEventListener('visibilitychange', this._wakeReacquire);
+      }
+      this._wakeWanted = true;
+    } catch (e) {
+      // Браузер не разрешил — не повод ломать занятие
+      console.warn('[UI] экран удержать не удалось:', e);
+    }
+  }
+
+  _releaseScreenAwake() {
+    this._wakeWanted = false;
+    if (this._wakeLock) {
+      this._wakeLock.release().catch(() => {});
+      this._wakeLock = null;
+    }
+  }
+
   async _finishEyes() {
     this._stopEyesTimer();
+    this._releaseScreenAwake();
     document.getElementById('eyesScreen').classList.add('hidden');
     if (this.speech) this.speech.speak(this.t.eyesDoneVoice);
 

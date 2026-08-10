@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" href="assets/icon-180.png">
 
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css?v=17">
+  <link rel="stylesheet" href="css/style.css?v=18">
 </head>
 <body>
 <div class="app-wrapper">
@@ -350,6 +350,25 @@
           <span class="health-badge" id="eyesTodayBadge"></span>
         </div>
         <div class="health-sub" id="eyesMeta"></div>
+
+        <!-- Длительность подбирается под себя: глазу, как любой мышце,
+             нужна посильная нагрузка -->
+        <div class="eyes-setting-label" id="eyesLevelLabel">Длительность упражнений</div>
+        <div class="chip-row" id="eyesLevelRow">
+          <button class="chip" data-eyeslevel="soft">Мягко</button>
+          <button class="chip" data-eyeslevel="normal">Норма</button>
+          <button class="chip" data-eyeslevel="strong">Усиленно</button>
+        </div>
+        <div class="eyes-level-hint" id="eyesLevelHint"></div>
+
+        <div class="toggle-row" style="margin-top:10px;">
+          <span style="font-size: 0.8rem; color: #ccc;" id="eyesAffLabel">Настрои вслух (по Жданову)</span>
+          <label class="switch">
+            <input type="checkbox" id="setEyesAffirmations" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
         <button class="btn-gold" id="btnStartEyes">Начать комплекс</button>
         <button class="btn-gold btn-secondary" id="btnToggleEyesList" style="margin-top:8px;">Показать упражнения</button>
         <div class="eyes-list hidden" id="eyesList"></div>
@@ -446,7 +465,14 @@
     <div class="eyes-palming" id="eyesPalming">🖐</div>
   </div>
 
-  <div class="eyes-timer" id="eyesTimer">—</div>
+  <!-- Настрой, который проговаривается вслух, — заодно видно глазами -->
+  <div class="eyes-affirm" id="eyesAffirm"></div>
+
+  <div class="eyes-timer-row">
+    <button class="icon-btn" id="btnEyesMinus" title="-10 сек">−</button>
+    <div class="eyes-timer" id="eyesTimer">—</div>
+    <button class="icon-btn" id="btnEyesPlus" title="+10 сек">+</button>
+  </div>
   <div class="eyes-track"><div class="eyes-track-fill" id="eyesTrackFill"></div></div>
 
   <div class="eyes-how" id="eyesStepHow"></div>
@@ -505,16 +531,16 @@
   </button>
 </nav>
 
-<script src="js/data.js?v=17"></script>
-<script src="js/methodology.js?v=17"></script>
-<script src="js/eyes.js?v=17"></script>
-<script src="js/i18n.js?v=17"></script>
-<script src="js/store.js?v=17"></script>
-<script src="js/db.js?v=17"></script>
-<script src="js/timer.js?v=17"></script>
-<script src="js/speech.js?v=17"></script>
-<script src="js/workout.js?v=17"></script>
-<script src="js/ui.js?v=17"></script>
-<script src="js/app.js?v=17"></script>
+<script src="js/data.js?v=18"></script>
+<script src="js/methodology.js?v=18"></script>
+<script src="js/eyes.js?v=18"></script>
+<script src="js/i18n.js?v=18"></script>
+<script src="js/store.js?v=18"></script>
+<script src="js/db.js?v=18"></script>
+<script src="js/timer.js?v=18"></script>
+<script src="js/speech.js?v=18"></script>
+<script src="js/workout.js?v=18"></script>
+<script src="js/ui.js?v=18"></script>
+<script src="js/app.js?v=18"></script>
 </body>
 </html>

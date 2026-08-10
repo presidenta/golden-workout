@@ -1,6 +1,6 @@
 ﻿const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 17",
+    subtitle: "Architect Pro · сборка 18",
     tabs: { workout: "Тренировка", plan: "План", health: "Здоровье", stats: "Календарь", more: "Ещё" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -94,7 +94,7 @@
     prevResult: "Прошлый результат", noData: "Нет данных",
     warmup: "🔥 Разминка", cooldown: "❄️ Заминка",
 
-    /* ----- сборка 17: план недели, здоровье, календарь ----- */
+    /* ----- сборка 18: план недели, здоровье, календарь ----- */
     min: "мин", today: "сегодня", timesShort: "раз",
     weekdays: ["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],
     weekdaysShort: ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -131,6 +131,8 @@
     eyesTitle: "👁 Гимнастика для глаз",
     eyesTitleShort: "Гимнастика для глаз",
     eyesExit: "Выйти из комплекса",
+    eyesLevelLabel: "Длительность упражнений",
+    eyesAffLabel: "Настрои вслух (по Жданову)",
     groupDaily: "Каждый день",
     startShort: "Начать",
     eyesMeta: (n, m) => `${n} упражнений · около ${m} мин · каждый день`,
@@ -150,7 +152,7 @@
     partialMark: "не до конца"
   },
   en: {
-    subtitle: "Architect Pro · build 17",
+    subtitle: "Architect Pro · build 18",
     tabs: { workout: "Workout", plan: "Plan", health: "Health", stats: "Calendar", more: "More" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -243,7 +245,7 @@
     prevResult: "Previous", noData: "No data",
     warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down",
 
-    /* ----- build 17: week plan, health, calendar ----- */
+    /* ----- build 18: week plan, health, calendar ----- */
     min: "min", today: "today", timesShort: "times",
     weekdays: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
     weekdaysShort: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
@@ -277,6 +279,8 @@
     eyesTitle: "👁 Eye exercises",
     eyesTitleShort: "Eye exercises",
     eyesExit: "Leave the set",
+    eyesLevelLabel: "How long each exercise lasts",
+    eyesAffLabel: "Affirmations aloud (Zhdanov)",
     groupDaily: "Every day",
     startShort: "Start",
     eyesMeta: (n, m) => `${n} exercises · about ${m} min · every day`,
@@ -295,7 +299,7 @@
     partialMark: "partial"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 17",
+    subtitle: "Architect Pro · збірка 18",
     tabs: { workout: "Тренування", plan: "План", health: "Здоров'я", stats: "Календар", more: "Ще" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -388,7 +392,7 @@
     prevResult: "Минулий результат", noData: "Немає даних",
     warmup: "🔥 Розминка", cooldown: "❄️ Заминка",
 
-    /* ----- збірка 17: план тижня, здоров'я, календар ----- */
+    /* ----- збірка 18: план тижня, здоров'я, календар ----- */
     min: "хв", today: "сьогодні", timesShort: "разів",
     weekdays: ["Неділя","Понеділок","Вівторок","Середа","Четвер","П'ятниця","Субота"],
     weekdaysShort: ["Нд","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -422,6 +426,8 @@
     eyesTitle: "👁 Гімнастика для очей",
     eyesTitleShort: "Гімнастика для очей",
     eyesExit: "Вийти з комплексу",
+    eyesLevelLabel: "Тривалість вправ",
+    eyesAffLabel: "Настрої вголос (за Ждановим)",
     groupDaily: "Щодня",
     startShort: "Почати",
     eyesMeta: (n, m) => `${n} вправ · близько ${m} хв · щодня`,

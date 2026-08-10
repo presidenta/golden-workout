@@ -25,7 +25,81 @@
 
    Весь комплекс — около семи минут. Числа одни для всех языков. */
 
-const EYE_SET_VERSION = 1;
+const EYE_SET_VERSION = 2;
+
+/* Насколько долго держать каждое упражнение. Глаз — мышца, и ей, как
+   любой другой, нужна посильная нагрузка: начинать стоит с мягкого
+   режима, а усиленный имеет смысл, только когда лёгкий перестал
+   утомлять. Множитель применяется ко всем шагам разом. */
+const EYE_LEVELS = {
+  soft: {
+    id: 'soft', mul: 0.6,
+    ru: { name: 'Мягко', hint: 'Короткие подходы. С этого стоит начинать.' },
+    en: { name: 'Easy', hint: 'Short holds. Start here.' },
+    ua: { name: "М'яко", hint: 'Короткі підходи. З цього варто починати.' }
+  },
+  normal: {
+    id: 'normal', mul: 1,
+    ru: { name: 'Норма', hint: 'Обычный режим, около семи минут.' },
+    en: { name: 'Normal', hint: 'Standard, about seven minutes.' },
+    ua: { name: 'Норма', hint: 'Звичайний режим, близько семи хвилин.' }
+  },
+  strong: {
+    id: 'strong', mul: 1.6,
+    ru: { name: 'Усиленно', hint: 'Длинные подходы. Только если лёгкий уже не утомляет.' },
+    en: { name: 'Intense', hint: 'Long holds. Only when easy stops tiring you.' },
+    ua: { name: 'Посилено', hint: 'Довгі підходи. Лише коли легкий вже не втомлює.' }
+  }
+};
+
+/* Настрои по Жданову и Шичко. Проговариваются вслух, пока человек
+   делает упражнение: в этих школах слово — часть занятия, а не
+   украшение. Работают они как самовнушение и настрой, а не как
+   лечение — про доказательность честно сказано в шапке файла. */
+const EYE_AFFIRMATIONS = {
+  ru: [
+    'Мои глаза отдыхают и наполняются силой.',
+    'С каждым днём я вижу всё лучше и лучше.',
+    'Мышцы глаз становятся сильными и послушными.',
+    'Взгляд свободный, лёгкий, без напряжения.',
+    'Глаза расслаблены, лоб разглажен, брови опущены.',
+    'Кровь свободно приходит к глазам и питает их.',
+    'Зрение становится чётким и ясным.',
+    'Я смотрю на мир спокойно и легко.',
+    'Каждое движение возвращает глазам подвижность.',
+    'Мои глаза здоровые, зоркие, отдохнувшие.',
+    'Напряжение уходит, приходит покой.',
+    'Я вижу далеко и ясно, без усилия.'
+  ],
+  en: [
+    'My eyes are resting and filling with strength.',
+    'Every day I see better and better.',
+    'The eye muscles grow strong and obedient.',
+    'My gaze is free and light, without strain.',
+    'Eyes relaxed, forehead smooth, brows soft.',
+    'Blood flows freely to my eyes and feeds them.',
+    'My sight becomes sharp and clear.',
+    'I look at the world calmly and easily.',
+    'Every movement returns mobility to my eyes.',
+    'My eyes are healthy, sharp and rested.',
+    'Tension leaves, calm arrives.',
+    'I see far and clearly, without effort.'
+  ],
+  ua: [
+    'Мої очі відпочивають і наповнюються силою.',
+    'З кожним днем я бачу все краще і краще.',
+    "М'язи очей стають сильними та слухняними.",
+    'Погляд вільний, легкий, без напруження.',
+    'Очі розслаблені, чоло розгладжене, брови опущені.',
+    'Кров вільно приходить до очей і живить їх.',
+    'Зір стає чітким і ясним.',
+    'Я дивлюся на світ спокійно і легко.',
+    'Кожен рух повертає очам рухливість.',
+    'Мої очі здорові, зіркі, відпочилі.',
+    'Напруження йде, приходить спокій.',
+    'Я бачу далеко і ясно, без зусиль.'
+  ]
+};
 
 /* type: 'time' — держим секунды, 'reps' — считаем повторы
    value: секунды или число повторов
@@ -123,6 +197,12 @@ const EYE_EXERCISES = [
   },
   {
     id: 'rectangle', type: 'reps', value: 5, pace: 6, source: 'Жданов',
+    both: true,
+    dirs: {
+      ru: ['по часовой стрелке', 'против часовой стрелки'],
+      en: ['clockwise', 'counter-clockwise'],
+      ua: ['за годинниковою стрілкою', 'проти годинникової стрілки']
+    },
     ru: {
       name: 'Прямоугольник',
       desc: 'Учит глаз двигаться по прямой, а не рывками.',
@@ -141,6 +221,12 @@ const EYE_EXERCISES = [
   },
   {
     id: 'clock', type: 'reps', value: 5, pace: 7, source: 'Жданов',
+    both: true,
+    dirs: {
+      ru: ['по часовой стрелке', 'против часовой стрелки'],
+      en: ['clockwise', 'counter-clockwise'],
+      ua: ['за годинниковою стрілкою', 'проти годинникової стрілки']
+    },
     ru: {
       name: 'Циферблат',
       desc: 'Круговое движение — работают все мышцы разом.',
@@ -159,6 +245,12 @@ const EYE_EXERCISES = [
   },
   {
     id: 'snake', type: 'reps', value: 4, pace: 8, source: 'Жданов',
+    both: true,
+    dirs: {
+      ru: ['слева направо', 'справа налево'],
+      en: ['left to right', 'right to left'],
+      ua: ['зліва направо', 'справа наліво']
+    },
     ru: {
       name: 'Змейка',
       desc: 'Самое сложное движение комплекса — и самое полезное.',
@@ -231,15 +323,52 @@ const EYE_EXERCISES = [
   }
 ];
 
-// Сколько минут занимает весь комплекс — считаем честно, по шагам.
-function eyeSetMinutes() {
-  const sec = EYE_EXERCISES.reduce((sum, ex) => {
-    return sum + (ex.type === 'time' ? ex.value : ex.value * (ex.pace || 5));
-  }, 0);
+// Длительность упражнения целиком, без учёта уровня.
+function eyeStepSeconds(ex) {
+  return ex.type === 'time' ? ex.value : ex.value * (ex.pace || 5);
+}
+
+/* Собирает комплекс в список шагов.
+
+   Упражнения с направлением идут двумя проходами: сначала в одну
+   сторону, потом в другую. Иначе одна пара мышц работает, а
+   противоположная только растягивается — и косоглазие в мелком виде
+   мы бы этим и тренировали. Время такого упражнения делится пополам,
+   чтобы комплекс не стал вдвое длиннее. */
+function buildEyeSession(levelId) {
+  const level = EYE_LEVELS[levelId] || EYE_LEVELS.normal;
+  const steps = [];
+
+  EYE_EXERCISES.forEach(ex => {
+    const passes = ex.both ? 2 : 1;
+    const base = eyeStepSeconds(ex) / passes;
+    for (let pass = 0; pass < passes; pass++) {
+      steps.push({
+        ex,
+        pass,
+        reverse: pass === 1,
+        seconds: Math.max(6, Math.round(base * level.mul))
+      });
+    }
+  });
+
+  return steps;
+}
+
+// Сколько минут займёт комплекс на выбранном уровне.
+function eyeSetMinutes(levelId) {
+  const sec = buildEyeSession(levelId).reduce((sum, s) => sum + s.seconds, 0);
   return Math.max(1, Math.round(sec / 60));
 }
 
-// Длительность одного шага в секундах — для таймера.
-function eyeStepSeconds(ex) {
-  return ex.type === 'time' ? ex.value : ex.value * (ex.pace || 5);
+// Сколько всего шагов получится — с учётом проходов в обе стороны.
+function eyeStepCount(levelId) {
+  return buildEyeSession(levelId).length;
+}
+
+// Подпись направления для второго прохода, если оно есть.
+function eyeDirLabel(step, lang) {
+  if (!step.ex.both || !step.ex.dirs) return '';
+  const list = step.ex.dirs[lang] || step.ex.dirs.ru;
+  return list[step.pass] || '';
 }
