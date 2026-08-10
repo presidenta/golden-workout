@@ -138,6 +138,10 @@
     // Возврат в предыдущий раздел
     on('btnBack', 'click', () => this._goBack());
 
+    // Поворот телефона меняет размер поля — траектории пересчитываем
+    window.addEventListener('resize', () => this._sizeEyesStage());
+    window.addEventListener('orientationchange', () => setTimeout(() => this._sizeEyesStage(), 250));
+
     // Constructor
     on('btnSaveCustom', 'click', () => this._saveCustomProgram());
     on('btnOpenSettings2', 'click', () => this._toggleSettings(true));
@@ -1689,6 +1693,7 @@
     const stage = document.getElementById('eyesStage');
     stage.dataset.move = ex.id;
     stage.classList.toggle('rev', !!step.reverse);
+    this._sizeEyesStage();
     const isPalming = ex.id.startsWith('palming');
     document.getElementById('eyesPalming').classList.toggle('hidden', !isPalming);
     document.getElementById('eyesDot').classList.toggle('hidden', isPalming);
@@ -1716,6 +1721,22 @@
       }
       if (this._eyesLeft <= 0) this._nextEyesStep();
     }, 1000);
+  }
+
+  /* Размах движения точки — по фактическому размеру поля. Поле теперь
+     подстраивается под высоту телефона, и жёстко заданные в пикселях
+     траектории уводили бы точку под край. */
+  _sizeEyesStage() {
+    const stage = document.getElementById('eyesStage');
+    if (!stage) return;
+    const r = stage.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const pad = 20; // половина точки плюс запас, чтобы не липла к рамке
+    const sx = Math.max(40, r.width / 2 - pad);
+    const sy = Math.max(30, r.height / 2 - pad);
+    stage.style.setProperty('--sx', `${Math.round(sx)}px`);
+    stage.style.setProperty('--sy', `${Math.round(sy)}px`);
+    stage.style.setProperty('--sr', `${Math.round(Math.min(sx, sy))}px`);
   }
 
   // Настрои по Жданову: их проговаривают, пока идёт упражнение

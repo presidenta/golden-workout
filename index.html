@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" href="assets/icon-180.png">
 
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css?v=18">
+  <link rel="stylesheet" href="css/style.css?v=19">
 </head>
 <body>
 <div class="app-wrapper">
@@ -300,8 +300,19 @@
 
         <div id="prevResultStrip" style="font-size:0.75rem;color:var(--gold-light);text-align:center;margin-bottom:10px;min-height:18px;"></div>
 
-        <button class="btn-gold" id="actionBtn">Старт подхода</button>
-        <button class="btn-gold btn-secondary" id="btnExitWorkout" data-i18n="backToList">К списку упражнений</button>
+        <!-- Кнопки держатся у нижнего края и не уезжают за экран:
+             раньше на невысоком телефоне до «Старта» приходилось
+             докручивать страницу. Возврат к списку — стрелкой в том же
+             ряду, чтобы обе кнопки помещались в одну строку. -->
+        <div class="workout-actions">
+          <button class="btn-inline-back" id="btnExitWorkout" aria-label="К списку упражнений">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button class="btn-gold" id="actionBtn">Старт подхода</button>
+        </div>
       </div>
     </div>
 
@@ -453,8 +464,11 @@
      Отдельный полноэкранный режим: точка ведёт взгляд по нужной
      траектории, снизу время до конца шага. -->
 <div id="eyesScreen" class="eyes-screen hidden">
+  <!-- Счётчик шагов, таймер и выход — одной строкой наверху.
+       Таймер здесь всегда на виду, даже на невысоком экране. -->
   <div class="eyes-top">
     <span class="eyes-step-count" id="eyesStepCount"></span>
+    <span class="eyes-timer" id="eyesTimer">—</span>
     <button class="sheet-close" id="btnEyesExit" aria-label="Закрыть">✕</button>
   </div>
   <div class="eyes-name" id="eyesStepName">—</div>
@@ -468,19 +482,17 @@
   <!-- Настрой, который проговаривается вслух, — заодно видно глазами -->
   <div class="eyes-affirm" id="eyesAffirm"></div>
 
-  <div class="eyes-timer-row">
-    <button class="icon-btn" id="btnEyesMinus" title="-10 сек">−</button>
-    <div class="eyes-timer" id="eyesTimer">—</div>
-    <button class="icon-btn" id="btnEyesPlus" title="+10 сек">+</button>
-  </div>
   <div class="eyes-track"><div class="eyes-track-fill" id="eyesTrackFill"></div></div>
 
   <div class="eyes-how" id="eyesStepHow"></div>
 
+  <!-- Всё управление одной строкой, прижатой к низу экрана -->
   <div class="eyes-controls">
+    <button class="icon-btn" id="btnEyesMinus" title="-10 сек">−</button>
     <button class="icon-btn" id="btnEyesPrev" aria-label="Назад">‹</button>
-    <button class="btn-gold" id="btnEyesToggle" style="margin-top:0;">Пауза</button>
+    <button class="btn-gold" id="btnEyesToggle">Пауза</button>
     <button class="icon-btn" id="btnEyesNext" aria-label="Дальше">›</button>
+    <button class="icon-btn" id="btnEyesPlus" title="+10 сек">+</button>
   </div>
 
   <!-- Крестик наверху легко не заметить, поэтому выход продублирован
@@ -531,16 +543,16 @@
   </button>
 </nav>
 
-<script src="js/data.js?v=18"></script>
-<script src="js/methodology.js?v=18"></script>
-<script src="js/eyes.js?v=18"></script>
-<script src="js/i18n.js?v=18"></script>
-<script src="js/store.js?v=18"></script>
-<script src="js/db.js?v=18"></script>
-<script src="js/timer.js?v=18"></script>
-<script src="js/speech.js?v=18"></script>
-<script src="js/workout.js?v=18"></script>
-<script src="js/ui.js?v=18"></script>
-<script src="js/app.js?v=18"></script>
+<script src="js/data.js?v=19"></script>
+<script src="js/methodology.js?v=19"></script>
+<script src="js/eyes.js?v=19"></script>
+<script src="js/i18n.js?v=19"></script>
+<script src="js/store.js?v=19"></script>
+<script src="js/db.js?v=19"></script>
+<script src="js/timer.js?v=19"></script>
+<script src="js/speech.js?v=19"></script>
+<script src="js/workout.js?v=19"></script>
+<script src="js/ui.js?v=19"></script>
+<script src="js/app.js?v=19"></script>
 </body>
 </html>
