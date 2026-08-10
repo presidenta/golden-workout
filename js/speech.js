@@ -11,18 +11,37 @@ class SpeechController {
     this.wantListening = false; // мы хотим слушать (после паузы поднимаем заново)
   }
 
-  // interrupt=false — фраза встаёт в очередь и не обрывает предыдущую.
-  // Иначе команда «вдох» перебивала счёт, и цифры было не слышно.
-  speak(text, interrupt = false) {
-    if (!this.enabled || !this.synth) return;
+  /* interrupt=false — фраза встаёт в очередь и не обрывает предыдущую.
+     Иначе команда «вдох» перебивала счёт, и цифры было не слышно.
+
+     opts.onEnd вызывается, когда фраза договорена (или оборвана, или
+     не была произнесена вовсе) — на этом строится непрерывный поток
+     настроев в гимнастике для глаз. Он обязан позваться в любом
+     случае, иначе цепочка молча остановится.
+     opts.rate — своя скорость: длинные формулы читаются спокойнее. */
+  speak(text, interrupt = false, opts = {}) {
+    const done = typeof opts.onEnd === 'function' ? opts.onEnd : null;
+    if (!this.enabled || !this.synth) {
+      if (done) setTimeout(done, 0);
+      return;
+    }
     try {
       if (interrupt) this.synth.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = this.lang;
-      u.rate = 1.15;   // чуть быстрее: короткие слова должны успевать за темпом
-      u.pitch = 1.0;
+      u.rate = opts.rate || 1.15;   // чуть быстрее: короткие слова должны успевать за темпом
+      u.pitch = opts.pitch || 1.0;
+      if (done) {
+        let called = false;
+        const once = () => { if (!called) { called = true; done(); } };
+        u.onend = once;
+        u.onerror = once;
+      }
       this.synth.speak(u);
-    } catch (e) { console.warn('TTS error', e); }
+    } catch (e) {
+      console.warn('TTS error', e);
+      if (done) setTimeout(done, 0);
+    }
   }
 
   // Оборвать всё сказанное — при паузе и выходе из подхода

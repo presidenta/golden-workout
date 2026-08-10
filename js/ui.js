@@ -123,6 +123,7 @@
     // Карточка упражнения
     on('btnPreviewStart', 'click', () => this._startFromPreview());
     on('btnPreviewClose', 'click', () => this._closePreview());
+    on('btnPreviewX', 'click', () => this._closePreview());
     on('previewModal', 'click', (e) => {
       // Клик по затемнению вокруг карточки — закрыть
       if (e.target.id === 'previewModal') this._closePreview();
@@ -177,6 +178,16 @@
     on('setEyesAffirmations', 'change', (e) => {
       store.setState({ eyesAffirmations: e.target.checked });
       this._persistSetting('eyesAffirmations', e.target.checked);
+      // Переключение работает и посреди занятия
+      if (this._eyesRunning) {
+        if (e.target.checked) this._startAffirmations();
+        else {
+          this._stopAffirmations();
+          if (this.speech) this.speech.stopSpeaking();
+          const box = document.getElementById('eyesAffirm');
+          if (box) box.textContent = '';
+        }
+      }
     });
 
     // Stats
@@ -1665,10 +1676,25 @@
     this.eyesSteps = buildEyeSession(store.getState().eyesLevel);
     this.eyesIndex = 0;
     this.eyesPaused = false;
-    this._affIndex = Math.floor(Math.random() * 5);
+    this._eyesRunning = true;
+
+    // Настрои идут своим чередом, через всё занятие, независимо от того,
+    // какое сейчас упражнение
+    this._affFlow = buildAffirmationFlow(this.currentLang);
+    this._affPos = 0;
+
+    /* Голос мог быть выключен настройками тренировки (счёт вслух,
+       подсказки дыхания). Для глаз это отдельное решение — на время
+       комплекса включаем, на выходе возвращаем как было. */
+    if (this.speech) {
+      this._speechWasEnabled = this.speech.enabled;
+      if (store.getState().eyesAffirmations !== false) this.speech.enabled = true;
+    }
+
     document.getElementById('eyesScreen').classList.remove('hidden');
     this._keepScreenAwake();
     this._showEyesStep();
+    this._startAffirmations();
   }
 
   _showEyesStep() {
@@ -1702,25 +1728,74 @@
     this._eyesLeft = step.seconds;
     this._paintEyesTimer();
 
-    // Голосом: название, направление и первая мысль о том, что делаем
+    // Название и направление обрывают текущий настрой: что делать —
+    // важнее, а поток продолжится сразу следом
     if (this.speech) {
-      this.speech.speak(dir ? `${loc.name}. ${dir}` : loc.name);
+      this.speech.speak(dir ? `${loc.name}. ${dir}` : loc.name, true);
     }
-    this._eyesTick = 0;
 
     this._stopEyesTimer();
     this._eyesTimer = setInterval(() => {
       if (this.eyesPaused) return;
       this._eyesLeft--;
-      this._eyesTick++;
       this._paintEyesTimer();
-      // Настрой вслух: первый — когда человек уже вошёл в движение,
-      // дальше раз в двадцать секунд, чтобы не тараторить
-      if (this._eyesTick === 4 || (this._eyesTick > 4 && this._eyesTick % 20 === 0)) {
-        this._speakAffirmation();
-      }
       if (this._eyesLeft <= 0) this._nextEyesStep();
     }, 1000);
+  }
+
+  /* ----- Поток настроев -----
+     Слова-пароли и настрои идут через всё занятие подряд, с паузой в
+     две секунды, и не привязаны к упражнениям. Следующая фраза
+     начинается, когда договорена предыдущая, а не по расписанию:
+     иначе на длинных формулах речь наложилась бы сама на себя. */
+  _startAffirmations() {
+    if (this._affRunning) return;
+    if (store.getState().eyesAffirmations === false) return;
+    this._affRunning = true;
+    this._affTimer = setTimeout(() => this._affirmStep(), 1500);
+  }
+
+  _affirmStep() {
+    if (!this._eyesRunning || this.eyesPaused || store.getState().eyesAffirmations === false) {
+      this._affRunning = false;
+      return;
+    }
+
+    const flow = this._affFlow || [];
+    if (!flow.length) { this._affRunning = false; return; }
+    const text = flow[this._affPos % flow.length];
+    this._affPos++;
+
+    const box = document.getElementById('eyesAffirm');
+    if (box) box.textContent = text;
+
+    this._affWaiting = true;
+    const next = () => {
+      if (!this._affWaiting) return;       // уже перешли дальше
+      this._affWaiting = false;
+      clearTimeout(this._affGuard);
+      if (!this._eyesRunning || this.eyesPaused) { this._affRunning = false; return; }
+      this._affTimer = setTimeout(() => this._affirmStep(), 2000);
+    };
+
+    if (this.speech && this.speech.enabled) {
+      /* Событие «фраза договорена» приходит не всегда: Safari его
+         теряет, а прерванная речь может не сообщить о конце вовсе.
+         Поэтому рядом идёт сторож — поток не должен молча умирать. */
+      this._affGuard = setTimeout(next, 3000 + text.length * 90);
+      this.speech.speak(text, false, { rate: 0.95, onEnd: next });
+    } else {
+      // Без голоса фраза просто висит на экране и сменяется по времени
+      this._affWaiting = false;
+      this._affTimer = setTimeout(() => this._affirmStep(), 4500);
+    }
+  }
+
+  _stopAffirmations() {
+    this._affRunning = false;
+    this._affWaiting = false;
+    if (this._affTimer) { clearTimeout(this._affTimer); this._affTimer = null; }
+    if (this._affGuard) { clearTimeout(this._affGuard); this._affGuard = null; }
   }
 
   /* Размах движения точки — по фактическому размеру поля. Поле теперь
@@ -1785,14 +1860,39 @@
     document.getElementById('btnEyesToggle').textContent =
       this.eyesPaused ? this.t.resume : this.t.pause;
     document.getElementById('eyesStage').classList.toggle('paused', this.eyesPaused);
+
+    if (this.eyesPaused) {
+      // Замолкаем на полуслове — договаривать настрой некому
+      this._stopAffirmations();
+      if (this.speech) this.speech.stopSpeaking();
+    } else {
+      // И поднимаем поток заново: прерванная фраза о своём конце
+      // сообщить уже не может
+      this._startAffirmations();
+    }
   }
 
   // Выход посреди комплекса: отметку не ставим, но и не ругаемся
   _exitEyes() {
     this._stopEyesTimer();
-    this._releaseScreenAwake();
+    this._endEyesSession();
     document.getElementById('eyesScreen').classList.add('hidden');
     this._updateBackButton();
+  }
+
+  // Общий хвост выхода: замолчать, отпустить экран, вернуть голосу
+  // прежние настройки тренировки
+  _endEyesSession() {
+    this._eyesRunning = false;
+    this._stopAffirmations();
+    this._releaseScreenAwake();
+    if (this.speech) {
+      this.speech.stopSpeaking();
+      if (this._speechWasEnabled !== undefined) {
+        this.speech.enabled = this._speechWasEnabled;
+        this._speechWasEnabled = undefined;
+      }
+    }
   }
 
   /* ----- Экран не должен гаснуть -----
@@ -1828,9 +1928,12 @@
 
   async _finishEyes() {
     this._stopEyesTimer();
-    this._releaseScreenAwake();
+    this._stopAffirmations();
+    this._eyesRunning = false;
     document.getElementById('eyesScreen').classList.add('hidden');
-    if (this.speech) this.speech.speak(this.t.eyesDoneVoice);
+    // Завершающая фраза звучит уже без потока настроев
+    if (this.speech) this.speech.speak(this.t.eyesDoneVoice, true);
+    setTimeout(() => this._endEyesSession(), 2500);
 
     await db.mergeDay(dateKey(), {
       eyes: true,

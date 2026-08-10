@@ -43,6 +43,10 @@ async function bootstrap() {
     const ui = new UI(I18N);
     await ui.init({ speech, engine });
 
+    // Ссылка для отладки: с телефона через консоль браузера иначе
+    // не добраться ни до движка, ни до голоса
+    window.GW = { ui, engine, speech, store };
+
     // Restore volume UI
     document.querySelectorAll('.vol-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.vol === state.volumeLevel);
