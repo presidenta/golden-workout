@@ -1498,3 +1498,55 @@ input:checked + .slider:before { transform: translateX(18px); }
 .day-empty { font-size: 0.78rem; color: var(--text-muted); }
 
 .more-divider { height: 1px; background: #1e1e26; margin: 18px 0 14px 0; }
+
+/* ----- Кнопка «назад» в шапке ----- */
+.back-btn {
+  flex-shrink: 0;
+  margin-right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.back-btn.hidden { display: none; }
+
+/* ----- Напоминание про глаза на главном экране ----- */
+.daily-eyes {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(52,152,219,0.12), rgba(52,152,219,0.04));
+  border: 1px solid rgba(52, 152, 219, 0.35);
+  border-radius: 14px;
+  padding: 11px 14px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-main);
+}
+.daily-eyes:active { transform: scale(0.985); }
+.daily-eyes-ico { font-size: 1.3rem; flex-shrink: 0; }
+.daily-eyes-body { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.daily-eyes-name { font-size: 0.85rem; font-weight: 700; }
+.daily-eyes-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+.daily-eyes-badge {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: var(--accent-blue);
+  color: #04121c;
+}
+.daily-eyes-badge.done {
+  background: rgba(46, 204, 113, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(46, 204, 113, 0.5);
+}
+
+/* Глаза в окне выбора занятия */
+.prog-row-emoji { font-size: 1.1rem; flex-shrink: 0; width: 22px; text-align: center; }
+.prog-row-daily { border-color: rgba(52, 152, 219, 0.35); }
+
+/* Выход из комплекса — дублем внизу экрана */
+.eyes-exit-btn { max-width: 420px; width: 100%; margin-top: 12px; }

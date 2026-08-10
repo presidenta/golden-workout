@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -17,13 +17,22 @@
   <link rel="apple-touch-icon" href="assets/icon-180.png">
 
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css?v=16">
+  <link rel="stylesheet" href="css/style.css?v=17">
 </head>
 <body>
 <div class="app-wrapper">
   <div class="app-card">
     <!-- ШАПКА -->
     <div class="header">
+      <!-- Возврат в предыдущий раздел. В установленном на телефон
+           приложении адресной строки нет, и уйти из раздела нечем —
+           поэтому кнопка своя, плюс работает системная «назад». -->
+      <button class="icon-btn back-btn hidden" id="btnBack" aria-label="Назад">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
       <div class="title-box">
         <div class="title">Golden Workout</div>
         <div class="subtitle" id="ui_subtitle">Architect Pro v4.0</div>
@@ -210,6 +219,17 @@
     <!-- ВКЛАДКА 1: ТРЕНИРОВКА -->
     <div id="tabContentWorkout">
       <div id="screenPlan">
+        <!-- Глаза — ежедневное дело, поэтому напоминание висит прямо
+             на главном экране, а не только в разделе «Здоровье» -->
+        <button class="daily-eyes" id="btnDailyEyes">
+          <span class="daily-eyes-ico">👁</span>
+          <span class="daily-eyes-body">
+            <span class="daily-eyes-name" id="dailyEyesName">Гимнастика для глаз</span>
+            <span class="daily-eyes-meta" id="dailyEyesMeta"></span>
+          </span>
+          <span class="daily-eyes-badge" id="dailyEyesBadge"></span>
+        </button>
+
         <div class="volume-selector">
           <div class="vol-btn" data-vol="min">📉 Мин (-1 подх)</div>
           <div class="vol-btn active" data-vol="norm">⭐ 100% Стандарт</div>
@@ -436,6 +456,10 @@
     <button class="btn-gold" id="btnEyesToggle" style="margin-top:0;">Пауза</button>
     <button class="icon-btn" id="btnEyesNext" aria-label="Дальше">›</button>
   </div>
+
+  <!-- Крестик наверху легко не заметить, поэтому выход продублирован
+       внизу, под большим пальцем -->
+  <button class="btn-gold btn-secondary eyes-exit-btn" id="btnEyesExitBottom" data-i18n="eyesExit">Выйти из комплекса</button>
 </div>
 
 <!-- ПАНЕЛЬ РАЗДЕЛОВ: внизу экрана, куда достаёт большой палец -->
@@ -481,16 +505,16 @@
   </button>
 </nav>
 
-<script src="js/data.js?v=16"></script>
-<script src="js/methodology.js?v=16"></script>
-<script src="js/eyes.js?v=16"></script>
-<script src="js/i18n.js?v=16"></script>
-<script src="js/store.js?v=16"></script>
-<script src="js/db.js?v=16"></script>
-<script src="js/timer.js?v=16"></script>
-<script src="js/speech.js?v=16"></script>
-<script src="js/workout.js?v=16"></script>
-<script src="js/ui.js?v=16"></script>
-<script src="js/app.js?v=16"></script>
+<script src="js/data.js?v=17"></script>
+<script src="js/methodology.js?v=17"></script>
+<script src="js/eyes.js?v=17"></script>
+<script src="js/i18n.js?v=17"></script>
+<script src="js/store.js?v=17"></script>
+<script src="js/db.js?v=17"></script>
+<script src="js/timer.js?v=17"></script>
+<script src="js/speech.js?v=17"></script>
+<script src="js/workout.js?v=17"></script>
+<script src="js/ui.js?v=17"></script>
+<script src="js/app.js?v=17"></script>
 </body>
 </html>

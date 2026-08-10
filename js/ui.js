@@ -19,6 +19,7 @@ class UI {
     this.t = this.i18n[this.currentLang];
     await this._loadPrograms();
     this._bindEvents();
+    this._bindSystemBack();
     this._renderAll();
     store.subscribe((s) => this._onStateChange(s));
     this._checkReminders();
@@ -134,6 +135,9 @@ class UI {
     on('btnSkipLog', 'click', () => this._skipLog());
     on('logRpe', 'input', (e) => { document.getElementById('rpeValue').textContent = e.target.value; });
 
+    // Возврат в предыдущий раздел
+    on('btnBack', 'click', () => this._goBack());
+
     // Constructor
     on('btnSaveCustom', 'click', () => this._saveCustomProgram());
     on('btnOpenSettings2', 'click', () => this._toggleSettings(true));
@@ -152,8 +156,10 @@ class UI {
 
     // Глаза
     on('btnStartEyes', 'click', () => this._startEyes());
+    on('btnDailyEyes', 'click', () => this._startEyes());
     on('btnToggleEyesList', 'click', () => this._toggleEyesList());
     on('btnEyesExit', 'click', () => this._exitEyes());
+    on('btnEyesExitBottom', 'click', () => this._exitEyes());
     on('btnEyesPrev', 'click', () => this._prevEyesStep());
     on('btnEyesNext', 'click', () => this._nextEyesStep());
     on('btnEyesToggle', 'click', () => this._toggleEyesPause());
@@ -172,7 +178,52 @@ class UI {
     });
   }
 
-  _switchTab(tabId) {
+  /* ----- Возврат назад -----
+     В установленном на телефон приложении нет ни адресной строки, ни
+     кнопки браузера. Поэтому ведём свою историю разделов: её листает
+     и стрелка в шапке, и системная кнопка «назад». */
+
+  _canGoBack() {
+    const open = ['eyesScreen', 'programSheet', 'previewModal', 'settingsModal', 'screenWorkout']
+      .some(id => {
+        const el = document.getElementById(id);
+        return el && !el.classList.contains('hidden');
+      });
+    return open || (this._tabHistory && this._tabHistory.length > 0)
+        || store.getState().currentTab !== 'workout';
+  }
+
+  _goBack() {
+    // Сначала закрываем то, что открыто поверх раздела
+    const close = [
+      ['eyesScreen', () => this._exitEyes()],
+      ['programSheet', () => this._closePrograms()],
+      ['previewModal', () => this._closePreview()],
+      ['settingsModal', () => this._toggleSettings(false)],
+      ['screenWorkout', () => this._exitWorkout()]
+    ];
+    for (const [id, fn] of close) {
+      const el = document.getElementById(id);
+      if (el && !el.classList.contains('hidden')) { fn(); this._updateBackButton(); return; }
+    }
+    // Дальше — предыдущий раздел
+    const prev = (this._tabHistory || []).pop();
+    this._switchTab(prev || 'workout', true);
+  }
+
+  _updateBackButton() {
+    const btn = document.getElementById('btnBack');
+    if (!btn) return;
+    btn.classList.toggle('hidden', !this._canGoBack());
+  }
+
+  _switchTab(tabId, viaBack) {
+    const prev = store.getState().currentTab;
+    if (!viaBack && prev && prev !== tabId) {
+      this._tabHistory = this._tabHistory || [];
+      this._tabHistory.push(prev);
+      if (this._tabHistory.length > 20) this._tabHistory.shift();
+    }
     store.setState({ currentTab: tabId });
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
     ['workout', 'plan', 'health', 'stats', 'more'].forEach(t => {
@@ -182,9 +233,33 @@ class UI {
     if (tabId === 'stats') this._renderStats();
     if (tabId === 'health') this._renderHealth();
     if (tabId === 'plan') this._renderPlanTab();
+    if (tabId === 'workout') this._renderDailyEyes();
+    this._updateBackButton();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   _cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  /* Системная кнопка «назад» на телефоне. Держим в истории браузера
+     одну лишнюю запись: пока внутри приложения есть куда возвращаться,
+     мы её восстанавливаем и закрываем текущий экран сами. Когда
+     возвращаться некуда — запись не восстанавливается, и кнопка
+     закрывает приложение, как и ожидается. */
+  _bindSystemBack() {
+    try {
+      history.replaceState({ gw: 'root' }, '');
+      history.pushState({ gw: 'screen' }, '');
+      window.addEventListener('popstate', () => {
+        if (this._canGoBack()) {
+          history.pushState({ gw: 'screen' }, '');
+          this._goBack();
+        }
+      });
+    } catch (e) {
+      // Открыто с диска — история может быть недоступна, не беда
+      console.warn('[UI] системная кнопка «назад» недоступна:', e);
+    }
+  }
 
   // Смена языка кнопкой в шапке. Настройки и голос подхватывают её сразу,
   // страница перерисовывается целиком.
@@ -272,7 +347,9 @@ class UI {
     this._renderTreadmill();
     this._renderPlanTab();
     this._renderHealth();
+    this._renderDailyEyes();
     this._renderStats();
+    this._updateBackButton();
   }
 
   /* ----- Беговая дорожка ----- */
@@ -373,6 +450,24 @@ class UI {
 
     const list = document.getElementById('programList');
     list.innerHTML = '';
+
+    /* Первым делом — глаза. Их ищут именно здесь, среди занятий:
+       это такое же ежедневное дело, как тренировка, просто короче. */
+    const dailyHead = document.createElement('div');
+    dailyHead.className = 'prog-group-title';
+    dailyHead.textContent = this.t.groupDaily;
+    list.appendChild(dailyHead);
+
+    const eyesRow = document.createElement('button');
+    eyesRow.className = 'prog-row prog-row-daily';
+    eyesRow.innerHTML = `
+      <span class="prog-row-emoji">👁</span>
+      <span class="prog-row-body">
+        <span class="prog-row-name">${this._esc(this.t.eyesTitleShort)}</span>
+        <span class="prog-row-meta">${this._esc(this.t.eyesMeta(EYE_EXERCISES.length, eyeSetMinutes()))}</span>
+      </span>`;
+    eyesRow.onclick = () => { this._closePrograms(); this._startEyes(); };
+    list.appendChild(eyesRow);
 
     this._programGroups().forEach(group => {
       const head = document.createElement('div');
@@ -1442,6 +1537,23 @@ class UI {
 
   /* ----- Здоровье: глаза, кардио, дорожка ----- */
 
+  // Напоминание про глаза на главном экране: раздел «Здоровье» —
+  // не первое место, куда смотрят, а дело это ежедневное
+  async _renderDailyEyes() {
+    const name = document.getElementById('dailyEyesName');
+    const meta = document.getElementById('dailyEyesMeta');
+    const badge = document.getElementById('dailyEyesBadge');
+    if (!name || !meta || !badge) return;
+
+    name.textContent = this.t.eyesTitleShort;
+    meta.textContent = this.t.eyesMeta(EYE_EXERCISES.length, eyeSetMinutes());
+
+    const day = await db.getDay(dateKey()).catch(() => null);
+    const done = !!(day && day.eyes);
+    badge.textContent = done ? this.t.doneToday : this.t.startShort;
+    badge.classList.toggle('done', done);
+  }
+
   async _renderHealth() {
     const t = this.t;
     document.getElementById('eyesTitle').textContent = t.eyesTitle;
@@ -1577,6 +1689,7 @@ class UI {
   _exitEyes() {
     this._stopEyesTimer();
     document.getElementById('eyesScreen').classList.add('hidden');
+    this._updateBackButton();
   }
 
   async _finishEyes() {
@@ -1592,7 +1705,9 @@ class UI {
 
     alert(this.t.eyesDone);
     this._renderHealth();
+    this._renderDailyEyes();
     this._renderStats();
+    this._updateBackButton();
   }
 
   /* ----- Stats ----- */
