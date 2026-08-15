@@ -1,6 +1,6 @@
 ﻿// Пути относительные: приложение может жить не в корне домена,
 // а в подпапке — с абсолютными "/..." там ничего бы не нашлось.
-const CACHE_NAME = 'golden-workout-v22';
+const CACHE_NAME = 'golden-workout-v23';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -20,9 +20,16 @@ const STATIC_ASSETS = [
   './js/ui.js'
 ];
 
+/* addAll работает по принципу «всё или ничего»: один недоступный файл
+   отменял установку целиком, и телефон оставался со старым набором
+   скриптов рядом с новой страницей — отсюда и «приложение зависло на
+   одной программе». Кладём файлы по одному: что не доехало сейчас,
+   докачается при первом же запросе. */
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.allSettled(STATIC_ASSETS.map(url => cache.add(url)))
+    )
   );
   self.skipWaiting();
 });
@@ -40,10 +47,21 @@ self.addEventListener('fetch', e => {
   const { request } = e;
   const url = new URL(request.url);
 
-  // App shell: Cache First
+  /* App shell: сначала кэш, иначе сеть — и сразу кладём ответ в кэш.
+     Раньше недостающий файл каждый раз тянулся заново и в офлайне
+     не появлялся вовсе, из-за чего страница собиралась неполной. */
   if (url.origin === location.origin && request.destination !== 'image') {
     e.respondWith(
-      caches.match(request).then(cached => cached || fetch(request))
+      caches.match(request).then(cached => {
+        if (cached) return cached;
+        return fetch(request).then(response => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+          }
+          return response;
+        });
+      })
     );
     return;
   }

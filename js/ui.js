@@ -205,6 +205,18 @@
     on('btnTmLogSave', 'click', () => this._saveTreadmillLog());
     on('btnTmLogSkip', 'click', () => this._skipTreadmillLog());
 
+    // Кардио как занятие
+    on('btnDailyCardio', 'click', () => this._startCardio());
+    on('btnStartCardio', 'click', () => this._startCardio());
+    on('btnCardioExit', 'click', () => this._exitCardio());
+    on('btnCardioFinish', 'click', () => this._finishCardio());
+    on('btnCardioToggle', 'click', () => this._toggleCardioPause());
+    on('btnCardioMinus', 'click', () => this._shiftCardioTime(-300));
+    on('btnCardioPlus', 'click', () => this._shiftCardioTime(300));
+    document.querySelectorAll('#cardioLenRow .chip').forEach(chip => {
+      chip.addEventListener('click', () => this._pickCardioMinutes(Number(chip.dataset.cardio)));
+    });
+
     // Stats
     on('btnLogCardio', 'click', () => this._logCardio());
     on('btnExportCSV', 'click', () => this._exportCSV());
@@ -225,7 +237,8 @@
      и стрелка в шапке, и системная кнопка «назад». */
 
   _canGoBack() {
-    const open = ['eyesScreen', 'tmScreen', 'tmLogModal', 'programSheet', 'previewModal', 'settingsModal', 'screenWorkout']
+    const open = ['eyesScreen', 'tmScreen', 'cardioScreen', 'tmLogModal',
+                  'programSheet', 'previewModal', 'settingsModal', 'screenWorkout']
       .some(id => {
         const el = document.getElementById(id);
         return el && !el.classList.contains('hidden');
@@ -240,6 +253,7 @@
       ['tmLogModal', () => this._skipTreadmillLog()],
       ['eyesScreen', () => this._exitEyes()],
       ['tmScreen', () => this._exitTreadmill()],
+      ['cardioScreen', () => this._exitCardio()],
       ['programSheet', () => this._closePrograms()],
       ['previewModal', () => this._closePreview()],
       ['settingsModal', () => this._toggleSettings(false)],
@@ -276,7 +290,11 @@
     if (tabId === 'stats') this._renderStats();
     if (tabId === 'health') this._renderHealth();
     if (tabId === 'plan') this._renderPlanTab();
-    if (tabId === 'workout') { this._renderDailyEyes(); this._renderTreadmillCard(); }
+    if (tabId === 'workout') {
+      this._safe('dailyEyes', () => this._renderDailyEyes());
+      this._safe('treadmillCard', () => this._renderTreadmillCard());
+      this._safe('cardioCard', () => this._renderCardioCard());
+    }
     this._updateBackButton();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -349,6 +367,14 @@
     });
   }
 
+  /* Каждый блок экрана рисуется отдельно и не тянет за собой соседей.
+     Раньше исключение в одном рендере обрывало всю отрисовку, и
+     приложение застывало на полпути — с одной программой в шапке и
+     мёртвыми кнопками. */
+  _safe(name, fn) {
+    try { fn(); } catch (e) { console.warn(`[UI] сбой в ${name}:`, e); }
+  }
+
   _renderAll() {
     this._syncLangButtons();
     this._applyMarkupTexts();
@@ -383,16 +409,17 @@
     document.querySelector('[data-vol="min"]').textContent = this.t.volume.min;
     document.querySelector('[data-vol="norm"]').textContent = this.t.volume.norm;
     document.querySelector('[data-vol="max"]').textContent = this.t.volume.max;
-    this._renderPrograms();
-    this._renderPlanList();
-    this._renderConstructor();
-    this._renderSchedule();
-    this._renderTreadmill();
-    this._renderPlanTab();
-    this._renderHealth();
-    this._renderDailyEyes();
-    this._renderTreadmillCard();
-    this._renderStats();
+    this._safe('programs', () => this._renderPrograms());
+    this._safe('planList', () => this._renderPlanList());
+    this._safe('constructor', () => this._renderConstructor());
+    this._safe('schedule', () => this._renderSchedule());
+    this._safe('treadmillPlan', () => this._renderTreadmill());
+    this._safe('planTab', () => this._renderPlanTab());
+    this._safe('health', () => this._renderHealth());
+    this._safe('dailyEyes', () => this._renderDailyEyes());
+    this._safe('treadmillCard', () => this._renderTreadmillCard());
+    this._safe('cardioCard', () => this._renderCardioCard());
+    this._safe('stats', () => this._renderStats());
     this._updateBackButton();
   }
 
@@ -515,17 +542,31 @@
     list.appendChild(eyesRow);
 
     // Дорожка — такое же самостоятельное занятие, ищут его здесь же
-    const tmRow = document.createElement('button');
-    tmRow.className = 'prog-row prog-row-daily';
-    const tmWeek = this._tmWeek();
-    tmRow.innerHTML = `
-      <span class="prog-row-emoji">🏃</span>
+    if (this._hasTreadmill()) {
+      const tmRow = document.createElement('button');
+      tmRow.className = 'prog-row prog-row-daily';
+      const tmWeek = this._tmWeek();
+      tmRow.innerHTML = `
+        <span class="prog-row-emoji">🏃</span>
+        <span class="prog-row-body">
+          <span class="prog-row-name">${this._esc(this.t.tmShortTitle)}</span>
+          <span class="prog-row-meta">${this._esc(`${this.t.week} ${tmWeek} · ${treadmillWeekSummary(tmWeek, this.currentLang)} · ${treadmillTotals(tmWeek).minutes} ${this.t.min}`)}</span>
+        </span>`;
+      tmRow.onclick = () => { this._closePrograms(); this._startTreadmill(); };
+      list.appendChild(tmRow);
+    }
+
+    // Кардио — свободное занятие на время, без плана по неделям
+    const cardioRow = document.createElement('button');
+    cardioRow.className = 'prog-row prog-row-daily';
+    cardioRow.innerHTML = `
+      <span class="prog-row-emoji">❤️</span>
       <span class="prog-row-body">
-        <span class="prog-row-name">${this._esc(this.t.tmShortTitle)}</span>
-        <span class="prog-row-meta">${this._esc(`${this.t.week} ${tmWeek} · ${treadmillWeekSummary(tmWeek, this.currentLang)} · ${treadmillTotals(tmWeek).minutes} ${this.t.min}`)}</span>
+        <span class="prog-row-name">${this._esc(this.t.cardioShortTitle)}</span>
+        <span class="prog-row-meta">${this._esc(this.t.cardioSessionMeta(store.getState().cardioMinutes || 30))}</span>
       </span>`;
-    tmRow.onclick = () => { this._closePrograms(); this._startTreadmill(); };
-    list.appendChild(tmRow);
+    cardioRow.onclick = () => { this._closePrograms(); this._startCardio(); };
+    list.appendChild(cardioRow);
 
     this._programGroups().forEach(group => {
       const head = document.createElement('div');
@@ -1684,7 +1725,8 @@
     cardioBadge.textContent = mins ? `${mins} ${t.min}` : t.notDoneToday;
     cardioBadge.classList.toggle('done', mins > 0);
 
-    this._renderTreadmillCard();
+    this._safe('treadmillCard', () => this._renderTreadmillCard());
+    this._safe('cardioCard', () => this._renderCardioCard());
   }
 
   _renderEyesList() {
@@ -2025,6 +2067,15 @@
      говорит, когда бежать, когда идти и на какой скорости, а в конце
      записывает пройденное — минуты, километры и чистый бег. */
 
+  /* Файл дорожки мог не догрузиться: телефон умеет собрать страницу
+     из кэша частями — новый index.html и старый набор скриптов. Раньше
+     это роняло отрисовку списка занятий целиком, и приложение
+     «зависало» на одной программе. Теперь дорожка просто не
+     показывается, а всё остальное работает. */
+  _hasTreadmill() {
+    return typeof buildTreadmillSession === 'function' && typeof TREADMILL !== 'undefined';
+  }
+
   _tmSessionsOf(day) {
     if (!day) return [];
     return Array.isArray(day.treadmillSessions) ? day.treadmillSessions : [];
@@ -2037,6 +2088,14 @@
 
   async _renderTreadmillCard() {
     const t = this.t;
+    // Без файла дорожки карточку просто прячем — экран не должен падать
+    if (!this._hasTreadmill()) {
+      ['btnDailyTreadmill'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+      return;
+    }
     const week = this._tmWeek();
     const totals = treadmillTotals(week);
     const loc = TREADMILL[this.currentLang] || TREADMILL.ru;
@@ -2275,6 +2334,149 @@
   _skipTreadmillLog() {
     document.getElementById('tmLogModal').classList.add('hidden');
     this._updateBackButton();
+  }
+
+  /* ----- Кардио как отдельное занятие -----
+     Ходьба, велосипед, скакалка — что угодно, где важно только время
+     под нагрузкой. Плана по неделям здесь нет, есть таймер и запись
+     минут в тот же дневник дня, куда кладётся ручная отметка. */
+
+  _cardioMinutes() {
+    return Number(store.getState().cardioMinutes) || 30;
+  }
+
+  async _renderCardioCard() {
+    const t = this.t;
+    const mins = this._cardioMinutes();
+    const setText = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+
+    setText('cardioLenLabel', t.cardioLenLabel);
+    setText('cardioManualLabel', t.cardioManualLabel);
+    setText('btnStartCardio', t.cardioStart);
+    setText('dailyCardioName', t.cardioShortTitle);
+    setText('dailyCardioMeta', t.cardioSessionMeta(mins));
+
+    document.querySelectorAll('#cardioLenRow .chip').forEach(c => {
+      c.textContent = `${c.dataset.cardio} ${t.min}`;
+      c.classList.toggle('active', Number(c.dataset.cardio) === mins);
+    });
+
+    const day = await db.getDay(dateKey()).catch(() => null);
+    const total = (day && day.cardioMin) || 0;
+    const badge = document.getElementById('dailyCardioBadge');
+    if (badge) {
+      badge.textContent = total ? `${total} ${t.min}` : t.startShort;
+      badge.classList.toggle('done', total > 0);
+    }
+  }
+
+  _pickCardioMinutes(mins) {
+    store.setState({ cardioMinutes: mins });
+    this._persistSetting('cardioMinutes', mins);
+    this._renderCardioCard();
+  }
+
+  _startCardio() {
+    this._cardioTotalSec = this._cardioMinutes() * 60;
+    this._cardioLeftSec = this._cardioTotalSec;
+    this._cardioPaused = false;
+    this._cardioRunning = true;
+    this._cardioStartedAt = Date.now();
+
+    document.getElementById('cardioScreen').classList.remove('hidden');
+    document.getElementById('cardioPhase').textContent = this.t.cardioShortTitle;
+    document.getElementById('cardioNote').textContent = this.t.cardioNote;
+    document.getElementById('cardioTopLabel').textContent = this.t.cardioSessionMeta(this._cardioMinutes());
+    document.getElementById('btnCardioToggle').textContent = this.t.pause;
+    document.getElementById('btnCardioFinish').textContent = this.t.tmFinishBtn;
+
+    this._keepScreenAwake();
+    this._paintCardio();
+    if (this.speech) this.speech.speak(this.t.cardioStartVoice, true);
+
+    this._stopCardioTimer();
+    this._cardioTimer = setInterval(() => {
+      if (this._cardioPaused) return;
+      this._cardioLeftSec--;
+      this._paintCardio();
+      // Последняя минута — предупреждаем голосом, глаза заняты дорогой
+      if (this._cardioLeftSec === 60 && this.speech) this.speech.speak(this.t.cardioLastMinute);
+      if (this._cardioLeftSec <= 0) this._finishCardio();
+    }, 1000);
+
+    this._updateBackButton();
+  }
+
+  _paintCardio() {
+    const left = Math.max(0, this._cardioLeftSec);
+    const mm = String(Math.floor(left / 60)).padStart(2, '0');
+    const ss = String(left % 60).padStart(2, '0');
+    document.getElementById('cardioBigTimer').textContent = `${mm}:${ss}`;
+    const pct = this._cardioTotalSec ? (left / this._cardioTotalSec) * 100 : 0;
+    document.getElementById('cardioFill').style.width = `${Math.max(0, pct)}%`;
+  }
+
+  _stopCardioTimer() {
+    if (this._cardioTimer) { clearInterval(this._cardioTimer); this._cardioTimer = null; }
+  }
+
+  _toggleCardioPause() {
+    this._cardioPaused = !this._cardioPaused;
+    document.getElementById('btnCardioToggle').textContent =
+      this._cardioPaused ? this.t.resume : this.t.pause;
+    document.getElementById('cardioScreen').classList.toggle('paused', this._cardioPaused);
+  }
+
+  _shiftCardioTime(deltaSec) {
+    this._cardioLeftSec = Math.max(10, this._cardioLeftSec + deltaSec);
+    this._cardioTotalSec = Math.max(this._cardioTotalSec, this._cardioLeftSec);
+    this._paintCardio();
+  }
+
+  // Выход без записи
+  _exitCardio() {
+    this._stopCardioTimer();
+    this._cardioRunning = false;
+    this._releaseScreenAwake();
+    if (this.speech) this.speech.stopSpeaking();
+    document.getElementById('cardioScreen').classList.add('hidden');
+    this._updateBackButton();
+  }
+
+  /* Записываем то, что человек реально отзанимался, а не что было
+     задумано: выйти можно в любой момент, и эти минуты — тоже работа. */
+  async _finishCardio() {
+    this._stopCardioTimer();
+    this._cardioRunning = false;
+    this._releaseScreenAwake();
+    document.getElementById('cardioScreen').classList.add('hidden');
+    if (this.speech) this.speech.speak(this.t.cardioDoneVoice, true);
+
+    const done = Math.max(1, Math.round((this._cardioTotalSec - Math.max(0, this._cardioLeftSec)) / 60));
+    await this._addCardioMinutes(done);
+
+    alert(`${this.t.tmSaved}\n${done} ${this.t.min}`);
+    this._updateBackButton();
+  }
+
+  // Общая запись минут кардио — и с таймера, и из поля ввода
+  async _addCardioMinutes(mins) {
+    const key = dateKey();
+    const day = await db.getDay(key).catch(() => null);
+    const total = ((day && day.cardioMin) || 0) + mins;
+    const log = (day && Array.isArray(day.cardioLog)) ? day.cardioLog.slice() : [];
+    log.push({ at: Date.now(), min: mins });
+
+    await db.mergeDay(key, { cardioMin: total, cardioLog: log })
+      .catch(e => console.warn('[Cardio] запись не сохранилась:', e));
+
+    this._safe('health', () => this._renderHealth());
+    this._safe('cardioCard', () => this._renderCardioCard());
+    this._safe('stats', () => this._renderStats());
+    return total;
   }
 
   /* ----- Stats ----- */
@@ -2543,22 +2745,10 @@
     const mins = parseInt(input.value, 10);
     if (!mins || mins <= 0) return;
 
-    const key = dateKey();
-    const day = await db.getDay(key).catch(() => null);
-    const total = ((day && day.cardioMin) || 0) + mins;
-
-    // Каждая запись со своим временем: кардио тоже бывает не раз в день
-    const log = (day && Array.isArray(day.cardioLog)) ? day.cardioLog.slice() : [];
-    log.push({ at: Date.now(), min: mins });
-
-    await db.mergeDay(key, { cardioMin: total, cardioLog: log })
-      .catch(e => console.warn('[Cardio] запись не сохранилась:', e));
-
+    const total = await this._addCardioMinutes(mins);
     document.getElementById('cardioLogStatus').textContent =
       `✓ ${total} ${this.t.min} ${this.t.today}`;
     input.value = '';
-    this._renderHealth();
-    this._renderStats();
   }
 
   async _exportCSV() {

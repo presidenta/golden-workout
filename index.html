@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" href="assets/icon-180.png">
 
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css?v=22">
+  <link rel="stylesheet" href="css/style.css?v=23">
 </head>
 <body>
 <div class="app-wrapper">
@@ -244,6 +244,16 @@
           <span class="daily-eyes-badge" id="dailyTmBadge"></span>
         </button>
 
+        <!-- Кардио на время: ходьба, велосипед, что угодно с пульсом -->
+        <button class="daily-eyes daily-cardio" id="btnDailyCardio">
+          <span class="daily-eyes-ico">❤️</span>
+          <span class="daily-eyes-body">
+            <span class="daily-eyes-name" id="dailyCardioName">Кардио</span>
+            <span class="daily-eyes-meta" id="dailyCardioMeta"></span>
+          </span>
+          <span class="daily-eyes-badge" id="dailyCardioBadge"></span>
+        </button>
+
         <div class="volume-selector">
           <div class="vol-btn" data-vol="min">📉 Мин (-1 подх)</div>
           <div class="vol-btn active" data-vol="norm">⭐ 100% Стандарт</div>
@@ -406,6 +416,19 @@
           <span class="health-badge" id="cardioTodayBadge"></span>
         </div>
         <div class="health-sub" data-i18n="cardioHint">Рекомендация: 30-40 мин бега / ходьбы ежедневно.</div>
+
+        <!-- Кардио можно провести с таймером, как любое другое занятие -->
+        <div class="eyes-setting-label" id="cardioLenLabel">Длительность занятия</div>
+        <div class="chip-row" id="cardioLenRow">
+          <button class="chip" data-cardio="15">15</button>
+          <button class="chip" data-cardio="20">20</button>
+          <button class="chip" data-cardio="30">30</button>
+          <button class="chip" data-cardio="45">45</button>
+        </div>
+        <button class="btn-gold" id="btnStartCardio">Начать кардио</button>
+
+        <div class="more-divider"></div>
+        <div class="eyes-setting-label" id="cardioManualLabel">Записать уже пройденное</div>
         <div style="display:flex; gap:8px;">
           <input type="number" id="cardioMinutesInput" placeholder="Минут" style="flex:1;">
           <button class="btn-gold" style="margin-top:0; width:120px; padding:8px;" id="btnLogCardio" data-i18n="logCardio">Записать</button>
@@ -574,6 +597,28 @@
   <button class="btn-gold btn-secondary eyes-exit-btn" id="btnTmFinish">Закончить и записать</button>
 </div>
 
+<!-- ЭКРАН КАРДИО: просто время под присмотром, без плана по неделям -->
+<div id="cardioScreen" class="eyes-screen tm-screen hidden" data-phase="walk">
+  <div class="eyes-top">
+    <span class="eyes-step-count" id="cardioTopLabel"></span>
+    <button class="sheet-close" id="btnCardioExit" aria-label="Закрыть">✕</button>
+  </div>
+
+  <div class="tm-phase" id="cardioPhase">Кардио</div>
+  <div class="tm-speed" id="cardioBigTimer">00:00</div>
+  <div class="tm-phase-note" id="cardioNote"></div>
+
+  <div class="eyes-track"><div class="eyes-track-fill" id="cardioFill"></div></div>
+
+  <div class="eyes-controls">
+    <button class="icon-btn" id="btnCardioMinus" title="-5 мин">−</button>
+    <button class="btn-gold" id="btnCardioToggle">Пауза</button>
+    <button class="icon-btn" id="btnCardioPlus" title="+5 мин">+</button>
+  </div>
+
+  <button class="btn-gold btn-secondary eyes-exit-btn" id="btnCardioFinish">Закончить и записать</button>
+</div>
+
 <!-- ЗАПИСЬ РЕЗУЛЬТАТА ЗАНЯТИЯ НА ДОРОЖКЕ -->
 <div id="tmLogModal" class="modal-overlay hidden">
   <div class="modal-content">
@@ -641,17 +686,17 @@
   </button>
 </nav>
 
-<script src="js/data.js?v=22"></script>
-<script src="js/methodology.js?v=22"></script>
-<script src="js/eyes.js?v=22"></script>
-<script src="js/treadmill.js?v=22"></script>
-<script src="js/i18n.js?v=22"></script>
-<script src="js/store.js?v=22"></script>
-<script src="js/db.js?v=22"></script>
-<script src="js/timer.js?v=22"></script>
-<script src="js/speech.js?v=22"></script>
-<script src="js/workout.js?v=22"></script>
-<script src="js/ui.js?v=22"></script>
-<script src="js/app.js?v=22"></script>
+<script src="js/data.js?v=23"></script>
+<script src="js/methodology.js?v=23"></script>
+<script src="js/eyes.js?v=23"></script>
+<script src="js/treadmill.js?v=23"></script>
+<script src="js/i18n.js?v=23"></script>
+<script src="js/store.js?v=23"></script>
+<script src="js/db.js?v=23"></script>
+<script src="js/timer.js?v=23"></script>
+<script src="js/speech.js?v=23"></script>
+<script src="js/workout.js?v=23"></script>
+<script src="js/ui.js?v=23"></script>
+<script src="js/app.js?v=23"></script>
 </body>
 </html>

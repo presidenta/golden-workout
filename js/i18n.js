@@ -1,6 +1,6 @@
 ﻿const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 22",
+    subtitle: "Architect Pro · сборка 23",
     tabs: { workout: "Тренировка", plan: "План", health: "Здоровье", stats: "Календарь", more: "Ещё" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -94,7 +94,7 @@
     prevResult: "Прошлый результат", noData: "Нет данных",
     warmup: "🔥 Разминка", cooldown: "❄️ Заминка",
 
-    /* ----- сборка 22: план недели, здоровье, календарь ----- */
+    /* ----- сборка 23: план недели, здоровье, календарь ----- */
     min: "мин", today: "сегодня", timesShort: "раз",
     weekdays: ["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],
     weekdaysShort: ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -170,6 +170,18 @@
     tmLogMinLabel: "Время, мин",
     tmLogRunLabel: "Из них бега, мин",
     tmLogSkip: "Не записывать",
+    tmFinishBtn: "Закончить и записать",
+
+    // Кардио как самостоятельное занятие
+    cardioShortTitle: "Кардио",
+    cardioSessionMeta: (m) => `${m} мин под таймер · ходьба, бег, велосипед`,
+    cardioLenLabel: "Длительность занятия",
+    cardioManualLabel: "Записать уже пройденное",
+    cardioStart: "Начать кардио",
+    cardioNote: "Держите ровный темп: дышать должно быть тяжело, но говорить получается.",
+    cardioStartVoice: "Кардио начали",
+    cardioLastMinute: "Осталась минута",
+    cardioDoneVoice: "Кардио завершено",
 
     // Календарь
     legendWorkout: "Тренировка", legendCardio: "Кардио", legendEyes: "Глаза",
@@ -178,7 +190,7 @@
     partialMark: "не до конца"
   },
   en: {
-    subtitle: "Architect Pro · build 22",
+    subtitle: "Architect Pro · build 23",
     tabs: { workout: "Workout", plan: "Plan", health: "Health", stats: "Calendar", more: "More" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -271,7 +283,7 @@
     prevResult: "Previous", noData: "No data",
     warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down",
 
-    /* ----- build 22: week plan, health, calendar ----- */
+    /* ----- build 23: week plan, health, calendar ----- */
     min: "min", today: "today", timesShort: "times",
     weekdays: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
     weekdaysShort: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
@@ -343,6 +355,17 @@
     tmLogMinLabel: "Time, min",
     tmLogRunLabel: "Of that, running, min",
     tmLogSkip: "Do not record",
+    tmFinishBtn: "Finish and record",
+
+    cardioShortTitle: "Cardio",
+    cardioSessionMeta: (m) => `${m} min on the timer · walk, run, bike`,
+    cardioLenLabel: "Session length",
+    cardioManualLabel: "Record what is already done",
+    cardioStart: "Start cardio",
+    cardioNote: "Hold an even pace: breathing should be hard, but talking still possible.",
+    cardioStartVoice: "Cardio started",
+    cardioLastMinute: "One minute left",
+    cardioDoneVoice: "Cardio complete",
 
     legendWorkout: "Workout", legendCardio: "Cardio", legendEyes: "Eyes",
     legendTreadmill: "Treadmill",
@@ -350,7 +373,7 @@
     partialMark: "partial"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 22",
+    subtitle: "Architect Pro · збірка 23",
     tabs: { workout: "Тренування", plan: "План", health: "Здоров'я", stats: "Календар", more: "Ще" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -443,7 +466,7 @@
     prevResult: "Минулий результат", noData: "Немає даних",
     warmup: "🔥 Розминка", cooldown: "❄️ Заминка",
 
-    /* ----- збірка 22: план тижня, здоров'я, календар ----- */
+    /* ----- збірка 23: план тижня, здоров'я, календар ----- */
     min: "хв", today: "сьогодні", timesShort: "разів",
     weekdays: ["Неділя","Понеділок","Вівторок","Середа","Четвер","П'ятниця","Субота"],
     weekdaysShort: ["Нд","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -515,6 +538,17 @@
     tmLogMinLabel: "Час, хв",
     tmLogRunLabel: "З них бігу, хв",
     tmLogSkip: "Не записувати",
+    tmFinishBtn: "Закінчити і записати",
+
+    cardioShortTitle: "Кардіо",
+    cardioSessionMeta: (m) => `${m} хв під таймер · ходьба, біг, велосипед`,
+    cardioLenLabel: "Тривалість заняття",
+    cardioManualLabel: "Записати вже пройдене",
+    cardioStart: "Почати кардіо",
+    cardioNote: "Тримайте рівний темп: дихати має бути важко, але говорити виходить.",
+    cardioStartVoice: "Кардіо почали",
+    cardioLastMinute: "Залишилася хвилина",
+    cardioDoneVoice: "Кардіо завершено",
 
     legendWorkout: "Тренування", legendCardio: "Кардіо", legendEyes: "Очі",
     legendTreadmill: "Доріжка",

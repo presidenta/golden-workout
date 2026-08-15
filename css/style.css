@@ -1583,6 +1583,18 @@ input:checked + .slider:before { transform: translateX(18px); }
   border: 1px solid rgba(46, 204, 113, 0.5);
 }
 
+/* Карточка кардио на главном экране */
+.daily-cardio {
+  background: linear-gradient(135deg, rgba(46,204,113,0.12), rgba(46,204,113,0.04));
+  border-color: rgba(46, 204, 113, 0.35);
+}
+.daily-cardio .daily-eyes-badge { background: var(--accent-green); color: #04180d; }
+.daily-cardio .daily-eyes-badge.done {
+  background: rgba(46, 204, 113, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(46, 204, 113, 0.5);
+}
+
 /* Выбор недели плана */
 .tm-week-picker {
   display: flex;
