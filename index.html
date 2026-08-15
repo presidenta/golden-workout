@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" href="assets/icon-180.png">
 
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css?v=21">
+  <link rel="stylesheet" href="css/style.css?v=22">
 </head>
 <body>
 <div class="app-wrapper">
@@ -233,6 +233,17 @@
           <span class="daily-eyes-badge" id="dailyEyesBadge"></span>
         </button>
 
+        <!-- Дорожка — такое же самостоятельное занятие, как глаза:
+             со своим таймером по интервалам и своей отметкой в календаре -->
+        <button class="daily-eyes daily-treadmill" id="btnDailyTreadmill">
+          <span class="daily-eyes-ico">🏃</span>
+          <span class="daily-eyes-body">
+            <span class="daily-eyes-name" id="dailyTmName">Беговая дорожка</span>
+            <span class="daily-eyes-meta" id="dailyTmMeta"></span>
+          </span>
+          <span class="daily-eyes-badge" id="dailyTmBadge"></span>
+        </button>
+
         <div class="volume-selector">
           <div class="vol-btn" data-vol="min">📉 Мин (-1 подх)</div>
           <div class="vol-btn active" data-vol="norm">⭐ 100% Стандарт</div>
@@ -402,6 +413,29 @@
         <div id="cardioLogStatus" style="font-size:0.75rem; color:var(--accent-green); margin-top:6px;"></div>
       </div>
 
+      <!-- Занятие на дорожке: неделя выбирается здесь, отсюда же
+           запускается таймер по интервалам -->
+      <div class="health-card">
+        <div class="health-head">
+          <span class="health-title" id="tmCardTitle">🏃 Занятие на дорожке</span>
+          <span class="health-badge" id="tmTodayBadge"></span>
+        </div>
+        <div class="health-sub" id="tmCardMeta"></div>
+
+        <div class="eyes-setting-label" id="tmWeekLabel">Неделя плана</div>
+        <div class="tm-week-picker">
+          <button class="icon-btn" id="btnTmWeekPrev" aria-label="Предыдущая неделя">−</button>
+          <div class="tm-week-current">
+            <span id="tmWeekNo">1</span>
+            <span class="tm-week-of" id="tmWeekOf"></span>
+          </div>
+          <button class="icon-btn" id="btnTmWeekNext" aria-label="Следующая неделя">+</button>
+        </div>
+        <div class="eyes-level-hint" id="tmWeekNote"></div>
+
+        <button class="btn-gold" id="btnStartTreadmill">Начать занятие</button>
+      </div>
+
       <div class="tm-head">
         <div class="tm-model" id="tmModel">—</div>
         <div class="tm-goal" id="tmGoal"></div>
@@ -503,6 +537,67 @@
   <button class="btn-gold btn-secondary eyes-exit-btn" id="btnEyesExitBottom" data-i18n="eyesExit">Выйти из комплекса</button>
 </div>
 
+<!-- ЭКРАН ЗАНЯТИЯ НА ДОРОЖКЕ.
+     Ведёт по интервалам: когда бежать, когда идти и на какой скорости.
+     Смотреть в таблицу и считать минуты в уме больше не нужно. -->
+<div id="tmScreen" class="eyes-screen tm-screen hidden">
+  <div class="eyes-top">
+    <span class="eyes-step-count" id="tmStepCount"></span>
+    <span class="eyes-timer" id="tmTimer">—</span>
+    <button class="sheet-close" id="btnTmExit" aria-label="Закрыть">✕</button>
+  </div>
+
+  <div class="tm-phase" id="tmPhase">—</div>
+  <div class="tm-speed" id="tmSpeed">—</div>
+  <div class="tm-phase-note" id="tmPhaseNote"></div>
+
+  <div class="eyes-track"><div class="eyes-track-fill" id="tmTrackFill"></div></div>
+
+  <div class="tm-next" id="tmNext"></div>
+
+  <div class="tm-progress">
+    <div class="tm-progress-row">
+      <span id="tmDoneLabel">—</span>
+      <span id="tmLeftLabel">—</span>
+    </div>
+    <div class="eyes-track"><div class="eyes-track-fill" id="tmTotalFill"></div></div>
+  </div>
+
+  <div class="eyes-controls">
+    <button class="icon-btn" id="btnTmMinus" title="-1 мин">−</button>
+    <button class="icon-btn" id="btnTmPrev" aria-label="Назад">‹</button>
+    <button class="btn-gold" id="btnTmToggle">Пауза</button>
+    <button class="icon-btn" id="btnTmNext" aria-label="Дальше">›</button>
+    <button class="icon-btn" id="btnTmPlus" title="+1 мин">+</button>
+  </div>
+
+  <button class="btn-gold btn-secondary eyes-exit-btn" id="btnTmFinish">Закончить и записать</button>
+</div>
+
+<!-- ЗАПИСЬ РЕЗУЛЬТАТА ЗАНЯТИЯ НА ДОРОЖКЕ -->
+<div id="tmLogModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3 style="color: var(--gold-primary); margin-bottom: 6px;" id="tmLogTitle">Результат занятия</h3>
+    <div class="health-sub" id="tmLogHint">Цифры посчитаны по плану. Поправьте по дисплею дорожки.</div>
+
+    <div class="form-group">
+      <label id="tmLogKmLabel">Пройдено, км</label>
+      <input type="number" id="tmLogKm" min="0" max="99" step="0.01">
+    </div>
+    <div class="form-group">
+      <label id="tmLogMinLabel">Время, мин</label>
+      <input type="number" id="tmLogMin" min="1" max="300">
+    </div>
+    <div class="form-group">
+      <label id="tmLogRunLabel">Из них бега, мин</label>
+      <input type="number" id="tmLogRun" min="0" max="300">
+    </div>
+
+    <button class="btn-gold" id="btnTmLogSave">Сохранить</button>
+    <button class="btn-gold btn-secondary" id="btnTmLogSkip" style="margin-top:8px;">Не записывать</button>
+  </div>
+</div>
+
 <!-- ПАНЕЛЬ РАЗДЕЛОВ: внизу экрана, куда достаёт большой палец -->
 <nav class="bottom-nav" id="bottomNav">
   <button class="nav-tab active" data-tab="workout" id="tabBtnWorkout">
@@ -546,16 +641,17 @@
   </button>
 </nav>
 
-<script src="js/data.js?v=21"></script>
-<script src="js/methodology.js?v=21"></script>
-<script src="js/eyes.js?v=21"></script>
-<script src="js/i18n.js?v=21"></script>
-<script src="js/store.js?v=21"></script>
-<script src="js/db.js?v=21"></script>
-<script src="js/timer.js?v=21"></script>
-<script src="js/speech.js?v=21"></script>
-<script src="js/workout.js?v=21"></script>
-<script src="js/ui.js?v=21"></script>
-<script src="js/app.js?v=21"></script>
+<script src="js/data.js?v=22"></script>
+<script src="js/methodology.js?v=22"></script>
+<script src="js/eyes.js?v=22"></script>
+<script src="js/treadmill.js?v=22"></script>
+<script src="js/i18n.js?v=22"></script>
+<script src="js/store.js?v=22"></script>
+<script src="js/db.js?v=22"></script>
+<script src="js/timer.js?v=22"></script>
+<script src="js/speech.js?v=22"></script>
+<script src="js/workout.js?v=22"></script>
+<script src="js/ui.js?v=22"></script>
+<script src="js/app.js?v=22"></script>
 </body>
 </html>

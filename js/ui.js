@@ -190,6 +190,21 @@
       }
     });
 
+    // Беговая дорожка
+    on('btnDailyTreadmill', 'click', () => this._startTreadmill());
+    on('btnStartTreadmill', 'click', () => this._startTreadmill());
+    on('btnTmWeekPrev', 'click', () => this._shiftTmWeek(-1));
+    on('btnTmWeekNext', 'click', () => this._shiftTmWeek(1));
+    on('btnTmExit', 'click', () => this._exitTreadmill());
+    on('btnTmFinish', 'click', () => this._finishTreadmill());
+    on('btnTmToggle', 'click', () => this._toggleTmPause());
+    on('btnTmPrev', 'click', () => this._prevTmStep());
+    on('btnTmNext', 'click', () => this._nextTmStep());
+    on('btnTmMinus', 'click', () => this._shiftTmTime(-60));
+    on('btnTmPlus', 'click', () => this._shiftTmTime(60));
+    on('btnTmLogSave', 'click', () => this._saveTreadmillLog());
+    on('btnTmLogSkip', 'click', () => this._skipTreadmillLog());
+
     // Stats
     on('btnLogCardio', 'click', () => this._logCardio());
     on('btnExportCSV', 'click', () => this._exportCSV());
@@ -210,7 +225,7 @@
      и стрелка в шапке, и системная кнопка «назад». */
 
   _canGoBack() {
-    const open = ['eyesScreen', 'programSheet', 'previewModal', 'settingsModal', 'screenWorkout']
+    const open = ['eyesScreen', 'tmScreen', 'tmLogModal', 'programSheet', 'previewModal', 'settingsModal', 'screenWorkout']
       .some(id => {
         const el = document.getElementById(id);
         return el && !el.classList.contains('hidden');
@@ -222,7 +237,9 @@
   _goBack() {
     // Сначала закрываем то, что открыто поверх раздела
     const close = [
+      ['tmLogModal', () => this._skipTreadmillLog()],
       ['eyesScreen', () => this._exitEyes()],
+      ['tmScreen', () => this._exitTreadmill()],
       ['programSheet', () => this._closePrograms()],
       ['previewModal', () => this._closePreview()],
       ['settingsModal', () => this._toggleSettings(false)],
@@ -259,7 +276,7 @@
     if (tabId === 'stats') this._renderStats();
     if (tabId === 'health') this._renderHealth();
     if (tabId === 'plan') this._renderPlanTab();
-    if (tabId === 'workout') this._renderDailyEyes();
+    if (tabId === 'workout') { this._renderDailyEyes(); this._renderTreadmillCard(); }
     this._updateBackButton();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -374,6 +391,7 @@
     this._renderPlanTab();
     this._renderHealth();
     this._renderDailyEyes();
+    this._renderTreadmillCard();
     this._renderStats();
     this._updateBackButton();
   }
@@ -495,6 +513,19 @@
       </span>`;
     eyesRow.onclick = () => { this._closePrograms(); this._startEyes(); };
     list.appendChild(eyesRow);
+
+    // Дорожка — такое же самостоятельное занятие, ищут его здесь же
+    const tmRow = document.createElement('button');
+    tmRow.className = 'prog-row prog-row-daily';
+    const tmWeek = this._tmWeek();
+    tmRow.innerHTML = `
+      <span class="prog-row-emoji">🏃</span>
+      <span class="prog-row-body">
+        <span class="prog-row-name">${this._esc(this.t.tmShortTitle)}</span>
+        <span class="prog-row-meta">${this._esc(`${this.t.week} ${tmWeek} · ${treadmillWeekSummary(tmWeek, this.currentLang)} · ${treadmillTotals(tmWeek).minutes} ${this.t.min}`)}</span>
+      </span>`;
+    tmRow.onclick = () => { this._closePrograms(); this._startTreadmill(); };
+    list.appendChild(tmRow);
 
     this._programGroups().forEach(group => {
       const head = document.createElement('div');
@@ -1652,6 +1683,8 @@
     const mins = (day && day.cardioMin) || 0;
     cardioBadge.textContent = mins ? `${mins} ${t.min}` : t.notDoneToday;
     cardioBadge.classList.toggle('done', mins > 0);
+
+    this._renderTreadmillCard();
   }
 
   _renderEyesList() {
@@ -1986,6 +2019,264 @@
     this._updateBackButton();
   }
 
+  /* ----- Занятие на беговой дорожке -----
+     План по неделям был таблицей, по которой надо было идти самому,
+     сверяясь с часами. Теперь это занятие с таймером: приложение само
+     говорит, когда бежать, когда идти и на какой скорости, а в конце
+     записывает пройденное — минуты, километры и чистый бег. */
+
+  _tmSessionsOf(day) {
+    if (!day) return [];
+    return Array.isArray(day.treadmillSessions) ? day.treadmillSessions : [];
+  }
+
+  _tmWeek() {
+    const w = Number(store.getState().treadmillWeek) || 1;
+    return Math.min(treadmillWeekCount(), Math.max(1, w));
+  }
+
+  async _renderTreadmillCard() {
+    const t = this.t;
+    const week = this._tmWeek();
+    const totals = treadmillTotals(week);
+    const loc = TREADMILL[this.currentLang] || TREADMILL.ru;
+
+    const setText = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+
+    setText('tmCardTitle', t.tmCardTitle);
+    setText('tmWeekLabel', t.tmWeekLabel);
+    setText('tmWeekNo', String(week));
+    setText('tmWeekOf', `${t.of} ${treadmillWeekCount()}`);
+    setText('tmWeekNote', (loc.notes && loc.notes[week - 1]) || '');
+    setText('btnStartTreadmill', t.tmStart);
+    setText('tmCardMeta',
+      `${treadmillWeekSummary(week, this.currentLang)} · ${totals.minutes} ${t.min} · ~${totals.km} ${t.km2}`);
+
+    // Карточка на главном экране
+    setText('dailyTmName', t.tmShortTitle);
+    setText('dailyTmMeta',
+      `${t.week} ${week} · ${treadmillWeekSummary(week, this.currentLang)} · ${totals.minutes} ${t.min}`);
+
+    const day = await db.getDay(dateKey()).catch(() => null);
+    const sessions = this._tmSessionsOf(day);
+
+    const badge = document.getElementById('tmTodayBadge');
+    if (badge) {
+      badge.textContent = sessions.length
+        ? `${t.doneTimes(sessions.length)} · ${sessions.filter(s => s.at).map(s => this._hhmm(s.at)).join(', ')}`
+        : t.notDoneToday;
+      badge.classList.toggle('done', sessions.length > 0);
+    }
+    const dailyBadge = document.getElementById('dailyTmBadge');
+    if (dailyBadge) {
+      dailyBadge.textContent = sessions.length ? t.doneTimes(sessions.length) : t.startShort;
+      dailyBadge.classList.toggle('done', sessions.length > 0);
+    }
+  }
+
+  _shiftTmWeek(delta) {
+    const week = Math.min(treadmillWeekCount(), Math.max(1, this._tmWeek() + delta));
+    store.setState({ treadmillWeek: week });
+    this._persistSetting('treadmillWeek', week);
+    this._renderTreadmillCard();
+    this._renderTreadmill();
+  }
+
+  _startTreadmill() {
+    this._tmSteps = buildTreadmillSession(this._tmWeek());
+    this._tmIndex = 0;
+    this._tmPaused = false;
+    this._tmRunning = true;
+    this._tmStartedAt = Date.now();
+    document.getElementById('tmScreen').classList.remove('hidden');
+    this._keepScreenAwake();
+    this._showTmStep();
+    this._updateBackButton();
+  }
+
+  _tmPhaseName(step) {
+    const names = this.t.tmPhases;
+    return names[step.kind] || step.kind;
+  }
+
+  _showTmStep() {
+    const step = (this._tmSteps || [])[this._tmIndex];
+    if (!step) { this._finishTreadmill(); return; }
+    const t = this.t;
+
+    document.getElementById('tmStepCount').textContent =
+      `${t.week} ${this._tmWeek()} · ${this._tmIndex + 1} / ${this._tmSteps.length}`;
+    document.getElementById('tmPhase').textContent = this._tmPhaseName(step);
+    document.getElementById('tmSpeed').textContent = `${step.speed} ${t.kmh}`;
+    document.getElementById('tmPhaseNote').textContent = step.set
+      ? `${t.setInfo(step.set, step.of)}`
+      : t.tmEdgeNote;
+    document.getElementById('btnTmToggle').textContent = t.pause;
+
+    const screen = document.getElementById('tmScreen');
+    screen.dataset.phase = step.kind;
+
+    const next = this._tmSteps[this._tmIndex + 1];
+    document.getElementById('tmNext').textContent = next
+      ? `${t.tmNext}: ${this._tmPhaseName(next)} · ${next.speed} ${t.kmh} · ${next.minutes} ${t.min}`
+      : t.tmLast;
+
+    this._tmTotalSec = step.minutes * 60;
+    this._tmLeftSec = this._tmTotalSec;
+    this._paintTmTimer();
+
+    // Голосом: что делать и на какой скорости
+    if (this.speech) {
+      this.speech.speak(`${this._tmPhaseName(step)}. ${step.speed} ${t.kmhVoice}. ${step.minutes} ${t.minVoice}`, true);
+    }
+    this._tmWarned = false;
+
+    this._stopTmTimer();
+    this._tmTimer = setInterval(() => {
+      if (this._tmPaused) return;
+      this._tmLeftSec--;
+      this._paintTmTimer();
+      // Предупреждение заранее: скорость на дорожке меняют не мгновенно
+      if (!this._tmWarned && this._tmLeftSec === 10 && next) {
+        this._tmWarned = true;
+        if (this.speech) this.speech.speak(`${t.tmSoon} ${this._tmPhaseName(next)}`, false);
+      }
+      if (this._tmLeftSec <= 0) this._nextTmStep();
+    }, 1000);
+  }
+
+  _paintTmTimer() {
+    const left = Math.max(0, this._tmLeftSec);
+    const mm = String(Math.floor(left / 60)).padStart(2, '0');
+    const ss = String(left % 60).padStart(2, '0');
+    document.getElementById('tmTimer').textContent = `${mm}:${ss}`;
+
+    const pct = this._tmTotalSec ? (left / this._tmTotalSec) * 100 : 0;
+    document.getElementById('tmTrackFill').style.width = `${Math.max(0, pct)}%`;
+
+    // Общий прогресс занятия
+    const steps = this._tmSteps || [];
+    const totalSec = steps.reduce((s, x) => s + x.minutes * 60, 0);
+    let doneSec = 0;
+    for (let i = 0; i < this._tmIndex; i++) doneSec += steps[i].minutes * 60;
+    doneSec += this._tmTotalSec - left;
+    const t = this.t;
+    document.getElementById('tmDoneLabel').textContent =
+      `${Math.round(doneSec / 60)} ${t.min} ${t.tmDone}`;
+    document.getElementById('tmLeftLabel').textContent =
+      `${Math.max(0, Math.round((totalSec - doneSec) / 60))} ${t.min} ${t.tmLeft}`;
+    document.getElementById('tmTotalFill').style.width =
+      `${totalSec ? Math.min(100, (doneSec / totalSec) * 100) : 0}%`;
+  }
+
+  _stopTmTimer() {
+    if (this._tmTimer) { clearInterval(this._tmTimer); this._tmTimer = null; }
+  }
+
+  _nextTmStep() {
+    this._stopTmTimer();
+    this._tmIndex++;
+    if (this._tmIndex >= (this._tmSteps || []).length) { this._finishTreadmill(); return; }
+    this._showTmStep();
+  }
+
+  _prevTmStep() {
+    this._stopTmTimer();
+    this._tmIndex = Math.max(0, this._tmIndex - 1);
+    this._showTmStep();
+  }
+
+  _toggleTmPause() {
+    this._tmPaused = !this._tmPaused;
+    document.getElementById('btnTmToggle').textContent =
+      this._tmPaused ? this.t.resume : this.t.pause;
+    document.getElementById('tmScreen').classList.toggle('paused', this._tmPaused);
+    if (this._tmPaused && this.speech) this.speech.stopSpeaking();
+  }
+
+  _shiftTmTime(deltaSec) {
+    if (!this._tmTotalSec) return;
+    this._tmLeftSec = Math.max(5, this._tmLeftSec + deltaSec);
+    this._tmTotalSec = Math.max(this._tmTotalSec, this._tmLeftSec);
+    this._paintTmTimer();
+  }
+
+  // Выход без записи
+  _exitTreadmill() {
+    this._stopTmTimer();
+    this._tmRunning = false;
+    this._releaseScreenAwake();
+    if (this.speech) this.speech.stopSpeaking();
+    document.getElementById('tmScreen').classList.add('hidden');
+    this._updateBackButton();
+  }
+
+  /* Занятие закончено — предлагаем записать пройденное. Цифры
+     посчитаны по плану, но дорожка показывает свои: их и надо
+     сохранить, поэтому поля открыты для правки. */
+  _finishTreadmill() {
+    this._stopTmTimer();
+    this._tmRunning = false;
+    this._releaseScreenAwake();
+    document.getElementById('tmScreen').classList.add('hidden');
+    if (this.speech) this.speech.speak(this.t.tmDoneVoice, true);
+
+    const week = this._tmWeek();
+    const totals = treadmillTotals(week);
+    // Сколько человек реально пробыл на дорожке
+    const realMin = Math.max(1, Math.round((Date.now() - (this._tmStartedAt || Date.now())) / 60000));
+
+    const t = this.t;
+    document.getElementById('tmLogTitle').textContent = t.tmLogTitle;
+    document.getElementById('tmLogHint').textContent = t.tmLogHint;
+    document.getElementById('tmLogKmLabel').textContent = t.tmLogKmLabel;
+    document.getElementById('tmLogMinLabel').textContent = t.tmLogMinLabel;
+    document.getElementById('tmLogRunLabel').textContent = t.tmLogRunLabel;
+    document.getElementById('btnTmLogSave').textContent = t.save;
+    document.getElementById('btnTmLogSkip').textContent = t.tmLogSkip;
+
+    /* Если занятие закончили раньше, километры и бег тоже меньше —
+       подставляем долю от плана, а не полные цифры. Поправить всё
+       равно можно руками, по дисплею дорожки. */
+    const minutes = Math.min(realMin, totals.minutes) || totals.minutes;
+    const ratio = totals.minutes ? Math.min(1, minutes / totals.minutes) : 1;
+
+    document.getElementById('tmLogKm').value = Math.round(totals.km * ratio * 10) / 10;
+    document.getElementById('tmLogMin').value = minutes;
+    document.getElementById('tmLogRun').value = Math.round(totals.runMinutes * ratio);
+    document.getElementById('tmLogModal').classList.remove('hidden');
+    this._updateBackButton();
+  }
+
+  async _saveTreadmillLog() {
+    const week = this._tmWeek();
+    const km = parseFloat(document.getElementById('tmLogKm').value) || 0;
+    const minutes = parseInt(document.getElementById('tmLogMin').value, 10) || 0;
+    const runMinutes = parseInt(document.getElementById('tmLogRun').value, 10) || 0;
+
+    const key = dateKey();
+    const day = await db.getDay(key).catch(() => null);
+    const sessions = this._tmSessionsOf(day).slice();
+    sessions.push({ at: Date.now(), week, km, minutes, runMinutes });
+
+    await db.mergeDay(key, { treadmillSessions: sessions })
+      .catch(e => console.warn('[Treadmill] запись не сохранилась:', e));
+
+    document.getElementById('tmLogModal').classList.add('hidden');
+    alert(`${this.t.tmSaved}\n${km} ${this.t.km2} · ${minutes} ${this.t.min}`);
+    this._renderTreadmillCard();
+    this._renderStats();
+    this._updateBackButton();
+  }
+
+  _skipTreadmillLog() {
+    document.getElementById('tmLogModal').classList.add('hidden');
+    this._updateBackButton();
+  }
+
   /* ----- Stats ----- */
   /* Календарь помнит всё: тренировки, кардио и глаза. Месяцы листаются,
      любой день открывается и показывает, что именно было сделано. */
@@ -2047,6 +2338,7 @@
 
       const marks = [];
       if (w && w.length) marks.push('<i class="m-w"></i>');
+      if (this._tmSessionsOf(day).length) marks.push('<i class="m-t"></i>');
       if (day && day.cardioMin) marks.push('<i class="m-c"></i>');
       if (day && day.eyes) marks.push('<i class="m-e"></i>');
 
@@ -2057,6 +2349,7 @@
 
     document.getElementById('calLegend').innerHTML =
       `<span><i class="m-w"></i>${this._esc(this.t.legendWorkout)}</span>` +
+      `<span><i class="m-t"></i>${this._esc(this.t.legendTreadmill)}</span>` +
       `<span><i class="m-c"></i>${this._esc(this.t.legendCardio)}</span>` +
       `<span><i class="m-e"></i>${this._esc(this.t.legendEyes)}</span>`;
 
@@ -2084,7 +2377,8 @@
       const ds = dateKey(cursor);
       const w = this._workoutsByDate[ds];
       const day = this._daysByDate[ds];
-      const any = (w && w.length) || (day && (day.cardioMin || day.eyes));
+      const any = (w && w.length) || (day && (day.cardioMin || day.eyes)) ||
+                  this._tmSessionsOf(day).length;
       if (any) streak++;
       // Сегодняшний день ещё может состояться — пустой не обрывает серию
       else if (i > 0) break;
@@ -2153,6 +2447,25 @@
           ${lines}
         </div>`);
     });
+
+    // Дорожка: каждое занятие со своим временем и пройденным
+    const tmSessions = this._tmSessionsOf(day);
+    if (tmSessions.length) {
+      const rows = tmSessions.map((s, i) => {
+        const parts = [];
+        if (s.km) parts.push(`${s.km} ${this.t.km2}`);
+        if (s.minutes) parts.push(`${s.minutes} ${this.t.min}`);
+        if (s.runMinutes) parts.push(`${this.t.tmRunOf} ${s.runMinutes} ${this.t.min}`);
+        return `<div class="day-ex"><span>${i + 1}. ${this._esc(s.at ? this._hhmm(s.at) : '—')} · ${this._esc(this.t.week)} ${s.week || '—'}</span>
+          <span class="day-ex-num">${this._esc(parts.join(' · '))}</span></div>`;
+      }).join('');
+      const totalKm = Math.round(tmSessions.reduce((sum, s) => sum + (s.km || 0), 0) * 10) / 10;
+      parts.push(`<div class="day-block">
+        <div class="day-block-head">
+          <span class="day-tag t">${this._esc(this.t.legendTreadmill)}</span>
+          <span class="day-block-title">${totalKm} ${this._esc(this.t.km2)}</span>
+        </div>${rows}</div>`);
+    }
 
     if (day && day.cardioMin) {
       const cardioRows = Array.isArray(day.cardioLog)

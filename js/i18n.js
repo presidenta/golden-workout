@@ -1,6 +1,6 @@
 ﻿const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 21",
+    subtitle: "Architect Pro · сборка 22",
     tabs: { workout: "Тренировка", plan: "План", health: "Здоровье", stats: "Календарь", more: "Ещё" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -94,7 +94,7 @@
     prevResult: "Прошлый результат", noData: "Нет данных",
     warmup: "🔥 Разминка", cooldown: "❄️ Заминка",
 
-    /* ----- сборка 21: план недели, здоровье, календарь ----- */
+    /* ----- сборка 22: план недели, здоровье, календарь ----- */
     min: "мин", today: "сегодня", timesShort: "раз",
     weekdays: ["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],
     weekdaysShort: ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -149,13 +149,36 @@
     eyesTodayCount: (n) => `Сегодня комплекс пройден ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'раз' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'раза' : 'раз')}.`,
     eyesFullSet: "полный комплекс",
 
+    // Беговая дорожка как отдельное занятие
+    tmCardTitle: "🏃 Занятие на дорожке",
+    tmShortTitle: "Беговая дорожка",
+    tmWeekLabel: "Неделя плана",
+    tmStart: "Начать занятие",
+    week: "Неделя", of: "из", km2: "км", kmh: "км/ч",
+    kmhVoice: "километров в час", minVoice: "минут",
+    tmPhases: { warmup: "Разминка", run: "Бег", walk: "Шаг", cooldown: "Заминка" },
+    tmNext: "Дальше", tmLast: "Последний отрезок",
+    tmSoon: "Через десять секунд —",
+    tmEdgeNote: "Спокойная ходьба",
+    tmDone: "пройдено", tmLeft: "осталось",
+    tmRunOf: "из них бег",
+    tmDoneVoice: "Занятие на дорожке завершено",
+    tmSaved: "Записано в календарь",
+    tmLogTitle: "Результат занятия",
+    tmLogHint: "Цифры посчитаны по плану. Поправьте по дисплею дорожки.",
+    tmLogKmLabel: "Пройдено, км",
+    tmLogMinLabel: "Время, мин",
+    tmLogRunLabel: "Из них бега, мин",
+    tmLogSkip: "Не записывать",
+
     // Календарь
     legendWorkout: "Тренировка", legendCardio: "Кардио", legendEyes: "Глаза",
+    legendTreadmill: "Дорожка",
     dayEmpty: "В этот день записей нет.",
     partialMark: "не до конца"
   },
   en: {
-    subtitle: "Architect Pro · build 21",
+    subtitle: "Architect Pro · build 22",
     tabs: { workout: "Workout", plan: "Plan", health: "Health", stats: "Calendar", more: "More" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -248,7 +271,7 @@
     prevResult: "Previous", noData: "No data",
     warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down",
 
-    /* ----- build 21: week plan, health, calendar ----- */
+    /* ----- build 22: week plan, health, calendar ----- */
     min: "min", today: "today", timesShort: "times",
     weekdays: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
     weekdaysShort: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
@@ -300,12 +323,34 @@
     eyesTodayCount: (n) => `Done ${n} time${n === 1 ? '' : 's'} today.`,
     eyesFullSet: "full set",
 
+    tmCardTitle: "🏃 Treadmill session",
+    tmShortTitle: "Treadmill",
+    tmWeekLabel: "Plan week",
+    tmStart: "Start the session",
+    week: "Week", of: "of", km2: "km", kmh: "km/h",
+    kmhVoice: "kilometres per hour", minVoice: "minutes",
+    tmPhases: { warmup: "Warm-up", run: "Run", walk: "Walk", cooldown: "Cool-down" },
+    tmNext: "Next", tmLast: "Final stretch",
+    tmSoon: "In ten seconds —",
+    tmEdgeNote: "Easy walking",
+    tmDone: "done", tmLeft: "left",
+    tmRunOf: "running",
+    tmDoneVoice: "Treadmill session complete",
+    tmSaved: "Saved to the calendar",
+    tmLogTitle: "Session result",
+    tmLogHint: "Figures come from the plan. Correct them from the treadmill display.",
+    tmLogKmLabel: "Distance, km",
+    tmLogMinLabel: "Time, min",
+    tmLogRunLabel: "Of that, running, min",
+    tmLogSkip: "Do not record",
+
     legendWorkout: "Workout", legendCardio: "Cardio", legendEyes: "Eyes",
+    legendTreadmill: "Treadmill",
     dayEmpty: "Nothing recorded on this day.",
     partialMark: "partial"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 21",
+    subtitle: "Architect Pro · збірка 22",
     tabs: { workout: "Тренування", plan: "План", health: "Здоров'я", stats: "Календар", more: "Ще" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -398,7 +443,7 @@
     prevResult: "Минулий результат", noData: "Немає даних",
     warmup: "🔥 Розминка", cooldown: "❄️ Заминка",
 
-    /* ----- збірка 21: план тижня, здоров'я, календар ----- */
+    /* ----- збірка 22: план тижня, здоров'я, календар ----- */
     min: "хв", today: "сьогодні", timesShort: "разів",
     weekdays: ["Неділя","Понеділок","Вівторок","Середа","Четвер","П'ятниця","Субота"],
     weekdaysShort: ["Нд","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -450,7 +495,29 @@
     eyesTodayCount: (n) => `Сьогодні комплекс пройдено ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'раз' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'рази' : 'разів')}.`,
     eyesFullSet: "повний комплекс",
 
+    tmCardTitle: "🏃 Заняття на доріжці",
+    tmShortTitle: "Бігова доріжка",
+    tmWeekLabel: "Тиждень плану",
+    tmStart: "Почати заняття",
+    week: "Тиждень", of: "з", km2: "км", kmh: "км/год",
+    kmhVoice: "кілометрів на годину", minVoice: "хвилин",
+    tmPhases: { warmup: "Розминка", run: "Біг", walk: "Крок", cooldown: "Заминка" },
+    tmNext: "Далі", tmLast: "Останній відрізок",
+    tmSoon: "Через десять секунд —",
+    tmEdgeNote: "Спокійна ходьба",
+    tmDone: "пройдено", tmLeft: "залишилось",
+    tmRunOf: "з них біг",
+    tmDoneVoice: "Заняття на доріжці завершено",
+    tmSaved: "Записано в календар",
+    tmLogTitle: "Результат заняття",
+    tmLogHint: "Цифри пораховані за планом. Виправте за дисплеєм доріжки.",
+    tmLogKmLabel: "Пройдено, км",
+    tmLogMinLabel: "Час, хв",
+    tmLogRunLabel: "З них бігу, хв",
+    tmLogSkip: "Не записувати",
+
     legendWorkout: "Тренування", legendCardio: "Кардіо", legendEyes: "Очі",
+    legendTreadmill: "Доріжка",
     dayEmpty: "У цей день записів немає.",
     partialMark: "не до кінця"
   }

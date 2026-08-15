@@ -11,6 +11,8 @@
   --accent-blue: #3498db;
   --accent-green: #2ecc71;
   --accent-red: #e74c3c;
+  /* Четвёртый цвет календаря — беговая дорожка */
+  --accent-orange: #e8842a;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
@@ -1506,6 +1508,7 @@ input:checked + .slider:before { transform: translateX(18px); }
   width: 5px; height: 5px; border-radius: 50%; display: inline-block;
 }
 .m-w { background: var(--gold-primary); }
+.m-t { background: var(--accent-orange); }
 .m-c { background: var(--accent-green); }
 .m-e { background: var(--accent-blue); }
 .cal-legend {
@@ -1545,6 +1548,7 @@ input:checked + .slider:before { transform: translateX(18px); }
   letter-spacing: 0.5px; padding: 2px 7px; border-radius: 20px;
 }
 .day-tag.w { background: rgba(212,175,55,0.15); color: var(--gold-primary); }
+.day-tag.t { background: rgba(232,132,42,0.15); color: var(--accent-orange); }
 .day-tag.c { background: rgba(46,204,113,0.15); color: var(--accent-green); }
 .day-tag.e { background: rgba(52,152,219,0.15); color: var(--accent-blue); }
 .day-block-title { font-size: 0.82rem; font-weight: 700; color: var(--text-main); }
@@ -1562,6 +1566,110 @@ input:checked + .slider:before { transform: translateX(18px); }
 .day-empty { font-size: 0.78rem; color: var(--text-muted); }
 
 .more-divider { height: 1px; background: #1e1e26; margin: 18px 0 14px 0; }
+
+/* ============================================================
+   СБОРКА 22: беговая дорожка как отдельное занятие
+   ============================================================ */
+
+/* Карточка дорожки на главном экране — как у глаз, но своим цветом */
+.daily-treadmill {
+  background: linear-gradient(135deg, rgba(232,132,42,0.12), rgba(232,132,42,0.04));
+  border-color: rgba(232, 132, 42, 0.35);
+}
+.daily-treadmill .daily-eyes-badge { background: var(--accent-orange); color: #1a0d02; }
+.daily-treadmill .daily-eyes-badge.done {
+  background: rgba(46, 204, 113, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(46, 204, 113, 0.5);
+}
+
+/* Выбор недели плана */
+.tm-week-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 4px;
+}
+.tm-week-current {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 92px;
+  justify-content: center;
+}
+.tm-week-current > span:first-child {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--gold-light);
+  font-variant-numeric: tabular-nums;
+}
+.tm-week-of { font-size: 0.72rem; color: var(--text-muted); }
+
+/* ----- Экран занятия на дорожке ----- */
+.tm-screen .eyes-timer { font-size: 1.7rem; }
+.tm-phase {
+  margin-top: 18px;
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  text-align: center;
+}
+.tm-speed {
+  margin-top: 4px;
+  font-size: 3.2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--gold-primary);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.tm-phase-note {
+  margin: 8px 0 16px 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+.tm-next {
+  margin-top: 14px;
+  font-size: 0.82rem;
+  color: var(--gold-light);
+  text-align: center;
+  background: #0f0f13;
+  border: 1px solid #22222b;
+  border-radius: 10px;
+  padding: 9px 12px;
+  max-width: 420px;
+  width: 100%;
+}
+.tm-progress { width: 100%; max-width: 420px; margin-top: 16px; }
+.tm-progress-row {
+  display: flex; justify-content: space-between;
+  font-size: 0.72rem; color: var(--text-muted); margin-bottom: 5px;
+}
+
+/* Фаза видна цветом, даже если смотреть краем глаза с дорожки */
+.tm-screen[data-phase="run"] .tm-phase { color: var(--accent-orange); }
+.tm-screen[data-phase="run"] .tm-speed { color: var(--accent-orange); }
+.tm-screen[data-phase="run"] .eyes-track-fill { background: var(--accent-orange); }
+.tm-screen[data-phase="walk"] .tm-phase,
+.tm-screen[data-phase="walk"] .tm-speed { color: var(--accent-green); }
+.tm-screen[data-phase="walk"] .eyes-track-fill { background: var(--accent-green); }
+.tm-screen[data-phase="warmup"] .tm-phase,
+.tm-screen[data-phase="cooldown"] .tm-phase,
+.tm-screen[data-phase="warmup"] .tm-speed,
+.tm-screen[data-phase="cooldown"] .tm-speed { color: var(--accent-blue); }
+.tm-screen[data-phase="warmup"] .eyes-track-fill,
+.tm-screen[data-phase="cooldown"] .eyes-track-fill { background: var(--accent-blue); }
+
+@media (max-height: 700px) {
+  .tm-phase { font-size: 1.7rem; margin-top: 10px; }
+  .tm-speed { font-size: 2.6rem; }
+  .tm-phase-note { margin-bottom: 10px; }
+  .tm-next { margin-top: 10px; padding: 7px 10px; font-size: 0.76rem; }
+}
 
 /* ----- Кнопка «назад» в шапке ----- */
 .back-btn {
