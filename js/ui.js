@@ -139,6 +139,12 @@
     // Возврат в предыдущий раздел
     on('btnBack', 'click', () => this._goBack());
 
+    // Подход можно закончить раньше плана — счёт остаётся
+    on('btnDoneSet', 'click', () => this._stopSetEarly());
+
+    // Напоминание об отдохнувшей группе мышц
+    on('recoveryBanner', 'click', () => this._openRecoveryExercise());
+
     // Поворот телефона меняет размер поля — траектории пересчитываем
     window.addEventListener('resize', () => this._sizeEyesStage());
     window.addEventListener('orientationchange', () => setTimeout(() => this._sizeEyesStage(), 250));
@@ -294,6 +300,7 @@
       this._safe('dailyEyes', () => this._renderDailyEyes());
       this._safe('treadmillCard', () => this._renderTreadmillCard());
       this._safe('cardioCard', () => this._renderCardioCard());
+      this._safe('recovery', () => this._renderRecovery());
     }
     this._updateBackButton();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -419,6 +426,7 @@
     this._safe('dailyEyes', () => this._renderDailyEyes());
     this._safe('treadmillCard', () => this._renderTreadmillCard());
     this._safe('cardioCard', () => this._renderCardioCard());
+    this._safe('recovery', () => this._renderRecovery());
     this._safe('stats', () => this._renderStats());
     this._updateBackButton();
   }
@@ -780,6 +788,24 @@
       this._startRepTimer();
       if (this.speech) this.speech.speak(this.t.start);
     }
+    this._syncDoneSetButton();
+  }
+
+  // Кнопка «Готово» нужна только когда подход уже начат
+  _syncDoneSetButton() {
+    const btn = document.getElementById('btnDoneSet');
+    if (!btn) return;
+    const active = document.getElementById('actionBtn').dataset.mode;
+    btn.classList.toggle('hidden', !(active === 'active' || active === 'paused'));
+    btn.textContent = this.t.doneSet;
+  }
+
+  /* Закончить подход раньше плана. Столько повторов, сколько сделано,
+     и уходим в запись — как на любом тренажёре: нажал стоп, число
+     осталось. */
+  _stopSetEarly() {
+    if (this.repTimer) { clearInterval(this.repTimer); this.repTimer = null; }
+    this._finishSet();
   }
 
   _startRepTimer() {
@@ -869,10 +895,16 @@
   }
 
   _finishSet() {
+    /* Сколько повторов человек реально сделал. Раньше эта цифра
+       пропадала: в окне записи стояло плановое число, а «Пропустить
+       запись» не сохраняла подход вовсе — и тренировка исчезала. */
+    const ex = this.engine.getCurrentExercise();
+    this._repsDone = this.currentRep > 0 ? this.currentRep : (ex ? ex.reps : 0);
     this.currentRep = 0;
     this._startFrameLoop();
     document.getElementById('actionBtn').dataset.mode = '';
     document.getElementById('actionBtn').textContent = this.t.start;
+    this._syncDoneSetButton();
     document.getElementById('breathOverlay').className = 'breath-overlay';
     document.getElementById('counterCircle').className = 'counter-circle';
     if (this.speech) this.speech.speak(this.t.stop);
@@ -881,7 +913,9 @@
 
   _openLogModal() {
     const ex = this.engine.getCurrentExercise();
-    document.getElementById('logReps').value = ex ? ex.reps : 0;
+    // Подставляем сделанное, а не задуманное: остановились на
+    // пятнадцатом повторе — в поле пятнадцать
+    document.getElementById('logReps').value = this._repsDone || (ex ? ex.reps : 0);
     document.getElementById('logWeight').value = 0;
     document.getElementById('logRpe').value = 7;
     document.getElementById('rpeValue').textContent = '7';
@@ -900,7 +934,18 @@
     this._startRest();
   }
 
+  /* «Пропустить запись» — это отказ уточнять вес и усилие, а не отказ
+     от подхода. Работа сделана, и она обязана попасть в календарь:
+     раньше здесь терялась вся тренировка, если человек не заполнял
+     цифры (а при отжиманиях или приседаниях заполнять нечего). */
   _skipLog() {
+    const ex = this.engine.getCurrentExercise();
+    this.engine.logSet({
+      actualReps: this._repsDone || (ex ? ex.reps : 0),
+      weight: 0,
+      rpe: 7,
+      notes: ''
+    });
     document.getElementById('logModal').classList.add('hidden');
     this._startRest();
   }
@@ -1272,6 +1317,14 @@
   _exitWorkout() {
     if (this.repTimer) { clearInterval(this.repTimer); this.repTimer = null; }
     if (this.restTimer) { this.restTimer.stop(); this.restTimer = null; }
+
+    // Незаконченный подход тоже работа: повторы, сделанные до выхода,
+    // записываем как есть
+    if (this.currentRep > 0 && this.engine) {
+      this.engine.logSet({ actualReps: this.currentRep, weight: 0, rpe: 7, notes: '' });
+      this.currentRep = 0;
+    }
+
     // Уходим со сделанными подходами — записываем их. Раньше выход
     // с середины стирал всю работу, и в календаре день оставался пустым.
     if (this.engine && this.engine.logs && this.engine.logs.length) {
@@ -2336,6 +2389,90 @@
     this._updateBackButton();
   }
 
+  /* ----- Что отдохнуло и что пора повторить -----
+     Считаем по группам мышц, а не по названиям упражнений: приседания
+     можно повторить выпадами, для квадрицепса это та же работа.
+     У каждой группы свой срок — от суток для пресса до трёх для ног. */
+
+  async _renderRecovery() {
+    if (typeof analyzeRecovery !== 'function') return;
+    const t = this.t;
+    const banner = document.getElementById('recoveryBanner');
+    const block = document.getElementById('recoveryBlock');
+    if (!banner || !block) return;
+
+    const workouts = await db.getAllWorkouts().catch(() => []);
+    const rows = analyzeRecovery(workouts);
+    const names = t.muscleNames || {};
+
+    // Список: что готово, что ещё отдыхает
+    const list = document.getElementById('recoveryList');
+    list.innerHTML = rows
+      .filter(r => names[r.muscle])
+      .map(r => {
+        const when = r.never
+          ? t.recNever
+          : (r.ready ? t.recReady(r.daysPassed) : t.recRest(r.restLeft));
+        const cls = r.never ? 'never' : (r.ready ? 'ready' : 'resting');
+        return `<div class="recovery-row ${cls}">
+            <span class="recovery-dot"></span>
+            <span class="recovery-name">${this._esc(names[r.muscle])}</span>
+            <span class="recovery-when">${this._esc(when)}</span>
+          </div>`;
+      }).join('');
+
+    document.getElementById('recoverySummary').textContent = t.recTitle;
+    document.getElementById('recoveryNote').textContent = t.recNote;
+
+    // Баннер — про ту группу, что дольше всех ждёт
+    const hint = recoveryHint(workouts);
+    if (!hint || !names[hint.muscle]) {
+      banner.classList.add('hidden');
+      return;
+    }
+    const exNames = hint.exercises
+      .map(id => EXERCISE_DB[id])
+      .filter(Boolean)
+      .map(ex => (ex[this.currentLang] || ex.ru).name.split('(')[0].trim())
+      .slice(0, 2);
+
+    document.getElementById('recoveryTitle').textContent =
+      t.recBannerTitle(names[hint.muscle], hint.daysPassed);
+    document.getElementById('recoveryText').textContent =
+      `${t.recBannerText}: ${exNames.join(', ')}`;
+    banner.classList.remove('hidden');
+    // По нажатию открываем то самое упражнение
+    this._recoveryFirstExercise = hint.exercises[0];
+  }
+
+  /* Нажали на напоминание — сразу показываем карточку упражнения,
+     которым эту группу можно нагрузить. */
+  _openRecoveryExercise() {
+    const id = this._recoveryFirstExercise;
+    if (!id) return;
+    const prog = this.programs[store.getState().currentProgram];
+    const idx = prog ? prog.exercises.indexOf(id) : -1;
+    if (idx >= 0) {
+      this._openPreview(idx);
+    } else {
+      this._openPreviewById(id);
+    }
+  }
+
+  /* Упражнения нет в текущей программе — переключаемся на ту, где оно
+     есть. Человек попросил повторить ноги, значит и программа нужна
+     та, в которой ноги действительно работают. */
+  _openPreviewById(id) {
+    const key = Object.keys(this.programs)
+      .find(k => (this.programs[k].exercises || []).includes(id));
+    if (!key) return;
+    store.setState({ currentProgram: key });
+    this._safe('programs', () => this._renderPrograms());
+    this._safe('planList', () => this._renderPlanList());
+    const idx = this.programs[key].exercises.indexOf(id);
+    if (idx >= 0) this._openPreview(idx);
+  }
+
   /* ----- Кардио как отдельное занятие -----
      Ходьба, велосипед, скакалка — что угодно, где важно только время
      под нагрузкой. Плана по неделям здесь нет, есть таймер и запись
@@ -2643,7 +2780,6 @@
           <div class="day-block-head">
             <span class="day-tag w">${this._esc(this.t.legendWorkout)}</span>
             <span class="day-block-title">${this._esc(title)}</span>
-            ${w.partial ? `<span class="day-partial">${this._esc(this.t.partialMark)}</span>` : ''}
           </div>
           <div class="day-block-meta">${when}${sets} ${this._esc(this.t.setsShort)} · ${w.durationMin} ${this._esc(this.t.min)}</div>
           ${lines}

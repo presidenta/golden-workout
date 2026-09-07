@@ -1583,6 +1583,80 @@ input:checked + .slider:before { transform: translateX(18px); }
   border: 1px solid rgba(46, 204, 113, 0.5);
 }
 
+/* ----- Напоминание о повторе ----- */
+.recovery-banner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(212,175,55,0.16), rgba(212,175,55,0.05));
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-main);
+}
+.recovery-banner.hidden { display: none; }
+.recovery-banner:active { transform: scale(0.985); }
+.recovery-banner-ico { font-size: 1.4rem; flex-shrink: 0; }
+.recovery-banner-body { display: flex; flex-direction: column; min-width: 0; }
+.recovery-banner-title { font-size: 0.85rem; font-weight: 800; color: var(--gold-light); }
+.recovery-banner-text { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+.recovery-block {
+  background: #0d0d11;
+  border: 1px solid #1e1e26;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.recovery-block summary {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gold-light);
+  cursor: pointer;
+  list-style: none;
+}
+.recovery-block summary::-webkit-details-marker { display: none; }
+.recovery-block[open] summary { margin-bottom: 8px; }
+.recovery-list { display: flex; flex-direction: column; gap: 4px; }
+.recovery-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.78rem;
+  padding: 4px 0;
+}
+.recovery-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  flex-shrink: 0; background: #3a3a46;
+}
+.recovery-row.ready .recovery-dot { background: var(--accent-green); }
+.recovery-row.resting .recovery-dot { background: var(--accent-orange); }
+.recovery-name { flex: 1; color: var(--text-main); }
+.recovery-row.ready .recovery-name { color: var(--accent-green); font-weight: 700; }
+.recovery-when { color: var(--text-muted); font-size: 0.72rem; }
+.recovery-hint {
+  font-size: 0.7rem; line-height: 1.45;
+  color: var(--text-muted); margin-top: 10px;
+  border-top: 1px solid #1a1a22; padding-top: 8px;
+}
+
+/* Кнопка «Готово» рядом со «Стартом»: закончить подход на своём числе */
+.btn-done-set {
+  flex: 0 0 auto;
+  padding: 0 18px;
+  background: #17171f;
+  border: 1px solid rgba(46, 204, 113, 0.5);
+  border-radius: 12px;
+  color: var(--accent-green);
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.btn-done-set:active { transform: scale(0.95); }
+.btn-done-set.hidden { display: none; }
+
 /* Карточка кардио на главном экране */
 .daily-cardio {
   background: linear-gradient(135deg, rgba(46,204,113,0.12), rgba(46,204,113,0.04));

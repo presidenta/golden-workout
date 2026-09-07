@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" href="assets/icon-180.png">
 
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css?v=23">
+  <link rel="stylesheet" href="css/style.css?v=24">
 </head>
 <body>
 <div class="app-wrapper">
@@ -222,6 +222,23 @@
     <!-- ВКЛАДКА 1: ТРЕНИРОВКА -->
     <div id="tabContentWorkout">
       <div id="screenPlan">
+        <!-- Напоминание о том, что отдохнуло и просит работы.
+             Появляется само, когда группа мышц отдохнула свой срок. -->
+        <button class="recovery-banner hidden" id="recoveryBanner">
+          <span class="recovery-banner-ico">💪</span>
+          <span class="recovery-banner-body">
+            <span class="recovery-banner-title" id="recoveryTitle"></span>
+            <span class="recovery-banner-text" id="recoveryText"></span>
+          </span>
+        </button>
+
+        <!-- Что отдохнуло, а что ещё нет — по каждой группе мышц -->
+        <details class="recovery-block" id="recoveryBlock">
+          <summary id="recoverySummary">Что отдохнуло</summary>
+          <div class="recovery-list" id="recoveryList"></div>
+          <div class="recovery-hint" id="recoveryNote"></div>
+        </details>
+
         <!-- Глаза — ежедневное дело, поэтому напоминание висит прямо
              на главном экране, а не только в разделе «Здоровье» -->
         <button class="daily-eyes" id="btnDailyEyes">
@@ -336,6 +353,9 @@
             </svg>
           </button>
           <button class="btn-gold" id="actionBtn">Старт подхода</button>
+          <!-- Остановиться можно на любом повторе: сделал пятнадцать —
+               нажал, и записались именно пятнадцать -->
+          <button class="btn-done-set hidden" id="btnDoneSet">Готово</button>
         </div>
       </div>
     </div>
@@ -686,17 +706,18 @@
   </button>
 </nav>
 
-<script src="js/data.js?v=23"></script>
-<script src="js/methodology.js?v=23"></script>
-<script src="js/eyes.js?v=23"></script>
-<script src="js/treadmill.js?v=23"></script>
-<script src="js/i18n.js?v=23"></script>
-<script src="js/store.js?v=23"></script>
-<script src="js/db.js?v=23"></script>
-<script src="js/timer.js?v=23"></script>
-<script src="js/speech.js?v=23"></script>
-<script src="js/workout.js?v=23"></script>
-<script src="js/ui.js?v=23"></script>
-<script src="js/app.js?v=23"></script>
+<script src="js/data.js?v=24"></script>
+<script src="js/methodology.js?v=24"></script>
+<script src="js/eyes.js?v=24"></script>
+<script src="js/treadmill.js?v=24"></script>
+<script src="js/recovery.js?v=24"></script>
+<script src="js/i18n.js?v=24"></script>
+<script src="js/store.js?v=24"></script>
+<script src="js/db.js?v=24"></script>
+<script src="js/timer.js?v=24"></script>
+<script src="js/speech.js?v=24"></script>
+<script src="js/workout.js?v=24"></script>
+<script src="js/ui.js?v=24"></script>
+<script src="js/app.js?v=24"></script>
 </body>
 </html>

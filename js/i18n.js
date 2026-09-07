@@ -1,6 +1,6 @@
 ﻿const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 23",
+    subtitle: "Architect Pro · сборка 24",
     tabs: { workout: "Тренировка", plan: "План", health: "Здоровье", stats: "Календарь", more: "Ещё" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -94,7 +94,7 @@
     prevResult: "Прошлый результат", noData: "Нет данных",
     warmup: "🔥 Разминка", cooldown: "❄️ Заминка",
 
-    /* ----- сборка 23: план недели, здоровье, календарь ----- */
+    /* ----- сборка 24: план недели, здоровье, календарь ----- */
     min: "мин", today: "сегодня", timesShort: "раз",
     weekdays: ["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],
     weekdaysShort: ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -149,6 +149,16 @@
     eyesTodayCount: (n) => `Сегодня комплекс пройден ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'раз' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'раза' : 'раз')}.`,
     eyesFullSet: "полный комплекс",
 
+    // Напоминания о повторе по группам мышц
+    doneSet: "Готово",
+    recTitle: "Что отдохнуло",
+    recNote: "Пресс, икры и суставная восстанавливаются за сутки — их можно делать через день. Остальным группам, включая ноги и спину, нужно двое суток: сделали в понедельник — напоминание придёт в среду, а если пропустите, повторится в четверг.",
+    recReady: (d) => d >= 1 ? `отдыхает ${d} ${d === 1 ? 'день' : (d >= 2 && d <= 4 ? 'дня' : 'дней')} — можно` : 'можно',
+    recRest: (h) => h >= 24 ? `ещё ${Math.round(h / 24)} дн.` : `ещё ${h} ч`,
+    recNever: "ещё не тренировали",
+    recBannerTitle: (m, d) => `${m.charAt(0).toUpperCase() + m.slice(1)}: отдых ${d} ${d === 1 ? 'день' : (d >= 2 && d <= 4 ? 'дня' : 'дней')}`,
+    recBannerText: "Сегодня рекомендуем повторить",
+
     // Беговая дорожка как отдельное занятие
     tmCardTitle: "🏃 Занятие на дорожке",
     tmShortTitle: "Беговая дорожка",
@@ -190,7 +200,7 @@
     partialMark: "не до конца"
   },
   en: {
-    subtitle: "Architect Pro · build 23",
+    subtitle: "Architect Pro · build 24",
     tabs: { workout: "Workout", plan: "Plan", health: "Health", stats: "Calendar", more: "More" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -283,7 +293,7 @@
     prevResult: "Previous", noData: "No data",
     warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down",
 
-    /* ----- build 23: week plan, health, calendar ----- */
+    /* ----- build 24: week plan, health, calendar ----- */
     min: "min", today: "today", timesShort: "times",
     weekdays: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
     weekdaysShort: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
@@ -335,6 +345,15 @@
     eyesTodayCount: (n) => `Done ${n} time${n === 1 ? '' : 's'} today.`,
     eyesFullSet: "full set",
 
+    doneSet: "Done",
+    recTitle: "What has rested",
+    recNote: "Abs, calves and joint work recover in a day. Everything else, legs and back included, needs two days: trained on Monday — the reminder comes on Wednesday, and repeats on Thursday if you skip it.",
+    recReady: (d) => d >= 1 ? `rested ${d} day${d === 1 ? '' : 's'} — ready` : 'ready',
+    recRest: (h) => h >= 24 ? `${Math.round(h / 24)} more day(s)` : `${h} more h`,
+    recNever: "not trained yet",
+    recBannerTitle: (m, d) => `${m.charAt(0).toUpperCase() + m.slice(1)}: rested ${d} day${d === 1 ? '' : 's'}`,
+    recBannerText: "Suggested for today",
+
     tmCardTitle: "🏃 Treadmill session",
     tmShortTitle: "Treadmill",
     tmWeekLabel: "Plan week",
@@ -373,7 +392,7 @@
     partialMark: "partial"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 23",
+    subtitle: "Architect Pro · збірка 24",
     tabs: { workout: "Тренування", plan: "План", health: "Здоров'я", stats: "Календар", more: "Ще" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -466,7 +485,7 @@
     prevResult: "Минулий результат", noData: "Немає даних",
     warmup: "🔥 Розминка", cooldown: "❄️ Заминка",
 
-    /* ----- збірка 23: план тижня, здоров'я, календар ----- */
+    /* ----- збірка 24: план тижня, здоров'я, календар ----- */
     min: "хв", today: "сьогодні", timesShort: "разів",
     weekdays: ["Неділя","Понеділок","Вівторок","Середа","Четвер","П'ятниця","Субота"],
     weekdaysShort: ["Нд","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -517,6 +536,15 @@
     doneTimes: (n) => `✓ ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'раз' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'рази' : 'разів')}`,
     eyesTodayCount: (n) => `Сьогодні комплекс пройдено ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'раз' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'рази' : 'разів')}.`,
     eyesFullSet: "повний комплекс",
+
+    doneSet: "Готово",
+    recTitle: "Що відпочило",
+    recNote: "Прес, литки та суглобова відновлюються за добу. Решті груп, разом із ногами і спиною, потрібно дві доби: зробили в понеділок — нагадування прийде в середу, а якщо пропустите, повториться в четвер.",
+    recReady: (d) => d >= 1 ? `відпочиває ${d} ${d === 1 ? 'день' : (d >= 2 && d <= 4 ? 'дні' : 'днів')} — можна` : 'можна',
+    recRest: (h) => h >= 24 ? `ще ${Math.round(h / 24)} дн.` : `ще ${h} год`,
+    recNever: "ще не тренували",
+    recBannerTitle: (m, d) => `${m.charAt(0).toUpperCase() + m.slice(1)}: відпочинок ${d} ${d === 1 ? 'день' : (d >= 2 && d <= 4 ? 'дні' : 'днів')}`,
+    recBannerText: "Сьогодні рекомендуємо повторити",
 
     tmCardTitle: "🏃 Заняття на доріжці",
     tmShortTitle: "Бігова доріжка",
