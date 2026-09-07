@@ -1,6 +1,6 @@
 ﻿const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 24",
+    subtitle: "Architect Pro · сборка 25",
     tabs: { workout: "Тренировка", plan: "План", health: "Здоровье", stats: "Календарь", more: "Ещё" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -61,8 +61,12 @@
       static: "Дыхание не останавливается ни на секунду. Считайте про себя: три счёта вдох носом, три счёта выдох ртом. Дышите животом, а не грудью. Задержка в статике быстро поднимает давление и выключает мышцы — вы упадёте не от усталости, а от нехватки воздуха.",
       cardio: "Ритм два на два: два движения — вдох, два движения — выдох. Вдох носом, выдох ртом. Если сбились и начали хватать воздух — сбавьте темп, а не терпите: восстановить ритм на ходу почти невозможно.",
       simple: "Выдох — на усилии, вдох — на возврате. Движение простое, следите просто за тем, чтобы не задерживать дыхание.",
-      mobility: "Дыхание свободное и непрерывное, в своём темпе. Ничего не задерживайте и не подстраивайте под движение — задача разминки в том, чтобы разогнать кровь, а не нагрузить."
+      mobility: "Дыхание свободное и непрерывное, в своём темпе. Ничего не задерживайте и не подстраивайте под движение — задача разминки в том, чтобы разогнать кровь, а не нагрузить.",
+      wheel: "Вдох — пока катитесь вперёд, выдох — на возврате. Здесь это важнее, чем везде: на вдохе живот раздувается и перестаёт держать поясницу, поэтому воздух набирайте до начала движения и выкатывайтесь на полувдохе, с втянутым животом. Возврат — на мощном выдохе, будто выдавливаете себя обратно. Задержка дыхания в нижней точке недопустима: там и так самое высокое давление в брюшной полости."
     },
+    wheelPose: { knees: "С колен", standing: "Стоя", oblique: "По диагонали, поочерёдно", hold: "Удержание" },
+    wheelReach: (p) => `амплитуда ${p}%`,
+    wheelWarn: "Поясница круглая, таз подкручен. Прогнулись — вернитесь раньше.",
     boardCaption: "Планка в два обведённых гнезда",
     boardGrip: { along: "вдоль тела", across: "поперёк" },
     formCaption: "Локти",
@@ -94,7 +98,7 @@
     prevResult: "Прошлый результат", noData: "Нет данных",
     warmup: "🔥 Разминка", cooldown: "❄️ Заминка",
 
-    /* ----- сборка 24: план недели, здоровье, календарь ----- */
+    /* ----- сборка 25: план недели, здоровье, календарь ----- */
     min: "мин", today: "сегодня", timesShort: "раз",
     weekdays: ["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],
     weekdaysShort: ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -104,6 +108,13 @@
     groupPlan: "План недели", groupGoltis: "Голтис", groupBoard: "Доска",
     groupReady: "Готовые наборы", groupMine: "Мои комплексы",
     createOwn: "Создать свой комплекс",
+    editProgram: "Изменить", deleteProgram: "Удалить",
+    editingTitle: "Правка комплекса",
+    saveChanges: "Сохранить изменения",
+    cancelEdit: "Отменить правку",
+    confirmDeleteProgram: (n) => `Удалить комплекс «${n}»? Записи в календаре останутся.`,
+    enterName: "Введите название комплекса",
+    pickExercises: "Отметьте хотя бы одно упражнение",
 
     // Мастер плана
     planQDays: "Сколько дней в неделю?",
@@ -124,7 +135,7 @@
       chest: "грудь", back: "спина", lats: "широчайшие", shoulders: "плечи",
       biceps: "бицепс", triceps: "трицепс", abs: "пресс", core: "кор",
       quads: "квадрицепс", hamstrings: "бицепс бедра", glutes: "ягодицы",
-      calves: "икры", legs: "ноги", joints: "суставы", mobility: "подвижность"
+      calves: "икры", legs: "ноги", joints: "суставы", mobility: "подвижность", obliques: "косые"
     },
 
     // Глаза
@@ -200,7 +211,7 @@
     partialMark: "не до конца"
   },
   en: {
-    subtitle: "Architect Pro · build 24",
+    subtitle: "Architect Pro · build 25",
     tabs: { workout: "Workout", plan: "Plan", health: "Health", stats: "Calendar", more: "More" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -260,8 +271,12 @@
       static: "Breathing never stops. Count it: three counts in through the nose, three counts out through the mouth. Breathe into the belly, not the chest. Holding your breath in a static hold raises pressure fast and shuts the muscles down — you fail from lack of air, not fatigue.",
       cardio: "Two by two: two movements in, two movements out. In through the nose, out through the mouth. If the rhythm breaks and you start gasping, slow down rather than push on — rhythm is almost impossible to recover on the move.",
       simple: "Exhale on the effort, inhale on the return. Simple movement — just make sure you do not hold your breath.",
-      mobility: "Breathe freely and continuously, at your own pace. Do not hold it or sync it with the movement — warm-up is about moving blood, not loading the body."
+      mobility: "Breathe freely and continuously, at your own pace. Do not hold it or sync it with the movement — warm-up is about moving blood, not loading the body.",
+      wheel: "Inhale as you roll out, exhale on the way back. Take the air before the movement starts and roll out with the belly drawn in: a puffed-up belly stops supporting the lower back. Return on a strong exhale. Never hold your breath at the bottom — pressure in the abdomen is already at its highest there."
     },
+    wheelPose: { knees: "From the knees", standing: "Standing", oblique: "Angled, alternating", hold: "Static hold" },
+    wheelReach: (p) => `range ${p}%`,
+    wheelWarn: "Lower back rounded, pelvis tucked. If it arches, come back sooner.",
     boardCaption: "Bar into the two circled slots",
     boardGrip: { along: "along the body", across: "across" },
     formCaption: "Elbows",
@@ -293,7 +308,7 @@
     prevResult: "Previous", noData: "No data",
     warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down",
 
-    /* ----- build 24: week plan, health, calendar ----- */
+    /* ----- build 25: week plan, health, calendar ----- */
     min: "min", today: "today", timesShort: "times",
     weekdays: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
     weekdaysShort: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
@@ -302,6 +317,13 @@
     groupPlan: "This week's plan", groupGoltis: "Goltis", groupBoard: "Push-up board",
     groupReady: "Ready-made", groupMine: "My routines",
     createOwn: "Create your own",
+    editProgram: "Edit", deleteProgram: "Delete",
+    editingTitle: "Editing routine",
+    saveChanges: "Save changes",
+    cancelEdit: "Cancel editing",
+    confirmDeleteProgram: (n) => `Delete the routine "${n}"? Calendar records stay.`,
+    enterName: "Enter a name for the routine",
+    pickExercises: "Tick at least one exercise",
 
     planQDays: "How many days a week?",
     planQLevel: "Your level",
@@ -321,7 +343,7 @@
       chest: "chest", back: "back", lats: "lats", shoulders: "shoulders",
       biceps: "biceps", triceps: "triceps", abs: "abs", core: "core",
       quads: "quads", hamstrings: "hamstrings", glutes: "glutes",
-      calves: "calves", legs: "legs", joints: "joints", mobility: "mobility"
+      calves: "calves", legs: "legs", joints: "joints", mobility: "mobility", obliques: "obliques"
     },
 
     eyesTitle: "👁 Eye exercises",
@@ -392,7 +414,7 @@
     partialMark: "partial"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 24",
+    subtitle: "Architect Pro · збірка 25",
     tabs: { workout: "Тренування", plan: "План", health: "Здоров'я", stats: "Календар", more: "Ще" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -452,8 +474,12 @@
       static: "Дихання не зупиняється ані на секунду. Рахуйте подумки: три рахунки вдих носом, три рахунки видих ротом. Дихайте животом, а не грудьми. Затримка у статиці швидко піднімає тиск і вимикає м'язи.",
       cardio: "Ритм два на два: два рухи — вдих, два рухи — видих. Вдих носом, видих ротом. Якщо збилися і почали хапати повітря — збавте темп, а не терпіть.",
       simple: "Видих — на зусиллі, вдих — на поверненні. Рух простий, стежте лише за тим, щоб не затримувати дихання.",
-      mobility: "Дихання вільне й безперервне, у своєму темпі. Нічого не затримуйте — завдання розминки розігнати кров, а не навантажити."
+      mobility: "Дихання вільне й безперервне, у своєму темпі. Нічого не затримуйте — завдання розминки розігнати кров, а не навантажити.",
+      wheel: "Вдих — поки котитеся вперед, видих — на поверненні. Повітря набирайте до початку руху і викочуйтесь із втягнутим животом. Повернення — на потужному видиху. Затримка дихання внизу неприпустима."
     },
+    wheelPose: { knees: "З колін", standing: "Стоячи", oblique: "По діагоналі, по черзі", hold: "Утримання" },
+    wheelReach: (p) => `амплітуда ${p}%`,
+    wheelWarn: "Поясниця кругла, таз підкручений. Прогнулись — поверніться раніше.",
     boardCaption: "Планка у два обведені гнізда",
     boardGrip: { along: "вздовж тіла", across: "упоперек" },
     formCaption: "Лікті",
@@ -485,7 +511,7 @@
     prevResult: "Минулий результат", noData: "Немає даних",
     warmup: "🔥 Розминка", cooldown: "❄️ Заминка",
 
-    /* ----- збірка 24: план тижня, здоров'я, календар ----- */
+    /* ----- збірка 25: план тижня, здоров'я, календар ----- */
     min: "хв", today: "сьогодні", timesShort: "разів",
     weekdays: ["Неділя","Понеділок","Вівторок","Середа","Четвер","П'ятниця","Субота"],
     weekdaysShort: ["Нд","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -494,6 +520,13 @@
     groupPlan: "План тижня", groupGoltis: "Голтіс", groupBoard: "Дошка",
     groupReady: "Готові набори", groupMine: "Мої комплекси",
     createOwn: "Створити свій комплекс",
+    editProgram: "Змінити", deleteProgram: "Видалити",
+    editingTitle: "Правка комплексу",
+    saveChanges: "Зберегти зміни",
+    cancelEdit: "Скасувати правку",
+    confirmDeleteProgram: (n) => `Видалити комплекс «${n}»? Записи в календарі залишаться.`,
+    enterName: "Введіть назву комплексу",
+    pickExercises: "Позначте хоча б одну вправу",
 
     planQDays: "Скільки днів на тиждень?",
     planQLevel: "Ваш рівень",
@@ -513,7 +546,7 @@
       chest: "груди", back: "спина", lats: "найширші", shoulders: "плечі",
       biceps: "біцепс", triceps: "трицепс", abs: "прес", core: "кор",
       quads: "квадрицепс", hamstrings: "біцепс стегна", glutes: "сідниці",
-      calves: "литки", legs: "ноги", joints: "суглоби", mobility: "рухливість"
+      calves: "литки", legs: "ноги", joints: "суглоби", mobility: "рухливість", obliques: "косі"
     },
 
     eyesTitle: "👁 Гімнастика для очей",

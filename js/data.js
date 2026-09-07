@@ -144,6 +144,134 @@
     ua: { name: "Суглобова гімнастика (Голтис)", desc: "Імпульсна активація.", instructions: "М'які кругові рухи в суглобах. Дихання спокійне. Не форсувати." }
   },
 
+  /* ===== КОЛЕСО ДЛЯ ПРЕССА (ролик на четырёх колёсах) =====
+
+     Раскатка — самое честное упражнение на пресс: прямая мышца живота
+     здесь не скручивает корпус, а изо всех сил не даёт ему разогнуться.
+     Вместе с ней работают широчайшие, плечи и разгибатели спины — весь
+     передний и задний пояс сразу.
+
+     Четыре колеса вместо одного дают широкую опору: снаряд не виляет и
+     не заваливается вбок. Это удобно, но и обманчиво — поясницу всё
+     равно держите вы, а провис здесь опаснее, чем в любом другом
+     упражнении. Поэтому амплитуда наращивается постепенно: сначала
+     короткая раскатка, потом полная, и только затем стоя.
+
+     Общее правило для всех вариантов: таз подкручен под себя, живот
+     втянут, поясница слегка круглая. Прогнулась спина — вы уехали
+     дальше, чем можете удержать. */
+
+  wheel_short: {
+    id: 'wheel_short', reps: 8, rest: 90,
+    breath: 'wheel',
+    muscles: ['abs', 'core', 'lats'], equipment: 'ab wheel', difficulty: 'beginner',
+    frames: [],
+    wheel: { pose: 'knees', reach: 0.45 },
+    ru: {
+      name: "Колесо · Короткая раскатка с колен",
+      desc: "С этого начинают: половина амплитуды, зато под контролем.",
+      instructions: "Встаньте на колени, подложив что-нибудь мягкое, возьмитесь за обе ручки, колесо под плечами. Подкрутите таз под себя и втяните живот — спина слегка круглая, не прогнутая. Катите колесо вперёд ровно настолько, чтобы корпус ушёл примерно наполовину, и сразу тяните обратно животом, а не руками. Руки почти прямые, они только держат. Прогнулась поясница или провис таз — вы уехали дальше, чем можете."
+    },
+    en: {
+      name: "Wheel · Short kneeling rollout",
+      desc: "Where everyone starts: half the range, fully controlled.",
+      instructions: "Kneel down on something soft, grip both handles, wheel under your shoulders. Tuck the pelvis and brace the abs — the lower back slightly rounded, never arched. Roll out only halfway and pull back with the abs, not the arms. Arms stay almost straight. If the back arches, you went further than you can hold."
+    },
+    ua: {
+      name: "Колесо · Коротка розкатка з колін",
+      desc: "З цього починають: половина амплітуди, зате під контролем.",
+      instructions: "Станьте на коліна, візьміться за обидві ручки, колесо під плечима. Підкрутіть таз під себе і втягніть живіт — спина злегка кругла, не прогнута. Котіть колесо вперед лише наполовину і тягніть назад животом, а не руками."
+    }
+  },
+  wheel_knees: {
+    id: 'wheel_knees', reps: 10, rest: 90,
+    breath: 'wheel',
+    muscles: ['abs', 'core', 'lats', 'shoulders'], equipment: 'ab wheel', difficulty: 'intermediate',
+    frames: [],
+    wheel: { pose: 'knees', reach: 0.85 },
+    ru: {
+      name: "Колесо · Раскатка с колен",
+      desc: "Основное упражнение: пресс, широчайшие и плечи разом.",
+      instructions: "Та же стойка на коленях, но катите почти до полного выпрямления — грудь идёт к полу, руки уходят вперёд над головой. В нижней точке не расслабляйтесь ни на мгновение: именно там пресс работает сильнее всего. Возврат начинайте с втягивания живота и подкручивания таза, руки подключаются последними. Вперёд медленно, на три счёта, обратно быстрее."
+    },
+    en: {
+      name: "Wheel · Kneeling rollout",
+      desc: "The main one: abs, lats and shoulders together.",
+      instructions: "Same kneeling position, but roll almost to full extension — chest towards the floor, arms overhead. Never relax at the bottom: that is where the abs work hardest. Start the return by drawing the belly in and tucking the pelvis; arms come last. Out slowly on a count of three, back faster."
+    },
+    ua: {
+      name: "Колесо · Розкатка з колін",
+      desc: "Основна вправа: прес, найширші та плечі разом.",
+      instructions: "Та сама стійка на колінах, але котіть майже до повного випрямлення — груди йдуть до підлоги. Внизу не розслабляйтесь ані на мить. Повернення починайте з втягування живота, руки підключаються останніми."
+    }
+  },
+  wheel_oblique: {
+    id: 'wheel_oblique', reps: 8, rest: 90,
+    breath: 'wheel',
+    muscles: ['abs', 'obliques', 'core', 'lats'], equipment: 'ab wheel', difficulty: 'intermediate',
+    frames: [],
+    wheel: { pose: 'oblique', reach: 0.7 },
+    ru: {
+      name: "Колесо · Раскатка по диагонали",
+      desc: "Косые мышцы живота — то, что не достаётся прямой раскаткой.",
+      instructions: "Стойка на коленях. Катите колесо не прямо перед собой, а под углом примерно сорок пять градусов вправо, вернитесь — и следующий повтор влево. Считайте парами: вправо и влево — это два. Корпус доворачивайте следом за колесом, но таз держите ровно, он не должен заваливаться. Амплитуда здесь меньше, чем в прямой раскатке: под углом пресс держит хуже, и это нормально."
+    },
+    en: {
+      name: "Wheel · Angled rollout",
+      desc: "The obliques, which a straight rollout barely touches.",
+      instructions: "Kneeling. Roll the wheel not straight ahead but at about forty-five degrees to the right, return, then the same to the left. Count reps in pairs. Let the torso follow the wheel, but keep the hips square. The range is shorter than in a straight rollout — at an angle the core holds less, and that is normal."
+    },
+    ua: {
+      name: "Колесо · Розкатка по діагоналі",
+      desc: "Косі м'язи живота — те, що не дістається прямою розкаткою.",
+      instructions: "Стійка на колінах. Котіть колесо під кутом близько сорока п'яти градусів праворуч, поверніться, потім так само ліворуч. Рахуйте повтори парами. Таз тримайте рівно."
+    }
+  },
+  wheel_hold: {
+    id: 'wheel_hold', reps: 20, rest: 60,
+    breath: 'static',
+    muscles: ['abs', 'core', 'lats'], equipment: 'ab wheel', difficulty: 'intermediate',
+    frames: [],
+    wheel: { pose: 'hold', reach: 0.75 },
+    ru: {
+      name: "Колесо · Удержание в раскате (сек)",
+      desc: "Статика в самой тяжёлой точке — вместо планки.",
+      instructions: "Выкатитесь с колен примерно на три четверти и замрите. Тело от колен до кистей — одна прямая линия, поясница не провисает. Дышите ровно и неглубоко. Как только таз пошёл вниз или спину потянуло — сворачивайтесь, не досиживая. Это упражнение честнее планки: спрятаться в нём негде."
+    },
+    en: {
+      name: "Wheel · Rollout hold (sec)",
+      desc: "A static hold at the hardest point — instead of a plank.",
+      instructions: "Roll out from the knees about three quarters of the way and freeze. Body from knees to wrists in one straight line, no sagging. Breathe evenly and shallowly. The moment the hips drop or the back pulls, come back — do not sit it out."
+    },
+    ua: {
+      name: "Колесо · Утримання в розкаті (сек)",
+      desc: "Статика в найважчій точці — замість планки.",
+      instructions: "Викотіться з колін приблизно на три чверті і завмріть. Тіло від колін до кистей — одна пряма лінія. Щойно таз пішов вниз — згортайтесь."
+    }
+  },
+  wheel_standing: {
+    id: 'wheel_standing', reps: 6, rest: 120,
+    breath: 'wheel',
+    muscles: ['abs', 'core', 'lats', 'shoulders', 'back'], equipment: 'ab wheel', difficulty: 'intermediate',
+    frames: [],
+    wheel: { pose: 'standing', reach: 0.9 },
+    ru: {
+      name: "Колесо · Раскатка стоя",
+      desc: "Вершина упражнения. Браться не раньше, чем даются двадцать чистых раскаток с колен.",
+      instructions: "Ноги на ширине таза, наклонитесь и поставьте колесо перед стопами. Катите вперёд, оставляя ноги прямыми, и главное — умейте вернуться: подъём идёт за счёт живота и широчайших. Первое время работайте лицом к стене, чтобы колесо упёрлось в неё раньше, чем вы ляжете на пол. С больной поясницей это упражнение не делают: нагрузка на неё здесь самая большая из всего, что есть в приложении."
+    },
+    en: {
+      name: "Wheel · Standing rollout",
+      desc: "The peak of this exercise. Not before twenty clean kneeling rollouts.",
+      instructions: "Feet hip-width, bend down and place the wheel in front of your feet. Roll out keeping the legs straight — and be sure you can come back: the return comes from the abs and lats. At first work facing a wall so the wheel stops before you do. Not for anyone with a bad lower back."
+    },
+    ua: {
+      name: "Колесо · Розкатка стоячи",
+      desc: "Вершина вправи. Не раніше, ніж даються двадцять чистих розкаток з колін.",
+      instructions: "Ноги на ширині таза, нахиліться і поставте колесо перед стопами. Котіть уперед, тримаючи ноги прямими, і головне — вмійте повернутися. Спочатку працюйте обличчям до стіни. З хворою попереком цю вправу не роблять."
+    }
+  },
+
   /* ===== СКЛАДНАЯ ДОСКА ДЛЯ ОТЖИМАНИЙ =====
      Ручки переставляются по цветным гнёздам, и от цвета зависит,
      какая мышца работает. Разметка с самой доски:
@@ -270,6 +398,15 @@ const DEFAULT_PROGRAMS = {
   push_board_chest: {
     name: { ru: 'Доска · Грудь и трицепс', en: 'Board · Chest & triceps', ua: 'Дошка · Груди і трицепс' },
     exercises: ['board_blue', 'board_green', 'board_yellow', 'board_red']
+  },
+  // Колесо для пресса: от короткой раскатки к полной, плюс статика
+  wheel_core: {
+    name: { ru: 'Колесо · Пресс', en: 'Wheel · Core', ua: 'Колесо · Прес' },
+    exercises: ['wheel_short', 'wheel_knees', 'wheel_oblique', 'wheel_hold']
+  },
+  wheel_full: {
+    name: { ru: 'Колесо · Полный круг', en: 'Wheel · Full circle', ua: 'Колесо · Повне коло' },
+    exercises: ['goltis_joint', 'wheel_knees', 'wheel_oblique', 'wheel_hold', 'crunches']
   }
 };
 

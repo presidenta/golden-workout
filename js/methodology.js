@@ -126,8 +126,8 @@ const FOCUS = {
   },
   core: {
     id: 'core',
-    pick: ['mountain_climbers', 'crunches', 'plank', 'glute_bridge'],
-    fallback: ['crunches', 'plank', 'glute_bridge'],
+    pick: ['wheel_knees', 'mountain_climbers', 'crunches', 'plank', 'glute_bridge'],
+    fallback: ['wheel_short', 'crunches', 'plank', 'glute_bridge'],
     ru: { name: 'Кор и кардио', note: 'Пресс и поясница восстанавливаются быстро — их можно грузить хоть каждый день. Плюс полчаса дорожки.' },
     en: { name: 'Core & cardio', note: 'Abs and lower back recover fast — they can be worked almost daily. Plus half an hour on the treadmill.' },
     ua: { name: 'Кор і кардіо', note: 'Прес і поперек відновлюються швидко. Плюс півгодини доріжки.' }

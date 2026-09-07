@@ -151,6 +151,7 @@
 
     // Constructor
     on('btnSaveCustom', 'click', () => this._saveCustomProgram());
+    on('btnCancelEdit', 'click', () => this._cancelEditProgram());
     on('btnOpenSettings2', 'click', () => this._toggleSettings(true));
 
     // Schedule
@@ -584,6 +585,7 @@
 
       group.keys.forEach(k => {
         const p = this.programs[k];
+        const own = k.startsWith('custom_');
         const row = document.createElement('button');
         row.className = 'prog-row' + (k === key ? ' current' : '');
         row.innerHTML = `
@@ -591,8 +593,23 @@
           <span class="prog-row-body">
             <span class="prog-row-name">${this._esc(this._progName(p))}</span>
             <span class="prog-row-meta">${this._esc(this._progMeta(p))}</span>
-          </span>`;
-        row.onclick = () => this._pickProgram(k);
+          </span>
+          ${own ? `<span class="prog-row-tools">
+              <span class="prog-tool" data-act="edit" title="${this._esc(this.t.editProgram)}">✎</span>
+              <span class="prog-tool" data-act="del" title="${this._esc(this.t.deleteProgram)}">🗑</span>
+            </span>` : ''}`;
+
+        row.onclick = (e) => {
+          // Свои комплексы можно править и удалять прямо отсюда
+          const tool = e.target.closest('.prog-tool');
+          if (tool) {
+            e.stopPropagation();
+            if (tool.dataset.act === 'edit') this._editCustomProgram(k);
+            else this._deleteCustomProgram(k);
+            return;
+          }
+          this._pickProgram(k);
+        };
         list.appendChild(row);
       });
     });
@@ -1169,6 +1186,59 @@
       </div>`;
   }
 
+  /* Схема раската. Фотографий у этого снаряда нет, а понять нужно две
+     вещи: откуда куда катится колесо и как далеко. Рисуем силуэт в
+     начальном положении, дугу траектории и вторую фигуру в конечной
+     точке — её глубина берётся из reach самого упражнения. */
+  _wheelFigure(ex) {
+    const w = ex.wheel;
+    const reach = w.reach || 0.7;
+    const t = this.t;
+
+    // Опорная точка: колени (или стопы для варианта стоя)
+    const baseX = 46, baseY = 104;
+    // Куда уезжает колесо
+    const endX = baseX + 130 * reach;
+    const startX = baseX + 26;
+    const standing = w.pose === 'standing';
+    const hipY = standing ? 60 : 86;
+
+    const angle = w.pose === 'oblique' ? ' transform="skewX(-8)"' : '';
+
+    return `
+      <div class="wheel-figure">
+        <svg viewBox="0 0 200 130" class="wheel-svg" aria-hidden="true">
+          <!-- пол -->
+          <line x1="8" y1="112" x2="192" y2="112" stroke="#33333f" stroke-width="2"/>
+
+          <g${angle}>
+            <!-- начальное положение: корпус вертикально над опорой -->
+            <line x1="${baseX}" y1="${baseY}" x2="${baseX + 6}" y2="${hipY - 26}"
+                  stroke="#4a4a58" stroke-width="4" stroke-linecap="round"/>
+            <line x1="${baseX + 6}" y1="${hipY - 26}" x2="${startX}" y2="${baseY - 6}"
+                  stroke="#4a4a58" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="${startX}" cy="${baseY - 4}" r="7" fill="none" stroke="#4a4a58" stroke-width="3"/>
+
+            <!-- траектория -->
+            <path d="M ${startX} ${baseY - 4} Q ${(startX + endX) / 2} ${baseY - 30} ${endX} ${baseY - 4}"
+                  fill="none" stroke="var(--gold-dark)" stroke-width="2" stroke-dasharray="4 4"/>
+
+            <!-- конечное положение: тело вытянуто в линию -->
+            <line x1="${baseX}" y1="${baseY}" x2="${endX}" y2="${baseY - 4}"
+                  stroke="var(--gold-primary)" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="${endX}" cy="${baseY - 4}" r="8"
+                    fill="rgba(212,175,55,0.18)" stroke="var(--gold-primary)" stroke-width="3"/>
+            <circle cx="${endX}" cy="${baseY - 4}" r="2.5" fill="var(--gold-primary)"/>
+
+            <!-- опора: колени или стопы -->
+            <circle cx="${baseX}" cy="${baseY + 4}" r="4" fill="#4a4a58"/>
+          </g>
+        </svg>
+        <div class="board-caption">${this._esc(t.wheelPose[w.pose] || '')} · ${this._esc(t.wheelReach(Math.round(reach * 100)))}</div>
+        <div class="board-caption form-caption">${this._esc(t.wheelWarn)}</div>
+      </div>`;
+  }
+
   /* ----- Анимация упражнения -----
      Кадров два: начало и конец движения. Чередуя их, получаем анимацию.
      Пока идёт подход, кадры переключаются по командам «вдох» и «выдох»,
@@ -1181,6 +1251,8 @@
     if (oldFb) oldFb.remove();
     const oldBoard = box.querySelector('.board-figure');
     if (oldBoard) oldBoard.remove();
+    const oldWheel = box.querySelector('.wheel-figure');
+    if (oldWheel) oldWheel.remove();
 
     this.frames = (ex && ex.frames) || [];
     this.frameIndex = 0;
@@ -1190,6 +1262,14 @@
       this._stopFrameLoop();
       img.style.display = 'none';
       box.insertAdjacentHTML('beforeend', this._boardFigure(ex));
+      return;
+    }
+
+    // Колесо для пресса: показываем траекторию и глубину раската
+    if (ex && ex.wheel) {
+      this._stopFrameLoop();
+      img.style.display = 'none';
+      box.insertAdjacentHTML('beforeend', this._wheelFigure(ex));
       return;
     }
 
@@ -1639,18 +1719,84 @@
     });
   }
 
+  /* Открыть свой комплекс на правку: конструктор заполняется тем, что
+     в нём уже есть, и сохранение обновляет ту же запись, а не плодит
+     копии. Раньше собранный комплекс изменить было нельзя вовсе. */
+  _editCustomProgram(id) {
+    const prog = this.programs[id];
+    if (!prog) return;
+
+    this._editingProgram = id;
+    this._switchTab('more');
+    document.getElementById('customProgName').value = this._progName(prog);
+    document.querySelectorAll('#constructorExercisesList input').forEach(cb => {
+      cb.checked = (prog.exercises || []).includes(cb.value);
+    });
+    this._syncConstructorMode();
+    document.getElementById('tabContentMore').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async _deleteCustomProgram(id) {
+    const prog = this.programs[id];
+    if (!prog) return;
+    if (!confirm(this.t.confirmDeleteProgram(this._progName(prog)))) return;
+
+    delete this.programs[id];
+    await db.deleteProgram(id).catch(e => console.warn('[UI] не удалось удалить:', e));
+
+    const patch = { programs: this.programs };
+    // Удалили тот комплекс, что был выбран — переходим на первый доступный
+    if (store.getState().currentProgram === id) {
+      patch.currentProgram = Object.keys(this.programs)[0] || 'fullbody';
+    }
+    store.setState(patch);
+
+    if (this._editingProgram === id) this._cancelEditProgram();
+    this._safe('programs', () => this._renderPrograms());
+    this._safe('planList', () => this._renderPlanList());
+    this._safe('schedule', () => this._renderSchedule());
+  }
+
+  // Вид конструктора: создаём новый комплекс или правим существующий
+  _syncConstructorMode() {
+    const editing = !!this._editingProgram;
+    const title = document.querySelector('#tabContentMore [data-i18n="builderTitle"]');
+    if (title) title.textContent = editing ? this.t.editingTitle : this.t.builderTitle;
+    const saveBtn = document.getElementById('btnSaveCustom');
+    if (saveBtn) saveBtn.textContent = editing ? this.t.saveChanges : this.t.saveProgram;
+    const cancelBtn = document.getElementById('btnCancelEdit');
+    if (cancelBtn) {
+      cancelBtn.classList.toggle('hidden', !editing);
+      cancelBtn.textContent = this.t.cancelEdit;
+    }
+  }
+
+  _cancelEditProgram() {
+    this._editingProgram = null;
+    document.getElementById('customProgName').value = '';
+    document.querySelectorAll('#constructorExercisesList input:checked').forEach(cb => { cb.checked = false; });
+    this._syncConstructorMode();
+  }
+
   _saveCustomProgram() {
     const name = document.getElementById('customProgName').value.trim();
-    if (!name) { alert('Введите название'); return; }
+    if (!name) { alert(this.t.enterName); return; }
     const checked = Array.from(document.querySelectorAll('#constructorExercisesList input:checked')).map(cb => cb.value);
-    if (!checked.length) { alert('Выберите упражнения'); return; }
-    const id = 'custom_' + Date.now();
+    if (!checked.length) { alert(this.t.pickExercises); return; }
+
+    // Правим существующий — сохраняем под тем же ключом
+    const id = this._editingProgram || ('custom_' + Date.now());
     const prog = { id, name, exercises: checked };
     this.programs[id] = prog;
     store.setState({ programs: this.programs, currentProgram: id });
-    this._renderPrograms();
-    this._renderPlanList();
+
+    this._editingProgram = null;
+    this._syncConstructorMode();
+    this._safe('programs', () => this._renderPrograms());
+    this._safe('planList', () => this._renderPlanList());
+    this._safe('schedule', () => this._renderSchedule());
     this._switchTab('workout');
+
     // Ключ у этого хранилища лежит внутри записи, поэтому программа
     // кладётся целиком. Раньше здесь была обёртка {key, value} —
     // база её отвергала, и свои комплексы пропадали при перезапуске.
