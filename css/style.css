@@ -1583,6 +1583,29 @@ input:checked + .slider:before { transform: translateX(18px); }
   border: 1px solid rgba(46, 204, 113, 0.5);
 }
 
+/* ----- Дописать занятие задним числом ----- */
+.manual-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: default;
+}
+.manual-check { width: 18px; height: 18px; accent-color: var(--gold-primary); flex-shrink: 0; }
+.manual-label { flex: 1; min-width: 0; cursor: pointer; }
+.manual-label .exercise-name { white-space: normal; }
+.manual-nums { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.manual-nums input {
+  width: 46px;
+  padding: 6px 4px;
+  text-align: center;
+  background: #050507;
+  border: 1px solid #333;
+  border-radius: 7px;
+  color: #fff;
+  font-size: 0.8rem;
+}
+.manual-x { color: var(--text-muted); font-size: 0.75rem; }
+
 /* Правка и удаление своих комплексов — прямо в списке */
 .prog-row-tools {
   display: flex;

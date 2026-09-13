@@ -1,6 +1,6 @@
 ﻿const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 25",
+    subtitle: "Architect Pro · сборка 26",
     tabs: { workout: "Тренировка", plan: "План", health: "Здоровье", stats: "Календарь", more: "Ещё" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -98,7 +98,7 @@
     prevResult: "Прошлый результат", noData: "Нет данных",
     warmup: "🔥 Разминка", cooldown: "❄️ Заминка",
 
-    /* ----- сборка 25: план недели, здоровье, календарь ----- */
+    /* ----- сборка 26: план недели, здоровье, календарь ----- */
     min: "мин", today: "сегодня", timesShort: "раз",
     weekdays: ["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],
     weekdaysShort: ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -114,6 +114,13 @@
     cancelEdit: "Отменить правку",
     confirmDeleteProgram: (n) => `Удалить комплекс «${n}»? Записи в календаре останутся.`,
     enterName: "Введите название комплекса",
+    manualTitle: "Дописать занятие",
+    manualHint: "Отметьте упражнения и укажите, сколько подходов и повторов было сделано.",
+    manualDateLabel: "Дата", manualTimeLabel: "Время",
+    manualSave: "Записать в календарь",
+    manualSaved: "Занятие записано",
+    manualNoDate: "Укажите дату",
+    manualEntry: "Дописано вручную",
     pickExercises: "Отметьте хотя бы одно упражнение",
 
     // Мастер плана
@@ -211,7 +218,7 @@
     partialMark: "не до конца"
   },
   en: {
-    subtitle: "Architect Pro · build 25",
+    subtitle: "Architect Pro · build 26",
     tabs: { workout: "Workout", plan: "Plan", health: "Health", stats: "Calendar", more: "More" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -308,7 +315,7 @@
     prevResult: "Previous", noData: "No data",
     warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down",
 
-    /* ----- build 25: week plan, health, calendar ----- */
+    /* ----- build 26: week plan, health, calendar ----- */
     min: "min", today: "today", timesShort: "times",
     weekdays: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
     weekdaysShort: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
@@ -323,6 +330,13 @@
     cancelEdit: "Cancel editing",
     confirmDeleteProgram: (n) => `Delete the routine "${n}"? Calendar records stay.`,
     enterName: "Enter a name for the routine",
+    manualTitle: "Add a past session",
+    manualHint: "Tick the exercises and set how many sets and reps were done.",
+    manualDateLabel: "Date", manualTimeLabel: "Time",
+    manualSave: "Add to the calendar",
+    manualSaved: "Session recorded",
+    manualNoDate: "Pick a date",
+    manualEntry: "Added by hand",
     pickExercises: "Tick at least one exercise",
 
     planQDays: "How many days a week?",
@@ -414,7 +428,7 @@
     partialMark: "partial"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 25",
+    subtitle: "Architect Pro · збірка 26",
     tabs: { workout: "Тренування", plan: "План", health: "Здоров'я", stats: "Календар", more: "Ще" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -511,7 +525,7 @@
     prevResult: "Минулий результат", noData: "Немає даних",
     warmup: "🔥 Розминка", cooldown: "❄️ Заминка",
 
-    /* ----- збірка 25: план тижня, здоров'я, календар ----- */
+    /* ----- збірка 26: план тижня, здоров'я, календар ----- */
     min: "хв", today: "сьогодні", timesShort: "разів",
     weekdays: ["Неділя","Понеділок","Вівторок","Середа","Четвер","П'ятниця","Субота"],
     weekdaysShort: ["Нд","Пн","Вт","Ср","Чт","Пт","Сб"],
@@ -526,6 +540,13 @@
     cancelEdit: "Скасувати правку",
     confirmDeleteProgram: (n) => `Видалити комплекс «${n}»? Записи в календарі залишаться.`,
     enterName: "Введіть назву комплексу",
+    manualTitle: "Дописати заняття",
+    manualHint: "Позначте вправи та вкажіть, скільки підходів і повторів було зроблено.",
+    manualDateLabel: "Дата", manualTimeLabel: "Час",
+    manualSave: "Записати в календар",
+    manualSaved: "Заняття записано",
+    manualNoDate: "Вкажіть дату",
+    manualEntry: "Дописано вручну",
     pickExercises: "Позначте хоча б одну вправу",
 
     planQDays: "Скільки днів на тиждень?",

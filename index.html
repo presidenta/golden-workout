@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" href="assets/icon-180.png">
 
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css?v=25">
+  <link rel="stylesheet" href="css/style.css?v=26">
 </head>
 <body>
 <div class="app-wrapper">
@@ -513,6 +513,10 @@
         <div class="cal-streak" id="statsStreak">🔥 Серия: 0 дней</div>
       </div>
 
+      <!-- Дописать занятие, которое приложение не застало:
+           тренировались без телефона или запись потерялась -->
+      <button class="btn-gold btn-secondary" id="btnAddManual" style="margin-top:10px;">＋ Дописать занятие</button>
+
       <div class="day-card hidden" id="dayCard"></div>
 
       <div class="stats-card" style="margin-top:10px;">
@@ -641,6 +645,31 @@
   <button class="btn-gold btn-secondary eyes-exit-btn" id="btnCardioFinish">Закончить и записать</button>
 </div>
 
+<!-- ДОПИСАТЬ ЗАНЯТИЕ ЗАДНИМ ЧИСЛОМ -->
+<div id="manualLogModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <button class="modal-close" id="btnManualX" aria-label="Закрыть">✕</button>
+    <h3 style="color: var(--gold-primary); margin-bottom: 6px;" id="manualTitle">Дописать занятие</h3>
+    <div class="health-sub" id="manualHint">Отметьте упражнения и укажите, сколько подходов и повторов было сделано.</div>
+
+    <div style="display:flex; gap:8px;">
+      <div class="form-group" style="flex:1;">
+        <label id="manualDateLabel">Дата</label>
+        <input type="date" id="manualDate">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label id="manualTimeLabel">Время</label>
+        <input type="time" id="manualTime">
+      </div>
+    </div>
+
+    <div class="exercise-list" id="manualExercises" style="max-height:none;"></div>
+
+    <button class="btn-gold" id="btnManualSave">Записать в календарь</button>
+    <button class="btn-gold btn-secondary" id="btnManualCancel" style="margin-top:8px;">Отмена</button>
+  </div>
+</div>
+
 <!-- ЗАПИСЬ РЕЗУЛЬТАТА ЗАНЯТИЯ НА ДОРОЖКЕ -->
 <div id="tmLogModal" class="modal-overlay hidden">
   <div class="modal-content">
@@ -708,18 +737,18 @@
   </button>
 </nav>
 
-<script src="js/data.js?v=25"></script>
-<script src="js/methodology.js?v=25"></script>
-<script src="js/eyes.js?v=25"></script>
-<script src="js/treadmill.js?v=25"></script>
-<script src="js/recovery.js?v=25"></script>
-<script src="js/i18n.js?v=25"></script>
-<script src="js/store.js?v=25"></script>
-<script src="js/db.js?v=25"></script>
-<script src="js/timer.js?v=25"></script>
-<script src="js/speech.js?v=25"></script>
-<script src="js/workout.js?v=25"></script>
-<script src="js/ui.js?v=25"></script>
-<script src="js/app.js?v=25"></script>
+<script src="js/data.js?v=26"></script>
+<script src="js/methodology.js?v=26"></script>
+<script src="js/eyes.js?v=26"></script>
+<script src="js/treadmill.js?v=26"></script>
+<script src="js/recovery.js?v=26"></script>
+<script src="js/i18n.js?v=26"></script>
+<script src="js/store.js?v=26"></script>
+<script src="js/db.js?v=26"></script>
+<script src="js/timer.js?v=26"></script>
+<script src="js/speech.js?v=26"></script>
+<script src="js/workout.js?v=26"></script>
+<script src="js/ui.js?v=26"></script>
+<script src="js/app.js?v=26"></script>
 </body>
 </html>

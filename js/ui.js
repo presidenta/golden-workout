@@ -230,6 +230,12 @@
     on('btnCalPrev', 'click', () => this._calShift(-1));
     on('btnCalNext', 'click', () => this._calShift(1));
 
+    // Дописать занятие задним числом
+    on('btnAddManual', 'click', () => this._openManualLog());
+    on('btnManualSave', 'click', () => this._saveManualLog());
+    on('btnManualCancel', 'click', () => this._closeManualLog());
+    on('btnManualX', 'click', () => this._closeManualLog());
+
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (document.getElementById('screenWorkout').classList.contains('hidden')) return;
@@ -244,7 +250,7 @@
      и стрелка в шапке, и системная кнопка «назад». */
 
   _canGoBack() {
-    const open = ['eyesScreen', 'tmScreen', 'cardioScreen', 'tmLogModal',
+    const open = ['eyesScreen', 'tmScreen', 'cardioScreen', 'tmLogModal', 'manualLogModal',
                   'programSheet', 'previewModal', 'settingsModal', 'screenWorkout']
       .some(id => {
         const el = document.getElementById(id);
@@ -258,6 +264,7 @@
     // Сначала закрываем то, что открыто поверх раздела
     const close = [
       ['tmLogModal', () => this._skipTreadmillLog()],
+      ['manualLogModal', () => this._closeManualLog()],
       ['eyesScreen', () => this._exitEyes()],
       ['tmScreen', () => this._exitTreadmill()],
       ['cardioScreen', () => this._exitCardio()],
@@ -697,7 +704,29 @@
 
   // index — номер упражнения в плане. В движке перед основными идёт
   // разминка, поэтому номер сдвигаем на её длину.
+  /* ----- Сохранить сделанное перед новым упражнением -----
+     Движок при старте обнуляет журнал подходов. А выбор упражнения из
+     списка — это и есть новый старт: человек делал синий хват, выбирал
+     зелёный, и подходы по синему стирались без следа. Так пропадала вся
+     работа, кроме самого последнего упражнения.
+
+     Теперь перед каждым запуском накопленное уходит в календарь. */
+  _flushWorkout() {
+    if (!this.engine) return;
+    // Незакрытый подход тоже считается
+    if (this.currentRep > 0) {
+      this.engine.logSet({ actualReps: this.currentRep, weight: 0, rpe: 7, notes: '' });
+      this.currentRep = 0;
+    }
+    if (this.engine.logs && this.engine.logs.length) {
+      this.engine.finish(true);
+      this._safe('stats', () => this._renderStats());
+      this._safe('recovery', () => this._renderRecovery());
+    }
+  }
+
   _startExercise(index) {
+    this._flushWorkout();
     const state = store.getState();
     this.engine.start(state.currentProgram, true);
     const target = this.engine.warmupCount() + index;
@@ -710,6 +739,7 @@
 
   // Тренировка целиком, с самого начала — то есть с разминки
   _startSession() {
+    this._flushWorkout();
     const state = store.getState();
     this.engine.start(state.currentProgram, true);
     this._showWorkoutScreen();
@@ -1965,6 +1995,8 @@
      осталось. Считать самому не нужно, глаза заняты другим. */
 
   _startEyes() {
+    // Уходим в другое занятие — сделанные подходы сохраняем
+    this._flushWorkout();
     this.eyesSteps = buildEyeSession(store.getState().eyesLevel);
     this.eyesIndex = 0;
     this.eyesPaused = false;
@@ -2344,6 +2376,7 @@
   }
 
   _startTreadmill() {
+    this._flushWorkout();
     this._tmSteps = buildTreadmillSession(this._tmWeek());
     this._tmIndex = 0;
     this._tmPaused = false;
@@ -2535,6 +2568,100 @@
     this._updateBackButton();
   }
 
+  /* ----- Дописать занятие задним числом -----
+     Нужно там, где приложение не успело: тренировались без телефона,
+     забыли нажать «готово» или запись потерялась. Дата и время
+     указываются вручную, поэтому такая тренировка попадает в календарь
+     на своё место и участвует в напоминаниях о повторе. */
+
+  _openManualLog() {
+    const t = this.t;
+    const now = new Date();
+
+    document.getElementById('manualTitle').textContent = t.manualTitle;
+    document.getElementById('manualHint').textContent = t.manualHint;
+    document.getElementById('manualDateLabel').textContent = t.manualDateLabel;
+    document.getElementById('manualTimeLabel').textContent = t.manualTimeLabel;
+    document.getElementById('btnManualSave').textContent = t.manualSave;
+    document.getElementById('btnManualCancel').textContent = t.cancel;
+
+    // По умолчанию — выбранный в календаре день, иначе сегодня
+    document.getElementById('manualDate').value = this._selectedDay || dateKey(now);
+    document.getElementById('manualTime').value =
+      `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    this._renderManualExercises();
+    document.getElementById('manualLogModal').classList.remove('hidden');
+    this._updateBackButton();
+  }
+
+  _renderManualExercises() {
+    const box = document.getElementById('manualExercises');
+    box.innerHTML = '';
+    const sets = this._getEffectiveSets();
+
+    Object.keys(EXERCISE_DB).forEach(key => {
+      const ex = EXERCISE_DB[key];
+      const loc = ex[this.currentLang] || ex.ru;
+      const row = document.createElement('div');
+      row.className = 'exercise-item manual-row';
+      row.innerHTML = `
+        <input type="checkbox" value="${key}" id="m_${key}" class="manual-check">
+        <label for="m_${key}" class="manual-label">
+          <span class="exercise-name">${this._esc(loc.name)}</span>
+        </label>
+        <span class="manual-nums">
+          <input type="number" class="manual-sets" min="1" max="20" value="${sets}" aria-label="${this._esc(this.t.setsShort)}">
+          <span class="manual-x">×</span>
+          <input type="number" class="manual-reps" min="1" max="300" value="${ex.reps}" aria-label="${this._esc(this.t.reps)}">
+        </span>`;
+      box.appendChild(row);
+    });
+  }
+
+  async _saveManualLog() {
+    const date = document.getElementById('manualDate').value;
+    const time = document.getElementById('manualTime').value || '12:00';
+    if (!date) { alert(this.t.manualNoDate); return; }
+
+    const rows = Array.from(document.querySelectorAll('#manualExercises .manual-row'))
+      .filter(r => r.querySelector('.manual-check').checked);
+    if (!rows.length) { alert(this.t.pickExercises); return; }
+
+    const at = new Date(`${date}T${time}`).getTime();
+    const logs = [];
+    rows.forEach(r => {
+      const id = r.querySelector('.manual-check').value;
+      const setsCount = Math.max(1, parseInt(r.querySelector('.manual-sets').value, 10) || 1);
+      const reps = Math.max(1, parseInt(r.querySelector('.manual-reps').value, 10) || 1);
+      // Каждый подход — отдельная строка, как при обычной тренировке
+      for (let s = 1; s <= setsCount; s++) {
+        logs.push({ exerciseId: id, set: s, actualReps: reps, weight: 0, rpe: 7, notes: '', timestamp: at });
+      }
+    });
+
+    await db.addWorkout({
+      date,
+      program: 'manual',
+      startTime: at,
+      endTime: at,
+      durationMin: 0,
+      exercises: logs,
+      manual: true
+    }).catch(e => console.warn('[Manual] запись не сохранилась:', e));
+
+    document.getElementById('manualLogModal').classList.add('hidden');
+    alert(`${this.t.manualSaved}\n${logs.length} ${this.t.setsShort}`);
+    this._safe('stats', () => this._renderStats());
+    this._safe('recovery', () => this._renderRecovery());
+    this._updateBackButton();
+  }
+
+  _closeManualLog() {
+    document.getElementById('manualLogModal').classList.add('hidden');
+    this._updateBackButton();
+  }
+
   /* ----- Что отдохнуло и что пора повторить -----
      Считаем по группам мышц, а не по названиям упражнений: приседания
      можно повторить выпадами, для квадрицепса это та же работа.
@@ -2663,6 +2790,7 @@
   }
 
   _startCardio() {
+    this._flushWorkout();
     this._cardioTotalSec = this._cardioMinutes() * 60;
     this._cardioLeftSec = this._cardioTotalSec;
     this._cardioPaused = false;
@@ -2900,7 +3028,10 @@
 
     workouts.forEach(w => {
       const prog = this.programs[w.program];
-      const title = prog ? this._progName(prog) : w.program;
+      // Дописанное вручную подписываем понятно, а не служебным словом
+      const title = (w.manual || w.program === 'manual')
+        ? this.t.manualEntry
+        : (prog ? this._progName(prog) : w.program);
       const sets = (w.exercises || []).length;
       const byEx = {};
       (w.exercises || []).forEach(l => {
