@@ -1,6 +1,6 @@
 ﻿const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 26",
+    subtitle: "Architect Pro · сборка 27",
     tabs: { workout: "Тренировка", plan: "План", health: "Здоровье", stats: "Календарь", more: "Ещё" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -96,6 +96,7 @@
     reminderBanner: (time, prog) => `⏰ Время тренировки (${time})! Сегодня: ${prog}`,
     muscles: "Мышцы", equipment: "Инвентарь", instructions: "Техника",
     prevResult: "Прошлый результат", noData: "Нет данных",
+    doneOfProgram: (d, n) => `Выполнено: ${d}/${n}`,
     warmup: "🔥 Разминка", cooldown: "❄️ Заминка",
 
     /* ----- сборка 26: план недели, здоровье, календарь ----- */
@@ -218,7 +219,7 @@
     partialMark: "не до конца"
   },
   en: {
-    subtitle: "Architect Pro · build 26",
+    subtitle: "Architect Pro · build 27",
     tabs: { workout: "Workout", plan: "Plan", health: "Health", stats: "Calendar", more: "More" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -313,6 +314,7 @@
     reminderBanner: (time, prog) => `⏰ Workout time (${time})! Today: ${prog}`,
     muscles: "Muscles", equipment: "Equipment", instructions: "Form",
     prevResult: "Previous", noData: "No data",
+    doneOfProgram: (d, n) => `Done: ${d}/${n}`,
     warmup: "🔥 Warm-up", cooldown: "❄️ Cool-down",
 
     /* ----- build 26: week plan, health, calendar ----- */
@@ -428,7 +430,7 @@
     partialMark: "partial"
   },
   ua: {
-    subtitle: "Architect Pro · збірка 26",
+    subtitle: "Architect Pro · збірка 27",
     tabs: { workout: "Тренування", plan: "План", health: "Здоров'я", stats: "Календар", more: "Ще" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -523,6 +525,7 @@
     reminderBanner: (time, prog) => `⏰ Час тренування (${time})! Сьогодні: ${prog}`,
     muscles: "М'язи", equipment: "Інвентар", instructions: "Техніка",
     prevResult: "Минулий результат", noData: "Немає даних",
+    doneOfProgram: (d, n) => `Виконано: ${d}/${n}`,
     warmup: "🔥 Розминка", cooldown: "❄️ Заминка",
 
     /* ----- збірка 26: план тижня, здоров'я, календар ----- */

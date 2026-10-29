@@ -43,10 +43,22 @@
     // Программы выбранной методики не хранятся в базе: генератор при
     // тех же ответах всегда соберёт ту же неделю. Достаточно помнить,
     // какая методика выбрана и на каком уровне.
+    /* Собираем и те методики, на чьи программы ссылается расписание.
+       Ручная правка дней снимает отметку методики, а дни остаются её
+       программами — раньше после перезапуска их было не собрать, и
+       расписание указывало в пустоту. */
     const st = store.getState();
-    if (st.planMethod && typeof METHODS !== 'undefined' && METHODS[st.planMethod]) {
-      const plan = buildWeekPlan(st.planMethod, st.level);
-      if (plan) Object.assign(this.programs, plan.programs);
+    if (typeof METHODS !== 'undefined') {
+      const ids = new Set();
+      if (st.planMethod && METHODS[st.planMethod]) ids.add(st.planMethod);
+      Object.values(st.schedule || {}).forEach(key => {
+        const id = this._methodOfProgram(key);
+        if (id) ids.add(id);
+      });
+      ids.forEach(id => {
+        const plan = buildWeekPlan(id, st.level);
+        if (plan) Object.assign(this.programs, plan.programs);
+      });
     }
 
     // Программа могла исчезнуть вместе со сменой плана — тогда
@@ -57,6 +69,15 @@
 
     // Движок берёт программы из store, поэтому список нужно продублировать туда.
     store.setState({ programs: this.programs });
+  }
+
+  // Ключ программы методики — auto_<методика>_<фокус>. В названиях
+  // методик бывает подчёркивание, поэтому берём самое длинное совпадение.
+  _methodOfProgram(key) {
+    if (typeof key !== 'string' || !key.startsWith('auto_')) return null;
+    return Object.keys(METHODS)
+      .filter(id => key.startsWith(`auto_${id}_`))
+      .sort((a, b) => b.length - a.length)[0] || null;
   }
 
   _onStateChange(s) {
@@ -85,8 +106,11 @@
     // Volume
     document.querySelectorAll('.vol-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        store.setState({ volumeLevel: e.target.dataset.vol });
-        document.querySelectorAll('.vol-btn').forEach(b => b.classList.toggle('active', b === e.target));
+        const vol = e.currentTarget.dataset.vol;
+        store.setState({ volumeLevel: vol });
+        // Выбор объёма переживает перезапуск — app.js его и восстанавливает
+        this._persistSetting('volumeLevel', vol);
+        document.querySelectorAll('.vol-btn').forEach(b => b.classList.toggle('active', b === e.currentTarget));
         this._renderPlanList();
       });
     });
@@ -347,10 +371,7 @@
     if (this.speech) {
       this.speech.lang = lang === 'ru' ? 'ru-RU' : lang === 'ua' ? 'uk-UA' : 'en-US';
     }
-    db.get('settings', 'app').then(saved => {
-      const s = { ...(saved || {}), lang };
-      db.set('settings', 'app', s);
-    }).catch(() => {});
+    this._persistSetting('lang', lang);
     this._syncLangButtons();
   }
 
@@ -653,7 +674,7 @@
     const prog = this.programs[store.getState().currentProgram];
     if (!prog) return;
     const effSets = this._getEffectiveSets();
-    let done = 0;
+    const items = {};
 
     prog.exercises.forEach((key, idx) => {
       const ex = EXERCISE_DB[key];
@@ -673,12 +694,28 @@
       // Начать можно оттуда.
       item.onclick = () => this._openPreview(idx);
       box.appendChild(item);
+      items[key] = item;
       // В списке показываем первый кадр упражнения
       const img = item.querySelector('img');
       this._loadImage(img, (ex.frames && ex.frames[0]) || '');
     });
 
-    document.getElementById('sessionProgressLabel').textContent = `${this.t.streak.split(' ')[0]}: ${done}/${prog.exercises.length}`;
+    /* Что из этой программы уже сделано сегодня. Раньше счётчик был
+       нулём навсегда, а вместо «Выполнено» стоял огонёк от «Серии». */
+    const label = document.getElementById('sessionProgressLabel');
+    const total = prog.exercises.length;
+    label.textContent = this.t.doneOfProgram(0, total);
+    const token = this._planListToken = (this._planListToken || 0) + 1;
+    db.getWorkoutsByDate(dateKey()).then(workouts => {
+      if (token !== this._planListToken) return;   // список уже перерисован
+      const doneIds = new Set();
+      workouts.forEach(w => (w.exercises || []).forEach(l => doneIds.add(l.exerciseId)));
+      const done = prog.exercises.filter(k => doneIds.has(k)).length;
+      label.textContent = this.t.doneOfProgram(done, total);
+      Object.keys(items).forEach(k => {
+        if (doneIds.has(k)) items[k].querySelector('.exercise-status').textContent = '✅';
+      });
+    }).catch(() => {});
   }
 
   _loadImage(img, url) {
@@ -713,6 +750,7 @@
      Теперь перед каждым запуском накопленное уходит в календарь. */
   _flushWorkout() {
     if (!this.engine) return;
+    this._clearRepTimers();
     // Незакрытый подход тоже считается
     if (this.currentRep > 0) {
       this.engine.logSet({ actualReps: this.currentRep, weight: 0, rpe: 7, notes: '' });
@@ -722,6 +760,7 @@
       this.engine.finish(true);
       this._safe('stats', () => this._renderStats());
       this._safe('recovery', () => this._renderRecovery());
+      this._safe('planList', () => this._renderPlanList());
     }
   }
 
@@ -784,7 +823,13 @@
     this._setFrames(ex);
     document.getElementById('repDisplay').textContent = '0';
     document.getElementById('phaseDisplay').textContent = t.ready;
-    document.getElementById('actionBtn').textContent = t.start;
+    /* Новый подход начинается с «Старта». Выход посреди подхода оставлял
+       кнопку в положении «идёт»: на следующем упражнении первое нажатие
+       ставило паузу вместо старта, а «Готово» висело с самого начала. */
+    const actionBtn = document.getElementById('actionBtn');
+    actionBtn.textContent = t.start;
+    actionBtn.dataset.mode = '';
+    this._syncDoneSetButton();
     document.getElementById('breathOverlay').className = 'breath-overlay';
     document.getElementById('counterCircle').className = 'counter-circle';
 
@@ -851,8 +896,23 @@
      и уходим в запись — как на любом тренажёре: нажал стоп, число
      осталось. */
   _stopSetEarly() {
-    if (this.repTimer) { clearInterval(this.repTimer); this.repTimer = null; }
+    this._clearRepTimers();
     this._finishSet();
+  }
+
+  /* Внутри повтора команды «вдох», «выдох» и конец подхода стоят
+     отложенными. Их нужно снимать вместе со счётом: иначе после паузы
+     звучал запоздалый «вдох», а «Готово» на последнем повторе
+     закрывало подход дважды — и окно записи открывалось второй раз. */
+  _repLater(fn, ms) {
+    this._repTimeouts = this._repTimeouts || [];
+    this._repTimeouts.push(setTimeout(fn, ms));
+  }
+
+  _clearRepTimers() {
+    if (this.repTimer) { clearInterval(this.repTimer); this.repTimer = null; }
+    (this._repTimeouts || []).forEach(clearTimeout);
+    this._repTimeouts = [];
   }
 
   _startRepTimer() {
@@ -861,11 +921,17 @@
     // Счётчик хранится на объекте, а не в локальной переменной:
     // иначе после паузы отсчёт начинался бы заново с нуля.
     if (typeof this.currentRep !== 'number') this.currentRep = 0;
-    const tempo = store.getState().globalTempo;
-    const half = tempo * 500;
+    this._clearRepTimers();
+    // Паузу поставили уже после последнего повтора — продолжать нечего
+    if (this.currentRep >= ex.reps) { this._finishSet(); return; }
 
     // Пока идёт подход, кадрами управляют фазы дыхания
     this._stopFrameLoop();
+
+    if (ex.breath === 'static') { this._startHoldTimer(ex); return; }
+
+    const tempo = store.getState().globalTempo;
+    const half = tempo * 500;
 
     const overlay = document.getElementById('breathOverlay');
     const overlayText = document.getElementById('breathOverlayText');
@@ -888,7 +954,7 @@
 
       // Первая половина цикла — опускание. На нём делается вдох,
       // поэтому и кадр здесь нижний.
-      setTimeout(() => {
+      this._repLater(() => {
         this._showFrame(1);
         circle.className = 'counter-circle state-inhale';
         if (breath === 'off') {
@@ -907,7 +973,7 @@
       }, breathDelay);
 
       // Вторая половина — подъём, усилие. Выдох и верхний кадр.
-      setTimeout(() => {
+      this._repLater(() => {
         this._showFrame(0);
         circle.className = 'counter-circle state-exhale';
         if (breath !== 'both') {
@@ -925,16 +991,47 @@
       if (rep >= ex.reps) {
         clearInterval(this.repTimer);
         this.repTimer = null;
-        setTimeout(() => this._finishSet(), half + 600);
+        this._repLater(() => this._finishSet(), half + 600);
       }
     };
 
     tick();
-    this.repTimer = setInterval(tick, tempo * 1000);
+    // Последний повтор мог прийти уже в первом тике — тогда счёт не нужен
+    if (this.currentRep < ex.reps) this.repTimer = setInterval(tick, tempo * 1000);
+  }
+
+  /* Статика — планка, удержание в раскате. Здесь reps — это секунды
+     удержания, а не повторы: так их считает и план недели. Раньше
+     они шли повторами по темпу, и минутная планка тянулась четыре
+     минуты под «вдох» каждые четыре секунды. Дыхание в статике не
+     подсказываем — оно ровное и своё, — а вслух называем каждые
+     десять секунд, чтобы было слышно, сколько уже простояли. */
+  _startHoldTimer(ex) {
+    const phaseText = document.getElementById('phaseDisplay');
+    document.getElementById('counterCircle').className = 'counter-circle';
+    document.getElementById('breathOverlay').className = 'breath-overlay';
+    phaseText.textContent = this.t.sec;
+    this._showFrame(0);
+
+    const tick = () => {
+      this.currentRep++;
+      const sec = this.currentRep;
+      document.getElementById('repDisplay').textContent = sec;
+      this._updateSetProgress();
+      if (this.speech && store.getState().countAloud !== false && sec % 10 === 0 && sec < ex.reps) {
+        this.speech.speak(String(sec));
+      }
+      if (sec >= ex.reps) {
+        clearInterval(this.repTimer);
+        this.repTimer = null;
+        this._repLater(() => this._finishSet(), 600);
+      }
+    };
+    this.repTimer = setInterval(tick, 1000);
   }
 
   _pauseRepTimer() {
-    if (this.repTimer) { clearInterval(this.repTimer); this.repTimer = null; }
+    this._clearRepTimers();
     document.getElementById('breathOverlay').className = 'breath-overlay';
     // Обрываем недоговорённое, иначе счёт продолжится уже на паузе
     if (this.speech) this.speech.stopSpeaking();
@@ -945,6 +1042,7 @@
     /* Сколько повторов человек реально сделал. Раньше эта цифра
        пропадала: в окне записи стояло плановое число, а «Пропустить
        запись» не сохраняла подход вовсе — и тренировка исчезала. */
+    this._clearRepTimers();
     const ex = this.engine.getCurrentExercise();
     this._repsDone = this.currentRep > 0 ? this.currentRep : (ex ? ex.reps : 0);
     this.currentRep = 0;
@@ -1019,7 +1117,8 @@
     this.restTimer = new RestTimer(restSec);
     this.restTimer.onTick = (remaining, total) => {
       timeEl.textContent = remaining;
-      const pct = remaining / total;
+      // После «+10 сек» остаток бывает больше начального — круг не переполняем
+      const pct = Math.min(1, remaining / total);
       circle.style.strokeDashoffset = maxDash * (1 - pct);
     };
     this.restTimer.onComplete = () => {
@@ -1403,8 +1502,16 @@
   // попадает в статистику.
   _finishEarly() {
     if (!confirm(this.t.confirmFinish)) return;
-    if (this.repTimer) { clearInterval(this.repTimer); this.repTimer = null; }
+    this._clearRepTimers();
     if (this.restTimer) { this.restTimer.stop(); this.restTimer = null; }
+    // Повторы незакрытого подхода — тоже работа, как и при выходе
+    if (this.currentRep > 0) {
+      this.engine.logSet({ actualReps: this.currentRep, weight: 0, rpe: 7, notes: '' });
+      this.currentRep = 0;
+    }
+    // Не сделано ни одного подхода — записывать нечего, пустая тренировка
+    // в календаре только путала бы
+    if (!this.engine.logs.length) { this._exitWorkout(); return; }
     const result = this.engine.finish();
     this._finishWorkout(result.record);
   }
@@ -1420,12 +1527,15 @@
       this.speech.stopListening();
       this.speech.speak(this.t.workoutComplete);
     }
-    alert(this.t.allExercisesDone + `\n${this.t.streak}: ${record.durationMin} min`);
+    // Длительность тренировки — не серия дней: раньше здесь стояла
+    // подпись «Серия» и слово «min» на любом языке
+    alert(`${this.t.allExercisesDone}\n${record.durationMin} ${this.t.min}`);
     this._renderStats();
+    this._safe('planList', () => this._renderPlanList());
   }
 
   _exitWorkout() {
-    if (this.repTimer) { clearInterval(this.repTimer); this.repTimer = null; }
+    this._clearRepTimers();
     if (this.restTimer) { this.restTimer.stop(); this.restTimer = null; }
 
     // Незаконченный подход тоже работа: повторы, сделанные до выхода,
@@ -1440,6 +1550,7 @@
     if (this.engine && this.engine.logs && this.engine.logs.length) {
       this.engine.finish(true);
       this._renderStats();
+      this._safe('planList', () => this._renderPlanList());
     }
     this._stopFrameLoop();
     this._releaseScreenAwake();
@@ -1532,19 +1643,40 @@
     return this._persistSettings({ [key]: value });
   }
 
-  // Несколько настроек разом: по одной их пришлось бы писать
-  // параллельно, и последняя запись затёрла бы предыдущие
+  /* Несколько настроек разом. Записи встают в очередь: каждая читает
+     сохранённое, дописывает своё и кладёт обратно. Без очереди две
+     записи подряд (план и уровень глаз, неделя дорожки) читали одно и
+     то же старое состояние, и последняя молча стирала предыдущие. */
   _persistSettings(patch) {
-    return db.get('settings', 'app')
+    this._settingsQueue = (this._settingsQueue || Promise.resolve())
+      .then(() => db.get('settings', 'app'))
       .then(saved => db.set('settings', 'app', { ...(saved || {}), ...patch }))
       .catch(() => {});
+    return this._settingsQueue;
   }
 
+  /* Команда значит своё в зависимости от того, что сейчас на экране.
+     Раньше каждая выполнялась вслепую: «всё» на отдыхе записывало
+     лишний подход и перескакивало вперёд, «старт» на отдыхе запускал
+     счёт за спрятанным экраном, «отдых» посреди подхода обнулял счёт,
+     а «пауза» останавливала счёт, но кнопка продолжала показывать
+     «Пауза», и продолжить можно было только со второго нажатия.
+     Пока открыто окно записи подхода, голос молчит: там нужны цифры. */
   _onVoiceCommand(cmd) {
-    if (cmd === 'start') this._handleAction();
-    else if (cmd === 'pause') this._pauseRepTimer();
-    else if (cmd === 'complete') this._finishSet();
-    else if (cmd === 'rest') this._skipRest();
+    const shown = id => !document.getElementById(id).classList.contains('hidden');
+    if (shown('logModal')) return;
+
+    if (shown('restScreen')) {
+      if (cmd === 'rest') this._skipRest();
+      else if (cmd === 'start') { this._skipRest(); this._handleAction(); }
+      return;
+    }
+
+    if (!shown('screenWorkout')) return;
+    const mode = document.getElementById('actionBtn').dataset.mode;
+    if (cmd === 'start' && mode !== 'active') this._handleAction();
+    else if (cmd === 'pause' && mode === 'active') this._handleAction();
+    else if (cmd === 'complete' && (mode === 'active' || mode === 'paused')) this._stopSetEarly();
   }
 
   /* ----- План недели -----
@@ -2808,15 +2940,27 @@
     this._paintCardio();
     if (this.speech) this.speech.speak(this.t.cardioStartVoice, true);
 
+    /* Время идёт по часам, а не по числу тиков: с погашенным экраном
+       телефон будит таймер редко, и полчаса ходьбы записывались как
+       несколько минут. Пауза из счёта выпадает — её секунды просто
+       не вычитаются. */
     this._stopCardioTimer();
+    this._cardioTickAt = Date.now();
     this._cardioTimer = setInterval(() => {
-      if (this._cardioPaused) return;
-      this._cardioLeftSec--;
+      const now = Date.now();
+      const passed = Math.floor((now - this._cardioTickAt) / 1000);
+      if (this._cardioPaused) { this._cardioTickAt = now; return; }
+      if (passed < 1) return;
+      this._cardioTickAt += passed * 1000;
+      const before = this._cardioLeftSec;
+      this._cardioLeftSec -= passed;
       this._paintCardio();
       // Последняя минута — предупреждаем голосом, глаза заняты дорогой
-      if (this._cardioLeftSec === 60 && this.speech) this.speech.speak(this.t.cardioLastMinute);
+      if (before > 60 && this._cardioLeftSec <= 60 && this._cardioLeftSec > 0 && this.speech) {
+        this.speech.speak(this.t.cardioLastMinute);
+      }
       if (this._cardioLeftSec <= 0) this._finishCardio();
-    }, 1000);
+    }, 250);
 
     this._updateBackButton();
   }
@@ -3166,18 +3310,19 @@
 
   async _exportCSV() {
     const workouts = await db.getAllWorkouts().catch(() => []);
-    if (!workouts.length) { alert('Нет данных'); return; }
+    if (!workouts.length) { alert(this.t.noData); return; }
     const rows = ['Date,Program,Exercise,Set,Weight,Reps,RPE,Notes'];
     workouts.forEach(w => {
-      w.exercises.forEach(ex => {
+      (w.exercises || []).forEach(ex => {
         rows.push(`${w.date},${w.program},${ex.exerciseId},${ex.set},${ex.weight},${ex.actualReps},${ex.rpe},"${(ex.notes||'').replace(/"/g,'""')}"`);
       });
     });
     const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `golden-workout-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `golden-workout-${dateKey()}.csv`;
     a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
   }
 
   /* ----- Settings ----- */
@@ -3197,7 +3342,11 @@
       lang: document.getElementById('selectLang').value
     };
     store.setState(s);
-    db.set('settings', 'app', s).then(() => {
+    /* Дописываем к сохранённому, а не кладём поверх. Раньше эти восемь
+       полей заменяли запись целиком, и «Применить» стирало план недели,
+       уровень, глаза, неделю дорожки и объём — после перезапуска всё
+       возвращалось к началу. А без базы окно не закрывалось вовсе. */
+    this._persistSettings(s).then(() => {
       this._toggleSettings(false);
       this._renderAll();
       if (this.speech) {
@@ -3213,7 +3362,11 @@
     const now = new Date();
     const timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
     const s = store.getState();
-    if (timeStr === s.reminderTime) {
+    // Проверка идёт раз в полминуты, и в нужную минуту попадала дважды:
+    // напоминание звучало два раза подряд. Один раз на день и время.
+    const firedKey = `${dateKey(now)} ${timeStr}`;
+    if (timeStr === s.reminderTime && this._reminderFired !== firedKey) {
+      this._reminderFired = firedKey;
       const day = now.getDay();
       const progKey = s.schedule[day] || 'fullbody';
       const progName = this.programs[progKey] ? this._progName(this.programs[progKey]) : progKey;
