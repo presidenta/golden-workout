@@ -55,7 +55,6 @@ async function bootstrap() {
     // Restore settings form values
     document.getElementById('inputGlobalSets').value = state.globalSets;
     document.getElementById('inputGlobalTempo').value = state.globalTempo;
-    document.getElementById('inputRestSeconds').value = state.restSeconds;
     document.getElementById('selectBreath').value = state.breathMode || 'inhale';
     document.getElementById('setCountAloud').checked = state.countAloud !== false;
     document.getElementById('setVoiceControl').checked = !!state.voiceControlEnabled;

@@ -446,11 +446,6 @@ function eyeSetMinutes(levelId) {
   return Math.max(1, Math.round(sec / 60));
 }
 
-// Сколько всего шагов получится — с учётом проходов в обе стороны.
-function eyeStepCount(levelId) {
-  return buildEyeSession(levelId).length;
-}
-
 // Подпись направления для второго прохода, если оно есть.
 function eyeDirLabel(step, lang) {
   if (!step.ex.both || !step.ex.dirs) return '';

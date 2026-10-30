@@ -7,7 +7,6 @@ class Store {
       volumeLevel: 'norm',
       globalSets: 3,
       globalTempo: 4,
-      restSeconds: 90,
       // Подсказки дыхания: 'inhale' — только вдох, 'both' — вдох и выдох,
       // 'off' — молча. Выдох очевиден сам по себе, поэтому по умолчанию
       // произносится только вдох.
@@ -33,8 +32,9 @@ class Store {
       // в конструкторе. Наполняется из UI, отсюда их берёт
       // WorkoutEngine при старте.
       programs: {},
-      currentWorkout: null,
-      theme: 'dark'
+      // Программу на сегодня человек выбрал сам — тогда при повторном
+      // открытии в этот день расписание её не перебивает
+      programPickedOn: null
     };
     this.listeners = new Set();
   }

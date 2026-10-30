@@ -385,6 +385,8 @@ function buildWeekPlan(methodId, level) {
         auto: true,
         method: methodId,
         focus: focusKey,
+        // Уровень нужен движку: от него зависит отдых между подходами
+        level: lvl,
         sets: setsForFocus(focusKey, lvl),
         name: {
           ru: `${method.ru.name.split('·')[0].trim()} · ${focus.ru.name}`,
@@ -403,6 +405,7 @@ function buildWeekPlan(methodId, level) {
       programKey: progKey,
       exercises,
       sets: setsForFocus(focusKey, lvl),
+      level: lvl,
       isRest: focusKey === 'light' || focusKey === 'recovery'
     });
   });
@@ -437,7 +440,7 @@ function estimateDayMinutes(day) {
     const ex = EXERCISE_DB[id];
     if (!ex) return;
     const work = ex.breath === 'static' ? ex.reps : ex.reps * 4;
-    sec += day.sets * (work + ex.rest);
+    sec += day.sets * (work + restSecondsFor(ex, { level: day.level }));
   });
   return Math.max(5, Math.round((sec + 300) / 60));
 }

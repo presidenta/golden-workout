@@ -37,8 +37,6 @@ class Timer {
     this.isRunning = false;
   }
 
-  pause() { this.stop(); }
-
   addSeconds(sec) {
     this.endsAt = Math.max(Date.now(), this.endsAt + sec * 1000);
     this.remaining = Math.max(0, Math.ceil((this.endsAt - Date.now()) / 1000));

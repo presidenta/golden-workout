@@ -26,12 +26,10 @@ class Database {
           wStore.createIndex('date', 'date', { unique: false });
           wStore.createIndex('program', 'program', { unique: false });
         }
-        if (!db.objectStoreNames.contains('schedule')) {
-          db.createObjectStore('schedule', { keyPath: 'day' });
-        }
-        if (!db.objectStoreNames.contains('imageCache')) {
-          db.createObjectStore('imageCache', { keyPath: 'url' });
-        }
+        /* Хранилища schedule и imageCache были в первой версии и не
+           использовались ни разу: расписание лежит в settings, картинки
+           хранит сервис-воркер. Новым установкам их не создаём, у старых
+           они остаются пустыми — вреда от них нет. */
         // Кардио и глаза — по одной записи на дату
         if (!db.objectStoreNames.contains('daily')) {
           db.createObjectStore('daily', { keyPath: 'date' });
@@ -139,22 +137,6 @@ class Database {
     return new Promise((resolve, reject) => {
       const req = this._tx('daily', 'readonly').getAll();
       req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => reject(req.error);
-    });
-  }
-
-  async cacheImage(url, blob) {
-    return new Promise((resolve, reject) => {
-      const req = this._tx('imageCache', 'readwrite').put({ url, blob, timestamp: Date.now() });
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
-  }
-
-  async getCachedImage(url) {
-    return new Promise((resolve, reject) => {
-      const req = this._tx('imageCache', 'readonly').get(url);
-      req.onsuccess = () => resolve(req.result ? req.result.blob : null);
       req.onerror = () => reject(req.error);
     });
   }

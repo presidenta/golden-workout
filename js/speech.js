@@ -144,7 +144,6 @@ class SpeechController {
   handleCommand(cmd) {
     if (!this.onCommand || !cmd) return false;
 
-    this.lastHeard = cmd;
     if (this.onHeard) this.onHeard(cmd);
 
     // Фразу режем на слова и сверяем каждое.

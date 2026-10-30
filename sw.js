@@ -4,7 +4,7 @@
    просит стили и скрипты именно с этой меткой, и кэш ищет их по
    полному адресу. Без метки заготовленные файлы не находились ни разу
    и лежали в кэше зря. */
-const VERSION = '27';
+const VERSION = '28';
 const CACHE_NAME = 'golden-workout-v' + VERSION;
 const STATIC_ASSETS = [
   './',
@@ -97,31 +97,13 @@ self.addEventListener('fetch', e => {
   if (request.destination === 'image' && url.origin === location.origin) {
     e.respondWith(
       caches.match(request).then(cached => cached || fetch(request).then(response => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+        // Отказ сервера в кэш не кладём, иначе он отдавался бы вечно
+        if (response && response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+        }
         return response;
       }))
-    );
-    return;
-  }
-
-  // Images: Network First with cache fallback + offline placeholder
-  if (request.destination === 'image') {
-    e.respondWith(
-      fetch(request).then(response => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
-        return response;
-      }).catch(() =>
-        caches.match(request).then(cached => {
-          if (cached) return cached;
-          // Return inline SVG placeholder for broken images
-          return new Response(
-            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect fill="#121217" width="400" height="300"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#d4af37" font-size="18">🏋️ GIF недоступен</text></svg>`,
-            { headers: { 'Content-Type': 'image/svg+xml' } }
-          );
-        })
-      )
     );
   }
 });

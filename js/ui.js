@@ -9,7 +9,6 @@
     this.programs = { ...DEFAULT_PROGRAMS };
     this.currentLang = 'ru';
     this.t = null;
-    this._boundHandlers = {};
   }
 
   async init(deps) {
@@ -61,9 +60,19 @@
       });
     }
 
+    /* При открытии — программа сегодняшнего дня по расписанию. Раньше
+       выбор не запоминался вовсе, и приложение каждый раз открывалось
+       на «Full-Body». Если же сегодня человек сам выбрал другую, она и
+       остаётся: повторное открытие не должно сбивать его выбор. */
+    const pickedToday = st.programPickedOn === dateKey() && this.programs[st.currentProgram];
+    const todayKey = (st.schedule || {})[new Date().getDay()];
+    if (!pickedToday && todayKey && this.programs[todayKey]) {
+      store.setState({ currentProgram: todayKey });
+    }
+
     // Программа могла исчезнуть вместе со сменой плана — тогда
     // возвращаемся к базовой, иначе экран останется пустым.
-    if (!this.programs[st.currentProgram]) {
+    if (!this.programs[store.getState().currentProgram]) {
       store.setState({ currentProgram: Object.keys(this.programs)[0] || 'fullbody' });
     }
 
@@ -91,7 +100,7 @@
   _bindEvents() {
     const on = (id, ev, fn) => {
       const el = document.getElementById(id);
-      if (el) { el.addEventListener(ev, fn); this._boundHandlers[id + ev] = fn; }
+      if (el) el.addEventListener(ev, fn);
     };
 
     // Tabs. Берём кнопку, а не то, по чему попали пальцем:
@@ -652,8 +661,14 @@
     list.appendChild(add);
   }
 
+  // Выбор программы вручную помнится до конца дня
+  _rememberProgram(key) {
+    store.setState({ currentProgram: key, programPickedOn: dateKey() });
+    this._persistSettings({ currentProgram: key, programPickedOn: dateKey() });
+  }
+
   _pickProgram(key) {
-    store.setState({ currentProgram: key });
+    this._rememberProgram(key);
     this._renderPrograms();
     this._renderPlanList();
     this._closePrograms();
@@ -732,11 +747,9 @@
     test.src = url;
   }
 
+  // Подходы выбранной программы — та же формула, что у движка
   _getEffectiveSets() {
-    const s = store.getState();
-    if (s.volumeLevel === 'min') return Math.max(1, s.globalSets - 1);
-    if (s.volumeLevel === 'max') return s.globalSets + 2;
-    return s.globalSets;
+    return effectiveSets(this.programs[store.getState().currentProgram]);
   }
 
   // index — номер упражнения в плане. В движке перед основными идёт
@@ -1097,7 +1110,7 @@
 
   _startRest() {
     const ex = this.engine.getCurrentExercise();
-    const restSec = ex ? ex.rest : store.getState().restSeconds;
+    const restSec = this.engine.getRestSeconds(ex);
     const nextInfo = this.engine.nextSet();
 
     if (nextInfo.phase === 'complete') {
@@ -1147,7 +1160,7 @@
 
     document.getElementById('previewName').textContent = loc.name;
     document.getElementById('previewPlan').textContent =
-      `${this._getEffectiveSets()} ${this.t.setsShort} × ${ex.reps} ${this.t.reps} · ${this.t.restBetween(ex.rest)}`;
+      `${this._getEffectiveSets()} ${this.t.setsShort} × ${ex.reps} ${this.t.reps} · ${this.t.restBetween(restSecondsFor(ex, prog))}`;
     document.getElementById('previewDesc').textContent = loc.desc;
     document.getElementById('previewInstructions').innerHTML =
       `<strong>${this.t.instructions}:</strong> ${this._esc(loc.instructions)}`;
@@ -1844,10 +1857,11 @@
       schedule: plan.schedule,
       planMethod: plan.methodId,
       level: plan.level,
-      currentProgram: todayKey || store.getState().currentProgram
+      currentProgram: todayKey || store.getState().currentProgram,
+      programPickedOn: null
     });
 
-    this._persistSettings({ planMethod: plan.methodId, level: plan.level });
+    this._persistSettings({ planMethod: plan.methodId, level: plan.level, programPickedOn: null });
     db.set('settings', 'schedule', plan.schedule).catch(() => {});
 
     this._renderPrograms();
@@ -1950,7 +1964,8 @@
     const id = this._editingProgram || ('custom_' + Date.now());
     const prog = { id, name, exercises: checked };
     this.programs[id] = prog;
-    store.setState({ programs: this.programs, currentProgram: id });
+    store.setState({ programs: this.programs });
+    this._rememberProgram(id);
 
     this._editingProgram = null;
     this._syncConstructorMode();
@@ -2269,16 +2284,6 @@
     stage.style.setProperty('--sx', `${Math.round(sx)}px`);
     stage.style.setProperty('--sy', `${Math.round(sy)}px`);
     stage.style.setProperty('--sr', `${Math.round(Math.min(sx, sy))}px`);
-  }
-
-  // Настрои по Жданову: их проговаривают, пока идёт упражнение
-  _speakAffirmation() {
-    if (!store.getState().eyesAffirmations) return;
-    const list = EYE_AFFIRMATIONS[this.currentLang] || EYE_AFFIRMATIONS.ru;
-    const text = list[(this._affIndex || 0) % list.length];
-    this._affIndex = (this._affIndex || 0) + 1;
-    document.getElementById('eyesAffirm').textContent = text;
-    if (this.speech) this.speech.speak(text);
   }
 
   // Подправить время текущего шага, не выходя из комплекса
@@ -2871,7 +2876,7 @@
     const key = Object.keys(this.programs)
       .find(k => (this.programs[k].exercises || []).includes(id));
     if (!key) return;
-    store.setState({ currentProgram: key });
+    this._rememberProgram(key);
     this._safe('programs', () => this._renderPrograms());
     this._safe('planList', () => this._renderPlanList());
     const idx = this.programs[key].exercises.indexOf(id);
@@ -3334,7 +3339,6 @@
     const s = {
       globalSets: parseInt(document.getElementById('inputGlobalSets').value) || 3,
       globalTempo: parseInt(document.getElementById('inputGlobalTempo').value) || 4,
-      restSeconds: parseInt(document.getElementById('inputRestSeconds').value) || 90,
       breathMode: document.getElementById('selectBreath').value,
       countAloud: document.getElementById('setCountAloud').checked,
       voiceControlEnabled: document.getElementById('setVoiceControl').checked,

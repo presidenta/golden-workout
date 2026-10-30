@@ -1,6 +1,7 @@
 class WorkoutEngine {
   constructor() {
     this.programKey = null;
+    this.prog = null;
     this.exercises = [];
     this.currentExIndex = 0;
     this.currentSet = 1;
@@ -14,6 +15,7 @@ class WorkoutEngine {
     // programs может быть пустым — тогда берём стандартную программу.
     const known = store.getState().programs || {};
     const prog = known[programKey] || DEFAULT_PROGRAMS[programKey] || DEFAULT_PROGRAMS.fullbody;
+    this.prog = prog;
     const mainExercises = prog.exercises.map(id => EXERCISE_DB[id]).filter(Boolean);
 
     this.exercises = withWarmup 
@@ -26,16 +28,6 @@ class WorkoutEngine {
     this.logs = [];
     this.startTime = Date.now();
     this.phase = withWarmup ? 'warmup' : 'exercise';
-
-    store.setState({
-      currentWorkout: {
-        program: programKey,
-        startTime: this.startTime,
-        activeExIndex: 0,
-        activeSet: 1,
-        phase: this.phase
-      }
-    });
     return this.getCurrentState();
   }
 
@@ -44,11 +36,12 @@ class WorkoutEngine {
   }
 
   getEffectiveSets() {
-    const s = store.getState();
-    let base = s.globalSets;
-    if (s.volumeLevel === 'min') return Math.max(1, base - 1);
-    if (s.volumeLevel === 'max') return base + 2;
-    return base;
+    return effectiveSets(this.prog);
+  }
+
+  // Отдых после подхода текущего упражнения — с поправкой плана
+  getRestSeconds(ex = this.getCurrentExercise()) {
+    return ex ? restSecondsFor(ex, this.prog) : 60;
   }
 
   // Сколько упражнений занимает разминка в общем списке.
@@ -115,8 +108,7 @@ class WorkoutEngine {
 
     if (this.currentSet < setsForThis) {
       this.currentSet++;
-      this._syncState();
-      return { phase: 'rest', nextPhase: 'exercise', exercise: ex, nextSet: this.currentSet, restSeconds: ex.rest };
+      return { phase: 'rest', nextPhase: 'exercise', exercise: ex, nextSet: this.currentSet };
     } else {
       return this.nextExercise();
     }
@@ -139,13 +131,7 @@ class WorkoutEngine {
     else if (this.currentExIndex >= mainEnd) this.phase = 'cooldown';
     else this.phase = 'exercise';
 
-    this._syncState();
     return { phase: this.phase, exercise: ex, set: 1 };
-  }
-
-  skipRest() {
-    this._syncState();
-    return { phase: this.phase, exercise: this.getCurrentExercise(), set: this.currentSet };
   }
 
   // partial — вышли из тренировки на середине. Такой день всё равно
@@ -171,7 +157,6 @@ class WorkoutEngine {
        непустыми и записывал их ещё раз: один подход превращался в три
        одинаковые тренировки в календаре. В записи остаётся свой массив. */
     this.logs = [];
-    store.setState({ currentWorkout: null });
     return { phase: 'complete', record };
   }
 
@@ -184,20 +169,26 @@ class WorkoutEngine {
       progress: `${this.currentExIndex + 1}/${this.exercises.length}`
     };
   }
+}
 
-  _syncState() {
-    store.setState({
-      currentWorkout: {
-        ...store.getState().currentWorkout,
-        activeExIndex: this.currentExIndex,
-        activeSet: this.currentSet,
-        phase: this.phase
-      }
-    });
-  }
+/* Сколько подходов у рабочего упражнения программы. У программ плана
+   недели объём свой: его задают уровень и день — новичку два подхода,
+   опытному четыре, лёгкий день в один. Раньше тренировка всегда шла по
+   общей цифре из настроек, и план, где написано «1 подх.», давал три.
+   У готовых и своих комплексов — общая цифра. «Мин/Макс» — поверх. */
+function effectiveSets(prog, s = store.getState()) {
+  const base = (prog && prog.sets) || s.globalSets;
+  if (s.volumeLevel === 'min') return Math.max(1, base - 1);
+  if (s.volumeLevel === 'max') return base + 2;
+  return base;
+}
 
-  getPreviousResult(exerciseId) {
-    // Return last logged set for this exercise from previous workouts
-    return this.logs.filter(l => l.exerciseId === exerciseId).pop() || null;
-  }
+/* Отдых после подхода. Свой у каждого упражнения: суставной хватает
+   полминуты, тяжёлому нужно две. В плане недели уровень его растягивает
+   или сжимает: новичку дольше — дыхание ещё не поставлено, опытному
+   короче — нужна плотность. */
+function restSecondsFor(ex, prog) {
+  const lvl = prog && prog.level && typeof LEVELS !== 'undefined' ? LEVELS[prog.level] : null;
+  // До пяти секунд: «115», а не «113» — так отдых и читается, и помнится
+  return Math.round(ex.rest * ((lvl && lvl.restMul) || 1) / 5) * 5;
 }
