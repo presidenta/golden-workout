@@ -108,6 +108,15 @@ class Database {
     });
   }
 
+  // Дополнить записанную тренировку: та же запись, тот же id и uid
+  async putWorkout(record) {
+    return new Promise((resolve, reject) => {
+      const req = this._tx('workouts', 'readwrite').put(record);
+      req.onsuccess = () => { this._changed('workouts', record.uid); resolve(req.result); };
+      req.onerror = () => reject(req.error);
+    });
+  }
+
   async getWorkoutsByDate(date) {
     return new Promise((resolve, reject) => {
       const idx = this._tx('workouts', 'readonly').index('date');

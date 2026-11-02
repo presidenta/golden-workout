@@ -6,6 +6,7 @@ class WorkoutEngine {
     this.currentExIndex = 0;
     this.currentSet = 1;
     this.logs = [];
+    this._record = null;   // запись этой тренировки в базе — после первого подхода
     this.phase = 'idle'; // idle, warmup, exercise, rest, cooldown, complete
     this.startTime = null;
   }
@@ -26,6 +27,7 @@ class WorkoutEngine {
     this.currentExIndex = 0;
     this.currentSet = 1;
     this.logs = [];
+    this._record = null;
     this.startTime = Date.now();
     this.phase = withWarmup ? 'warmup' : 'exercise';
     return this.getCurrentState();
@@ -134,29 +136,55 @@ class WorkoutEngine {
     return { phase: this.phase, exercise: ex, set: 1 };
   }
 
+  /* Записать сделанное в календарь. Зовётся после каждого законченного
+     подхода, а не только в конце: раньше подходы копились в памяти, и
+     закрытое посреди тренировки приложение теряло их все. Первый подход
+     создаёт запись, следующие дополняют её же — в календаре одна
+     тренировка, сколько бы раз её ни сохраняли. Пока тренировка идёт,
+     запись помечена недоделанной: закроют приложение — так и останется. */
+  save(partial = true) {
+    if (!this._record) this._record = { uid: newUid(), id: null, date: dateKey() };
+    // Своя у каждой тренировки: запоздавшая запись прошлой пишет в прошлую
+    const session = this._record;
+    const record = {
+      uid: session.uid,
+      date: session.date,
+      program: this.programKey,
+      startTime: this.startTime,
+      endTime: Date.now(),
+      durationMin: Math.round((Date.now() - this.startTime) / 60000),
+      exercises: [...this.logs],
+      volumeLevel: store.getState().volumeLevel,
+      partial: !!partial
+    };
+    const write = () => session.id === null
+      ? db.addWorkout({ ...record }).then(id => { session.id = id; })
+      : db.putWorkout({ ...record, id: session.id });
+    /* Пишем сразу: календарь и статистику перерисовывают следом, и они
+       должны уже видеть этот подход. Ждём, только пока в пути первая
+       запись, — без её номера дополнить нечего. База может быть
+       недоступна (Safari в приватном режиме) — тренировку тогда просто
+       не запишем, но приложение падать не должно. */
+    const run = session.busy ? session.busy.then(write) : write();
+    const done = run
+      .catch(e => console.warn('[Workout] запись не сохранилась:', e))
+      .then(() => { if (session.busy === done) session.busy = null; });
+    session.busy = done;
+    return record;
+  }
+
   // partial — вышли из тренировки на середине. Такой день всё равно
   // считается сделанным: часть работы выполнена, и в календаре она
   // должна остаться.
   finish(partial = false) {
     this.phase = 'complete';
-    const record = {
-      date: dateKey(),
-      program: this.programKey,
-      startTime: this.startTime,
-      endTime: Date.now(),
-      durationMin: Math.round((Date.now() - this.startTime) / 60000),
-      exercises: this.logs,
-      volumeLevel: store.getState().volumeLevel,
-      partial: !!partial
-    };
-    // База может быть недоступна (Safari в приватном режиме) — тренировку
-    // тогда просто не запишем, но приложение падать не должно
-    db.addWorkout(record).catch(e => console.warn('[Workout] запись не сохранилась:', e));
+    const record = this.save(partial);
     /* Записанное из журнала убираем. Иначе следующий же переход —
        к другому упражнению, в глаза, на дорожку — видел те же подходы
        непустыми и записывал их ещё раз: один подход превращался в три
        одинаковые тренировки в календаре. В записи остаётся свой массив. */
     this.logs = [];
+    this._record = null;
     return { phase: 'complete', record };
   }
 

@@ -164,10 +164,6 @@
     on('btnRestMinus', 'click', () => { if (this.restTimer) this.restTimer.addSeconds(-10); });
     on('btnRestPlus', 'click', () => { if (this.restTimer) this.restTimer.addSeconds(10); });
 
-    // Log
-    on('btnSaveLog', 'click', () => this._saveLog());
-    on('btnSkipLog', 'click', () => this._skipLog());
-    on('logRpe', 'input', (e) => { document.getElementById('rpeValue').textContent = e.target.value; });
 
     // Возврат в предыдущий раздел
     on('btnBack', 'click', () => this._goBack());
@@ -869,8 +865,10 @@
     const strip = document.getElementById('prevResultStrip');
     // For now show from current session logs
     const prev = this.engine.logs.filter(l => l.exerciseId === exId).pop();
+    // Вес и усилие больше не вводят — в строке только то, что было на самом деле
     if (prev) {
-      strip.textContent = `${this.t.prevResult}: ${prev.actualReps} ${this.t.reps} × ${prev.weight}${this.t.kg} @ RPE ${prev.rpe}`;
+      const weight = prev.weight > 0 ? ` × ${prev.weight} ${this.t.kg}` : '';
+      strip.textContent = `${this.t.prevResult}: ${prev.actualReps} ${this.t.reps}${weight}`;
     } else {
       strip.textContent = '';
     }
@@ -1051,13 +1049,17 @@
     this._startFrameLoop();
   }
 
+  /* Подход закончен — он записан. Без окна «Сохранить»: раньше после
+     каждого подхода выскакивали поля веса и усилия (упражнения здесь
+     без железа — заполнять нечего), и пока не нажмёшь кнопку, подход
+     не считался. Теперь он сразу уходит в календарь, а оттуда — на
+     сервер: закроют приложение на отдыхе — сделанное уже на месте.
+     Пауза сюда не ведёт: на паузе подход ещё не окончен и ждёт
+     продолжения. Записываются сделанные повторы, а не плановые. */
   _finishSet() {
-    /* Сколько повторов человек реально сделал. Раньше эта цифра
-       пропадала: в окне записи стояло плановое число, а «Пропустить
-       запись» не сохраняла подход вовсе — и тренировка исчезала. */
     this._clearRepTimers();
     const ex = this.engine.getCurrentExercise();
-    this._repsDone = this.currentRep > 0 ? this.currentRep : (ex ? ex.reps : 0);
+    const reps = this.currentRep > 0 ? this.currentRep : (ex ? ex.reps : 0);
     this.currentRep = 0;
     this._startFrameLoop();
     document.getElementById('actionBtn').dataset.mode = '';
@@ -1066,45 +1068,8 @@
     document.getElementById('breathOverlay').className = 'breath-overlay';
     document.getElementById('counterCircle').className = 'counter-circle';
     if (this.speech) this.speech.speak(this.t.stop);
-    this._openLogModal();
-  }
-
-  _openLogModal() {
-    const ex = this.engine.getCurrentExercise();
-    // Подставляем сделанное, а не задуманное: остановились на
-    // пятнадцатом повторе — в поле пятнадцать
-    document.getElementById('logReps').value = this._repsDone || (ex ? ex.reps : 0);
-    document.getElementById('logWeight').value = 0;
-    document.getElementById('logRpe').value = 7;
-    document.getElementById('rpeValue').textContent = '7';
-    document.getElementById('logNotes').value = '';
-    document.getElementById('prevResultBox').textContent = document.getElementById('prevResultStrip').textContent;
-    document.getElementById('logModal').classList.remove('hidden');
-  }
-
-  _saveLog() {
-    const reps = parseInt(document.getElementById('logReps').value) || 0;
-    const weight = parseFloat(document.getElementById('logWeight').value) || 0;
-    const rpe = parseInt(document.getElementById('logRpe').value) || 7;
-    const notes = document.getElementById('logNotes').value;
-    this.engine.logSet({ actualReps: reps, weight, rpe, notes });
-    document.getElementById('logModal').classList.add('hidden');
-    this._startRest();
-  }
-
-  /* «Пропустить запись» — это отказ уточнять вес и усилие, а не отказ
-     от подхода. Работа сделана, и она обязана попасть в календарь:
-     раньше здесь терялась вся тренировка, если человек не заполнял
-     цифры (а при отжиманиях или приседаниях заполнять нечего). */
-  _skipLog() {
-    const ex = this.engine.getCurrentExercise();
-    this.engine.logSet({
-      actualReps: this._repsDone || (ex ? ex.reps : 0),
-      weight: 0,
-      rpe: 7,
-      notes: ''
-    });
-    document.getElementById('logModal').classList.add('hidden');
+    this.engine.logSet({ actualReps: reps, weight: 0, rpe: 7, notes: '' });
+    this.engine.save();
     this._startRest();
   }
 
@@ -1673,11 +1638,9 @@
      лишний подход и перескакивало вперёд, «старт» на отдыхе запускал
      счёт за спрятанным экраном, «отдых» посреди подхода обнулял счёт,
      а «пауза» останавливала счёт, но кнопка продолжала показывать
-     «Пауза», и продолжить можно было только со второго нажатия.
-     Пока открыто окно записи подхода, голос молчит: там нужны цифры. */
+     «Пауза», и продолжить можно было только со второго нажатия. */
   _onVoiceCommand(cmd) {
     const shown = id => !document.getElementById(id).classList.contains('hidden');
-    if (shown('logModal')) return;
 
     if (shown('restScreen')) {
       if (cmd === 'rest') this._skipRest();
