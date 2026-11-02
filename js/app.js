@@ -47,6 +47,9 @@ async function bootstrap() {
     // не добраться ни до движка, ни до голоса
     window.GW = { ui, engine, speech, store };
 
+    // Аккаунт «Кванта» и сохранение истории на сервере — модуль js/account/
+    if (typeof GFAccount !== 'undefined') GFAccount.start({ dbReady });
+
     // Restore volume UI
     document.querySelectorAll('.vol-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.vol === state.volumeLevel);

@@ -4,7 +4,7 @@
    просит стили и скрипты именно с этой меткой, и кэш ищет их по
    полному адресу. Без метки заготовленные файлы не находились ни разу
    и лежали в кэше зря. */
-const VERSION = '28';
+const VERSION = '29';
 const CACHE_NAME = 'golden-workout-v' + VERSION;
 const STATIC_ASSETS = [
   './',
@@ -23,7 +23,12 @@ const STATIC_ASSETS = [
   './js/timer.js?v=' + VERSION,
   './js/speech.js?v=' + VERSION,
   './js/workout.js?v=' + VERSION,
-  './js/ui.js?v=' + VERSION
+  './js/ui.js?v=' + VERSION,
+  './js/account/account.css?v=' + VERSION,
+  './js/account/texts.js?v=' + VERSION,
+  './js/account/session.js?v=' + VERSION,
+  './js/account/sync.js?v=' + VERSION,
+  './js/account/panel.js?v=' + VERSION
 ];
 
 /* addAll работает по принципу «всё или ничего»: один недоступный файл
