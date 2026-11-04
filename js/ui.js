@@ -124,9 +124,17 @@
       });
     });
 
-    // Переключение языка прямо из шапки
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-      btn.addEventListener('click', () => this._setLang(btn.dataset.lang));
+    // Язык прямо из шапки: кнопка открывает список, выбор его закрывает,
+    // касание мимо и Escape — тоже
+    on('langBtn', 'click', () => this._toggleLangMenu());
+    document.querySelectorAll('.lang-opt').forEach(btn => {
+      btn.addEventListener('click', () => { this._toggleLangMenu(false); this._setLang(btn.dataset.lang); });
+    });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#langDd')) this._toggleLangMenu(false);
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') this._toggleLangMenu(false);
     });
 
     // Голос включается кнопкой прямо на экране упражнения
@@ -142,6 +150,7 @@
     // Settings
     on('btnSettings', 'click', () => this._toggleSettings(true));
     on('btnSaveSettings', 'click', () => this._saveSettings());
+    on('btnCloseSettings', 'click', () => { this._toggleSettings(false); this._updateBackButton(); });
     on('btnDismissReminder', 'click', () => document.getElementById('reminderBanner').classList.add('hidden'));
 
     // Workout
@@ -381,9 +390,28 @@
   }
 
   _syncLangButtons() {
-    document.querySelectorAll('.lang-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.lang === this.currentLang);
+    let current = null;
+    document.querySelectorAll('.lang-opt').forEach(b => {
+      const on = b.dataset.lang === this.currentLang;
+      b.setAttribute('aria-pressed', String(on));
+      if (on) current = b;
     });
+    // На кнопке — флаг и короткое имя выбранного: «🇷🇺 Рус»
+    const label = document.getElementById('langLabel');
+    if (label && current) {
+      const flag = current.firstElementChild.textContent.split(' ')[0];
+      label.textContent = `${flag} ${current.querySelector('.code').textContent}`;
+    }
+  }
+
+  // Без аргумента — переключить; false — закрыть
+  _toggleLangMenu(open) {
+    const menu = document.getElementById('langMenu');
+    const btn = document.getElementById('langBtn');
+    if (!menu || !btn) return;
+    const show = open === undefined ? menu.hidden : open;
+    menu.hidden = !show;
+    btn.setAttribute('aria-expanded', String(show));
   }
 
   // У встроенных программ название на трёх языках, у созданных
@@ -432,6 +460,8 @@
     tabLabel('tabBtnStats', this.t.tabs.stats);
     tabLabel('tabBtnMore', this.t.tabs.more);
     document.getElementById('ui_set_title').textContent = this.t.settings;
+    document.getElementById('btnCloseSettings').setAttribute('aria-label', this.t.backLabel);
+    document.getElementById('btnBack').setAttribute('aria-label', this.t.backLabel);
     document.getElementById('btnStartNext').textContent = this.t.start;
     document.getElementById('actionBtn').textContent = this.t.start;
     document.getElementById('btnExportCSV').textContent = this.t.exportCSV;
@@ -3294,8 +3324,22 @@
   }
 
   /* ----- Settings ----- */
+  /* Поля заполняются при каждом открытии: закрыли стрелкой, не применив, —
+     в следующий раз в окне то, что действует, а не брошенные правки. */
   _toggleSettings(show) {
+    if (show) this._fillSettingsForm();
     document.getElementById('settingsModal').classList.toggle('hidden', !show);
+  }
+
+  _fillSettingsForm() {
+    const s = store.getState();
+    document.getElementById('inputGlobalSets').value = s.globalSets;
+    document.getElementById('inputGlobalTempo').value = s.globalTempo;
+    document.getElementById('selectBreath').value = s.breathMode || 'inhale';
+    document.getElementById('setCountAloud').checked = s.countAloud !== false;
+    document.getElementById('setVoiceControl').checked = !!s.voiceControlEnabled;
+    document.getElementById('inputReminderTime').value = s.reminderTime || '09:00';
+    document.getElementById('selectLang').value = this.currentLang;
   }
 
   _saveSettings() {

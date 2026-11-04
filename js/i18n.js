@@ -1,6 +1,6 @@
 ﻿const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 30",
+    subtitle: "Architect Pro · сборка 31",
     tabs: { workout: "Тренировка", plan: "План", health: "Здоровье", stats: "Календарь", more: "Ещё" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -71,7 +71,7 @@
     countLabel: "Счёт вслух",
     countHint: "Проговаривать номер повтора",
     previewStart: "Начать это упражнение",
-    close: "Закрыть",
+    close: "Закрыть", backLabel: "Назад",
     restBetween: (s) => `Отдых между подходами: ${s} сек`,
     setsLeftShort: (n) => n > 0 ? `ещё ${n} ${n === 1 ? 'подход' : (n >= 2 && n <= 4 ? 'подхода' : 'подходов')}` : 'последний подход',
     finishWorkout: "Закончить",
@@ -205,7 +205,7 @@
     dayEmpty: "В этот день записей нет."
   },
   en: {
-    subtitle: "Architect Pro · build 30",
+    subtitle: "Architect Pro · build 31",
     tabs: { workout: "Workout", plan: "Plan", health: "Health", stats: "Calendar", more: "More" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -275,7 +275,7 @@
     countLabel: "Count aloud",
     countHint: "Say the rep number",
     previewStart: "Start this exercise",
-    close: "Close",
+    close: "Close", backLabel: "Back",
     restBetween: (s) => `Rest between sets: ${s} sec`,
     setsLeftShort: (n) => n > 0 ? `${n} more ${n === 1 ? 'set' : 'sets'}` : 'last set',
     finishWorkout: "Finish",
@@ -402,7 +402,7 @@
     dayEmpty: "Nothing recorded on this day."
   },
   ua: {
-    subtitle: "Architect Pro · збірка 30",
+    subtitle: "Architect Pro · збірка 31",
     tabs: { workout: "Тренування", plan: "План", health: "Здоров'я", stats: "Календар", more: "Ще" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -472,7 +472,7 @@
     countLabel: "Лічба вголос",
     countHint: "Промовляти номер повтору",
     previewStart: "Почати цю вправу",
-    close: "Закрити",
+    close: "Закрити", backLabel: "Назад",
     restBetween: (s) => `Відпочинок між підходами: ${s} сек`,
     setsLeftShort: (n) => n > 0 ? `ще ${n} ${n === 1 ? 'підхід' : (n >= 2 && n <= 4 ? 'підходи' : 'підходів')}` : 'останній підхід',
     finishWorkout: "Закінчити",

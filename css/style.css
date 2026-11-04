@@ -650,33 +650,62 @@ body {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* Переключатель языка в шапке */
+/* Язык в шапке — одна кнопка и список под ней (образец — меню языков «Кванта») */
 .header-right { display: flex; align-items: center; gap: 8px; }
-.lang-switch {
-  display: flex;
-  gap: 2px;
-  padding: 2px;
-  border-radius: 12px;
+.lang-dd { position: relative; }
+.lang-dd-btn {
+  display: flex; align-items: center; gap: 6px;
+  height: 38px; padding: 0 12px;
+  border-radius: 19px;
+  border: 1px solid var(--card-border);
   background: #16161c;
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  color: var(--gold-light);
+  font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: border-color 0.2s, background 0.2s;
 }
-.lang-btn {
-  padding: 4px 8px;
-  border: none;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.5px;
+.lang-dd-btn:hover, .lang-dd-btn[aria-expanded="true"] { border-color: var(--gold-primary); background: rgba(212, 175, 55, 0.08); }
+.lang-arrow { font-size: 0.7rem; color: var(--text-muted); transition: transform 0.2s; }
+.lang-dd-btn[aria-expanded="true"] .lang-arrow { transform: rotate(180deg); }
+.lang-menu {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 200;
+  display: grid; gap: 3px; padding: 5px;
+  border-radius: 14px;
+  border: 1px solid var(--card-border);
+  background: rgba(18, 18, 23, 0.98);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.06);
+}
+.lang-menu[hidden] { display: none; }
+.lang-opt {
+  display: flex; align-items: center; gap: 10px;
+  min-width: 168px; min-height: 44px; padding: 0 12px;
+  border: 0; border-radius: 10px;
+  background: none; color: var(--text-main);
+  font-size: 0.88rem; text-align: left; cursor: pointer;
+}
+.lang-opt:hover { background: rgba(255, 255, 255, 0.04); }
+.lang-opt[aria-pressed="true"] { background: rgba(212, 175, 55, 0.14); color: var(--gold-light); font-weight: 700; }
+.lang-opt .code { margin-left: auto; font-size: 0.75rem; color: var(--text-muted); }
+
+/* Кнопка из двух частей: «назад» и главное действие. Читается одной
+   кнопкой, нажимается двумя — стрелка отдельно от «Применить». */
+.split-btn {
+  display: flex; margin-top: 12px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+.split-back {
+  flex: none; width: 58px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--gold-primary); border-right: 0;
+  border-radius: 12px 0 0 12px;
+  background: #16161c; color: var(--gold-light);
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s;
 }
-.lang-btn:hover { color: var(--gold-light); }
-.lang-btn.active {
-  background: var(--gold-gradient);
-  color: #1a1a10;
-}
+.split-back:hover { background: rgba(212, 175, 55, 0.12); }
+.split-back:active { background: rgba(212, 175, 55, 0.2); }
+.split-btn .split-main { flex: 1; min-width: 0; margin-top: 0; border-radius: 0 12px 12px 0; box-shadow: none; }
 
 /* ===== Беговая дорожка ===== */
 .tm-head { margin-bottom: 10px; }
@@ -1043,7 +1072,7 @@ input:checked + .slider:before { transform: translateX(18px); }
 @media (max-width: 380px) {
   .nav-tab { font-size: 0.58rem; padding: 10px 1px; }
   .current-ex-title { font-size: 0.92rem; }
-  .lang-btn { padding: 4px 6px; font-size: 0.62rem; }
+  .lang-dd-btn { padding: 0 10px; }
   .tm-week-head { flex-wrap: wrap; gap: 2px; }
 }
 

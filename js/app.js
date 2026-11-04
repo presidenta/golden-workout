@@ -55,14 +55,8 @@ async function bootstrap() {
       b.classList.toggle('active', b.dataset.vol === state.volumeLevel);
     });
 
-    // Restore settings form values
-    document.getElementById('inputGlobalSets').value = state.globalSets;
-    document.getElementById('inputGlobalTempo').value = state.globalTempo;
-    document.getElementById('selectBreath').value = state.breathMode || 'inhale';
-    document.getElementById('setCountAloud').checked = state.countAloud !== false;
-    document.getElementById('setVoiceControl').checked = !!state.voiceControlEnabled;
-    document.getElementById('inputReminderTime').value = state.reminderTime || '09:00';
-    document.getElementById('selectLang').value = lang;
+    // Поля окна настроек — из сохранённого (их же заново заполняет каждое открытие окна)
+    ui._fillSettingsForm();
 
     console.log('[Golden Workout] Initialized v4.0');
   } catch (err) {

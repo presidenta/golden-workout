@@ -13,7 +13,95 @@
 .gf-title { font-size: 0.85rem; font-weight: 700; color: var(--gold-primary); }
 .gf-text { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
 .gf-hint { color: var(--gold-light); }
-.gf-who { font-size: 0.85rem; color: var(--text-main); overflow-wrap: anywhere; }
+
+/* Вошедший: профиль — фото, имя, кабинет; ниже — сохранение и две маленькие кнопки */
+.gf-card.gf-signed {
+  gap: 14px;
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(212, 175, 55, 0.10), transparent 60%),
+    var(--card-bg);
+}
+.gf-profile { display: flex; align-items: center; gap: 14px; }
+.gf-avatar {
+  position: relative; flex: none;
+  width: 64px; height: 64px; padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--gold-primary);
+  background: radial-gradient(circle at 30% 25%, #2b2513, #121217 72%);
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.08), 0 6px 18px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.gf-avatar:active { transform: scale(0.96); }
+.gf-avatar.busy { opacity: 0.5; pointer-events: none; }
+.gf-avatar img { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.gf-initial {
+  display: block; line-height: 60px; text-align: center;
+  font-size: 1.7rem; font-weight: 800;
+  background: var(--gold-gradient);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.gf-avatar-badge {
+  position: absolute; right: -3px; bottom: -3px;
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gold-gradient); color: #1a1a10;
+  border: 2px solid var(--card-bg);
+}
+.gf-id { flex: 1; min-width: 0; }
+.gf-eyebrow {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.gf-name {
+  margin-top: 3px;
+  font-size: 1.2rem; font-weight: 800; line-height: 1.2;
+  color: var(--text-main); overflow-wrap: anywhere;
+}
+.gf-cabinet {
+  margin-top: 3px;
+  font-size: 0.76rem; color: var(--gold-light);
+  letter-spacing: 0.3px; font-variant-numeric: tabular-nums;
+}
+
+.gf-foot {
+  display: flex; align-items: center; gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.gf-state { flex: 1; min-width: 0; display: flex; align-items: flex-start; gap: 8px; }
+.gf-dot { flex: none; width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; background: var(--text-muted); }
+.gf-state-ok .gf-dot { background: var(--accent-green); box-shadow: 0 0 8px rgba(46, 204, 113, 0.6); }
+.gf-state-busy .gf-dot { background: var(--gold-primary); animation: gf-pulse 1.2s ease-in-out infinite; }
+.gf-state-warn .gf-dot { background: var(--accent-orange); }
+.gf-state-main { font-size: 0.78rem; color: var(--text-main); line-height: 1.35; }
+.gf-state-ok .gf-state-main { color: var(--accent-green); }
+.gf-state-warn .gf-state-main { color: var(--accent-orange); }
+.gf-state-sub { margin-top: 1px; font-size: 0.7rem; color: var(--text-muted); }
+
+/* Маленькие кнопки: служебные действия, а не главное на экране */
+.gf-mini {
+  flex: none; height: 34px; padding: 0 14px;
+  border-radius: 17px;
+  border: 1px solid #3a3a44; background: transparent;
+  color: var(--text-muted);
+  font-size: 0.75rem; font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.gf-mini:hover { color: #fff; border-color: #666; }
+.gf-mini-icon {
+  width: 34px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold-light); border-color: var(--card-border);
+}
+.gf-mini-icon.spinning svg { animation: gf-spin 0.9s linear infinite; }
+@keyframes gf-spin { to { transform: rotate(360deg); } }
+@keyframes gf-pulse { 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) {
+  .gf-mini-icon.spinning svg, .gf-state-busy .gf-dot { animation: none; }
+}
 .gf-status { font-size: 0.78rem; color: var(--text-muted); }
 .gf-status-ok { color: var(--accent-green); }
 .gf-status-offline, .gf-status-error { color: var(--accent-orange); }

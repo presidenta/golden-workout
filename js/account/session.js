@@ -64,7 +64,7 @@ class GFError extends Error {
 }
 
 const gfAccount = {
-  session: null,          // { token, userId, displayName, accountNo }
+  session: null,          // { token, userId, displayName, accountNo, avatar }
   _listeners: [],
 
   async init() {
@@ -120,7 +120,43 @@ const gfAccount = {
     await gfStore.setMeta('session', session);
     this._emit();
     gfSync.sync();
+    this.refreshProfile();
     return true;
+  },
+
+  /* Имя, номер кабинета и фотография — из аккаунта «Кванта» (/api/me). Берём
+     при каждом запуске: фото могли сменить в «Кванте», имя — у администратора.
+     Нет сети или сессия истекла — остаётся прежнее; истечение заметит
+     синхронизация. */
+  async refreshProfile() {
+    const s = this.session;
+    if (!s) return;
+    const me = await this.request('/api/me').catch(() => null);
+    if (!me || this.session !== s) return;
+    const next = {
+      ...s,
+      displayName: me.displayName || s.displayName,
+      accountNo: me.accountNo || s.accountNo,
+      avatar: me.avatar || null
+    };
+    if (gfStable(next) === gfStable(s)) return;
+    await this._keep(next);
+  },
+
+  /* Фотография аккаунта — одна на «Квант» и спорт: сменили здесь — сменилась
+     и там. Приходит уже сжатой (gfShrinkPhoto); пустая строка её убирает. */
+  async setAvatar(avatar) {
+    const s = this.session;
+    if (!s) return;
+    const res = await this.request('/api/me/avatar', { avatar });
+    if (this.session !== s) return;
+    await this._keep({ ...s, avatar: (res && res.avatar) || null });
+  },
+
+  async _keep(session) {
+    this.session = session;
+    await gfStore.setMeta('session', session);
+    this._emit();
   },
 
   /* Выход: сессия закрывается и на сервере. История на телефоне остаётся,

@@ -33,8 +33,54 @@ function gfEl(tag, attrs = {}, ...children) {
   return node;
 }
 
+// Значок линиями, цветом текста кнопки
+const GF_ICON_CAMERA = 'M4 8h3l2-3h6l2 3h3v11H4z M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z';
+const GF_ICON_SYNC = 'M20 11a8 8 0 0 0-14.3-4.9L4 8 M4 4v4h4 M4 13a8 8 0 0 0 14.3 4.9L20 16 M20 20v-4h-4';
+
+function gfIcon(d, size) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', size);
+  svg.setAttribute('height', size);
+  svg.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS(ns, 'path');
+  path.setAttribute('d', d);
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-width', '2');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('stroke-linejoin', 'round');
+  svg.append(path);
+  return svg;
+}
+
+/* Снимок с камеры весит мегабайты, а сервер «Кванта» принимает фото до 300 КБ
+   и показывает кружком. Ужимаем, как сам «Квант» (web/js/profile.js): квадрат
+   по центру, 256 пикселей, JPEG — выходит 20–40 КБ. */
+function gfShrinkPhoto(file, size = 256) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('not_readable'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('not_an_image'));
+      img.onload = () => {
+        const side = Math.min(img.width, img.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = size;
+        canvas.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 const gfPanel = {
   _formOpen: false,
+  _photoBusy: false,
   _msg: '',
   _busy: false,
   _installed: false,
@@ -53,20 +99,15 @@ const gfPanel = {
     const seq = ++this._renderSeq;
     const t = gfText();
     const s = gfAccount.session;
-    const status = s ? await this._statusText(t) : '';
+    const status = s ? await this._status(t) : null;
     if (seq !== this._renderSeq) return;      // пока считали, нарисовали новее
 
-    const parts = [gfEl('div', { class: 'gf-title', text: t.title })];
+    host.classList.toggle('gf-signed', !!s);
+    const parts = [];
     if (s) {
-      const no = s.accountNo ? ` · ${t.cabinet} № ${String(s.accountNo).padStart(9, '0')}` : '';
-      parts.push(
-        gfEl('div', { class: 'gf-who', text: `${t.signedIn}: ${s.displayName || '—'}${no}` }),
-        gfEl('div', { class: `gf-status gf-status-${gfSync.status}`, text: status }),
-        gfEl('div', { class: 'gf-row' },
-          gfEl('button', { class: 'btn-gold', type: 'button', text: t.syncNow, onclick: () => gfSync.sync() }),
-          gfEl('button', { class: 'btn-gold btn-secondary', type: 'button', text: t.logout, onclick: () => this._logout() }))
-      );
+      parts.push(this._profile(t, s), this._footer(t, status));
     } else {
+      parts.push(gfEl('div', { class: 'gf-title', text: t.title }));
       parts.push(gfEl('div', { class: 'gf-text', text: t.intro }));
       if (gfAccount.canAskKvant()) {
         parts.push(gfEl('button', {
@@ -128,18 +169,93 @@ const gfPanel = {
     this._formNode = null;
   },
 
-  async _statusText(t) {
-    if (gfSync.status === 'syncing') return t.saving;
-    if (gfSync.status === 'offline') return t.offline;
-    if (gfSync.status === 'error') return t.syncError;
+  /* КТО ВОШЁЛ — С ПЕРВОГО ВЗГЛЯДА. Раньше здесь была строка «Вы вошли: имя ·
+     кабинет № …» под заголовком и две большие золотые кнопки — читалось как
+     служебное сообщение, а не как свой кабинет. Теперь как профиль: фото
+     аккаунта (нет фото — первая буква имени), имя крупно, номер кабинета
+     под ним. Нажатие на фото — сменить его: оно общее с «Квантом». */
+  _profile(t, s) {
+    const label = s.avatar ? t.changePhoto : t.addPhoto;
+    const face = s.avatar
+      ? gfEl('img', { src: s.avatar, alt: '' })
+      : gfEl('span', { class: 'gf-initial', text: (s.displayName || '·').trim().charAt(0).toUpperCase() || '·' });
+    const avatar = gfEl('button', {
+      class: `gf-avatar${this._photoBusy ? ' busy' : ''}`, type: 'button',
+      'aria-label': label, title: label,
+      onclick: () => this._pickPhoto()
+    }, face, gfEl('span', { class: 'gf-avatar-badge', 'aria-hidden': 'true' }, gfIcon(GF_ICON_CAMERA, 13)));
+
+    return gfEl('div', { class: 'gf-profile' },
+      avatar,
+      gfEl('div', { class: 'gf-id' },
+        gfEl('div', { class: 'gf-eyebrow', text: t.eyebrow }),
+        gfEl('div', { class: 'gf-name', text: s.displayName || '—' }),
+        s.accountNo
+          ? gfEl('div', { class: 'gf-cabinet', text: `${t.cabinetNo} ${String(s.accountNo).padStart(9, '0')}` })
+          : null));
+  },
+
+  // Сохранение — строкой с огоньком; рядом две маленькие кнопки, не главные на экране
+  _footer(t, st) {
+    const syncing = gfSync.status === 'syncing';
+    return gfEl('div', { class: 'gf-foot' },
+      gfEl('div', { class: `gf-state gf-state-${st.kind}`, role: 'status' },
+        gfEl('span', { class: 'gf-dot', 'aria-hidden': 'true' }),
+        gfEl('div', { class: 'gf-state-text' },
+          gfEl('div', { class: 'gf-state-main', text: st.main }),
+          st.sub ? gfEl('div', { class: 'gf-state-sub', text: st.sub }) : null)),
+      gfEl('button', {
+        class: `gf-mini gf-mini-icon${syncing ? ' spinning' : ''}`, type: 'button',
+        'aria-label': t.syncNow, title: t.syncNow,
+        onclick: () => gfSync.sync()
+      }, gfIcon(GF_ICON_SYNC, 16)),
+      gfEl('button', { class: 'gf-mini', type: 'button', text: t.logout, onclick: () => this._logout() }));
+  },
+
+  // { main, sub, kind } — kind красит огонёк: ok зелёный, busy золотой, warn оранжевый
+  async _status(t) {
+    if (gfSync.status === 'syncing') return { main: t.saving, kind: 'busy' };
+    if (gfSync.status === 'offline') return { main: t.offline, kind: 'warn' };
+    if (gfSync.status === 'error') return { main: t.syncError, kind: 'warn' };
     const n = await gfSync.pendingCount();
-    if (n) return t.pending(n);
+    if (n) return { main: t.pending(n), kind: 'busy' };
     const last = await gfStore.getMeta('lastSync').catch(() => null);
-    if (!last) return `${t.savedAt}: ${t.never}`;
+    if (!last) return { main: t.savedAt, sub: t.never, kind: 'busy' };
     const d = new Date(last);
     const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const day = dateKey(d) === dateKey() ? t.today : d.toLocaleDateString();
-    return `${t.savedAt}: ${day} ${time}`;
+    return { main: t.savedAt, sub: `${day} ${time}`, kind: 'ok' };
+  },
+
+  /* Выбор фото. Поле выбора файла одно на страницу и спрятано: нажимают на
+     сам кружок. Снимок ужимается на телефоне и уходит в аккаунт. */
+  _pickPhoto() {
+    if (this._photoBusy) return;
+    if (!this._photoInput) {
+      this._photoInput = gfEl('input', { type: 'file', accept: 'image/*', hidden: '' });
+      this._photoInput.addEventListener('change', () => {
+        const file = this._photoInput.files && this._photoInput.files[0];
+        this._photoInput.value = '';              // тот же снимок можно выбрать снова
+        if (file) this._savePhoto(file);
+      });
+      document.body.append(this._photoInput);
+    }
+    this._photoInput.click();
+  },
+
+  async _savePhoto(file) {
+    const t = gfText();
+    this._photoBusy = true;
+    this.render();
+    try {
+      await gfAccount.setAvatar(await gfShrinkPhoto(file));
+      this.showMessage(t.photoSaved, true);
+    } catch (e) {
+      this.showMessage(e && e.code === 'network' ? t.err.network : t.photoError);
+    } finally {
+      this._photoBusy = false;
+      this.render();
+    }
   },
 
   async _logout() {
@@ -280,6 +396,7 @@ const GFAccount = {
     // «Войти через Квант» возвращает сюда же: уже открытая страница получает только новый #
     window.addEventListener('hashchange', () => this._takeHash());
     gfSync.sync();
+    gfAccount.refreshProfile();
   },
 
   /* Что принёс адрес: #kvant=<пропуск>, #install (поставить значок),
