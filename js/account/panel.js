@@ -55,32 +55,8 @@ function gfIcon(d, size) {
   return svg;
 }
 
-/* Снимок с камеры весит мегабайты, а сервер «Кванта» принимает фото до 300 КБ
-   и показывает кружком. Ужимаем, как сам «Квант» (web/js/profile.js): квадрат
-   по центру, 256 пикселей, JPEG — выходит 20–40 КБ. */
-function gfShrinkPhoto(file, size = 256) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('not_readable'));
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('not_an_image'));
-      img.onload = () => {
-        const side = Math.min(img.width, img.height);
-        const canvas = document.createElement('canvas');
-        canvas.width = canvas.height = size;
-        canvas.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
-        resolve(canvas.toDataURL('image/jpeg', 0.82));
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
 const gfPanel = {
   _formOpen: false,
-  _photoBusy: false,
   _msg: '',
   _busy: false,
   _installed: false,
@@ -172,18 +148,20 @@ const gfPanel = {
   /* КТО ВОШЁЛ — С ПЕРВОГО ВЗГЛЯДА. Раньше здесь была строка «Вы вошли: имя ·
      кабинет № …» под заголовком и две большие золотые кнопки — читалось как
      служебное сообщение, а не как свой кабинет. Теперь как профиль: фото
-     аккаунта (нет фото — первая буква имени), имя крупно, номер кабинета
-     под ним. Нажатие на фото — сменить его: оно общее с «Квантом». */
+     (нет фото — первая буква имени), имя крупно, номер кабинета под ним.
+     Фото — своё у спорта, не из «Кванта» (модуль js/photos/): нажатие
+     открывает его целиком, а нет фото — предлагает выбрать. */
   _profile(t, s) {
-    const label = s.avatar ? t.changePhoto : t.addPhoto;
-    const face = s.avatar
-      ? gfEl('img', { src: s.avatar, alt: '' })
+    const photos = typeof GFPhotos !== 'undefined' && GFPhotos.started ? GFPhotos : null;
+    const own = photos && photos.avatar();
+    const label = own ? t.openPhoto : t.addPhoto;
+    const face = own
+      ? gfEl('img', { src: own.thumb, alt: '' })
       : gfEl('span', { class: 'gf-initial', text: (s.displayName || '·').trim().charAt(0).toUpperCase() || '·' });
-    const avatar = gfEl('button', {
-      class: `gf-avatar${this._photoBusy ? ' busy' : ''}`, type: 'button',
-      'aria-label': label, title: label,
-      onclick: () => this._pickPhoto()
-    }, face, gfEl('span', { class: 'gf-avatar-badge', 'aria-hidden': 'true' }, gfIcon(GF_ICON_CAMERA, 13)));
+    const avatar = photos
+      ? gfEl('button', { class: 'gf-avatar', type: 'button', 'aria-label': label, title: label, onclick: () => photos.openAvatar() },
+          face, gfEl('span', { class: 'gf-avatar-badge', 'aria-hidden': 'true' }, gfIcon(GF_ICON_CAMERA, 13)))
+      : gfEl('div', { class: 'gf-avatar' }, face);
 
     return gfEl('div', { class: 'gf-profile' },
       avatar,
@@ -225,37 +203,6 @@ const gfPanel = {
     const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const day = dateKey(d) === dateKey() ? t.today : d.toLocaleDateString();
     return { main: t.savedAt, sub: `${day} ${time}`, kind: 'ok' };
-  },
-
-  /* Выбор фото. Поле выбора файла одно на страницу и спрятано: нажимают на
-     сам кружок. Снимок ужимается на телефоне и уходит в аккаунт. */
-  _pickPhoto() {
-    if (this._photoBusy) return;
-    if (!this._photoInput) {
-      this._photoInput = gfEl('input', { type: 'file', accept: 'image/*', hidden: '' });
-      this._photoInput.addEventListener('change', () => {
-        const file = this._photoInput.files && this._photoInput.files[0];
-        this._photoInput.value = '';              // тот же снимок можно выбрать снова
-        if (file) this._savePhoto(file);
-      });
-      document.body.append(this._photoInput);
-    }
-    this._photoInput.click();
-  },
-
-  async _savePhoto(file) {
-    const t = gfText();
-    this._photoBusy = true;
-    this.render();
-    try {
-      await gfAccount.setAvatar(await gfShrinkPhoto(file));
-      this.showMessage(t.photoSaved, true);
-    } catch (e) {
-      this.showMessage(e && e.code === 'network' ? t.err.network : t.photoError);
-    } finally {
-      this._photoBusy = false;
-      this.render();
-    }
   },
 
   async _logout() {
@@ -343,7 +290,8 @@ const gfPanel = {
   _isBusy() {
     const shown = id => { const n = document.getElementById(id); return n && !n.classList.contains('hidden'); };
     return ['screenWorkout', 'restScreen', 'eyesScreen', 'tmScreen', 'cardioScreen'].some(shown)
-      || !!document.querySelector('.modal-overlay:not(.hidden)');
+      || !!document.querySelector('.modal-overlay:not(.hidden)')
+      || (typeof GFPhotos !== 'undefined' && GFPhotos.isOpen());
   },
 
   /* Пришедшее с сервера уже лежит в базе, но экран и настройки в памяти
@@ -386,6 +334,7 @@ const GFAccount = {
     gfSync.onExpired = () => gfPanel.showMessage(gfText().err.unauthorized);
     gfPanel._sessionId = gfAccount.session && gfAccount.session.userId;
     gfAccount.onChange(() => gfPanel._sessionChanged());
+    if (typeof GFPhotos !== 'undefined') GFPhotos.onChange(() => gfPanel.render());
 
     let lang = store.getState().lang;
     store.subscribe(s => { if (s.lang !== lang) { lang = s.lang; gfPanel.render(); } });

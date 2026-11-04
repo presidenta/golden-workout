@@ -1,0 +1,130 @@
+/* Модуль фотографий: «Мой эталон», эталон на отдыхе, просмотр во весь экран */
+
+/* ----- Карточка «Мой эталон» на вкладке «Тренировка» ----- */
+#gpGoalCard {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--card-border);
+  background:
+    radial-gradient(120% 100% at 100% 0%, rgba(212, 175, 55, 0.10), transparent 60%),
+    var(--card-bg);
+}
+#gpGoalCard:empty { display: none; }
+.gp-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.gp-title {
+  font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px;
+  color: var(--gold-primary);
+}
+.gp-count-badge { font-size: 0.68rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.gp-intro { margin-top: 6px; font-size: 0.76rem; line-height: 1.45; color: var(--text-muted); }
+.gp-add-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 10px; height: 36px; padding: 0 16px 0 12px;
+  border-radius: 18px;
+  border: 1px solid var(--gold-primary);
+  background: rgba(212, 175, 55, 0.08);
+  color: var(--gold-light);
+  font-size: 0.78rem; font-weight: 700;
+  cursor: pointer;
+}
+.gp-plus { font-size: 1.1rem; line-height: 1; font-weight: 400; }
+
+/* Плитки листаются вбок; карточка по высоте не растёт, сколько бы фото ни было */
+.gp-strip {
+  display: flex; gap: 8px;
+  margin: 10px -14px 0; padding: 0 14px 2px;
+  overflow-x: auto; scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.gp-strip::-webkit-scrollbar { display: none; }
+.gp-tile {
+  flex: none; width: 84px; height: 112px; padding: 0;
+  border-radius: 12px; overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: #0c0c10;
+  cursor: pointer; scroll-snap-align: start;
+}
+.gp-tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.gp-tile:active { transform: scale(0.97); }
+.gp-tile-add {
+  display: flex; align-items: center; justify-content: center;
+  border-style: dashed; color: var(--gold-primary);
+  background: rgba(212, 175, 55, 0.04);
+}
+.gp-tile-add .gp-plus { font-size: 1.8rem; }
+
+/* ----- Эталон на экране отдыха ----- */
+#gpRestGoal { margin-top: 18px; display: flex; justify-content: center; }
+.gp-rest-photo {
+  position: relative; padding: 0;
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  background: #0c0c10;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+.gp-rest-photo img { display: block; max-width: min(78vw, 320px); max-height: 34vh; object-fit: contain; }
+.gp-rest-caption {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 18px 10px 7px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--gold-light);
+}
+
+/* ----- Просмотр во весь экран ----- */
+.gp-noscroll { overflow: hidden; }
+.gp-viewer {
+  position: fixed; inset: 0; z-index: 400;
+  background: #000;
+  touch-action: pan-y;
+}
+.gp-v-img {
+  position: absolute;
+  top: calc(56px + env(safe-area-inset-top)); bottom: calc(76px + env(safe-area-inset-bottom));
+  left: 0; right: 0;
+  width: 100%; height: calc(100% - 132px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  object-fit: contain;
+}
+.gp-v-top {
+  position: absolute; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: calc(8px + env(safe-area-inset-top)) 12px 8px 18px;
+}
+.gp-v-count { font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); font-variant-numeric: tabular-nums; }
+.gp-v-close {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.06);
+  color: #fff; font-size: 1.1rem; cursor: pointer;
+}
+.gp-v-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 64px;
+  border: 0; border-radius: 12px;
+  background: rgba(0, 0, 0, 0.35); color: #fff;
+  font-size: 2rem; line-height: 1; cursor: pointer;
+}
+.gp-v-prev { left: 8px; }
+.gp-v-next { right: 8px; }
+.gp-v-actions {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; justify-content: center; gap: 10px;
+  padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+}
+.gp-v-btn {
+  height: 40px; padding: 0 20px; border-radius: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.6); background: rgba(212, 175, 55, 0.1);
+  color: var(--gold-light); font-size: 0.82rem; font-weight: 700; cursor: pointer;
+}
+.gp-v-danger { border-color: rgba(231, 76, 60, 0.6); background: rgba(231, 76, 60, 0.1); color: #ff8a7d; }
+
+/* ----- Подсказка «сохраняю фото» ----- */
+.gp-toast {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(96px + env(safe-area-inset-bottom)); z-index: 450;
+  max-width: calc(100vw - 32px); padding: 10px 16px;
+  border-radius: 12px; border: 1px solid var(--card-border);
+  background: rgba(18, 18, 23, 0.97); color: var(--gold-light);
+  font-size: 0.8rem; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}

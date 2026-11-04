@@ -295,10 +295,13 @@
         return el && !el.classList.contains('hidden');
       });
     return open || (this._tabHistory && this._tabHistory.length > 0)
-        || store.getState().currentTab !== 'workout';
+        || store.getState().currentTab !== 'workout'
+        || (typeof GFPhotos !== 'undefined' && GFPhotos.isOpen());
   }
 
   _goBack() {
+    // Открытое во весь экран фото (модуль js/photos/) — поверх всего, закрывается первым
+    if (typeof GFPhotos !== 'undefined' && GFPhotos.close()) { this._updateBackButton(); return; }
     // Сначала закрываем то, что открыто поверх раздела
     const close = [
       ['tmLogModal', () => this._skipTreadmillLog()],

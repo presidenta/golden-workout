@@ -20,6 +20,10 @@
 const GF_KINDS = { workouts: 'workout', daily: 'day', programs: 'program', settings: 'settings' };
 const GF_STORE_OF = Object.fromEntries(Object.entries(GF_KINDS).map(([s, k]) => [k, s]));
 const GF_BATCH = 200;
+/* Пачка ограничена и по размеру: перед сервером nginx с пределом 1 МБ на запрос (настройка хоста, вне
+   репозитория). Двести длинных тренировок по 7 КБ его превышали — сервер отвечал 413 на каждый обмен,
+   и история переставала сохраняться. Считаем в знаках: кириллица в заметках весит вдвое больше. */
+const GF_BATCH_CHARS = 400000;
 
 // Сравнение без учёта порядка полей: сервер хранит JSON в своём порядке
 function gfStable(v) {
@@ -171,9 +175,15 @@ const gfSync = {
     const changed = new Set();
     let cursor = (await gfStore.getMeta('cursor')) || 0;
     for (let guard = 0; guard < 1000; guard++) {
-      const sent = (await gfStore.all('outbox')).slice(0, GF_BATCH);
-      const changes = [];
-      for (const e of sent) changes.push(await this._outgoing(e));
+      const sent = [], changes = [];
+      let chars = 0;
+      for (const e of (await gfStore.all('outbox')).slice(0, GF_BATCH)) {
+        const change = await this._outgoing(e);
+        chars += JSON.stringify(change).length;
+        if (sent.length && chars > GF_BATCH_CHARS) break;
+        sent.push(e);
+        changes.push(change);
+      }
       const res = await gfAccount.request('/api/sport/sync', { cursor, changes });
 
       // Отправленное — из очереди, если пока шёл запрос его не поменяли снова

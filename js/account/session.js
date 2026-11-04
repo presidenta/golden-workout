@@ -64,7 +64,7 @@ class GFError extends Error {
 }
 
 const gfAccount = {
-  session: null,          // { token, userId, displayName, accountNo, avatar }
+  session: null,          // { token, userId, displayName, accountNo }
   _listeners: [],
 
   async init() {
@@ -124,38 +124,24 @@ const gfAccount = {
     return true;
   },
 
-  /* Имя, номер кабинета и фотография — из аккаунта «Кванта» (/api/me). Берём
-     при каждом запуске: фото могли сменить в «Кванте», имя — у администратора.
-     Нет сети или сессия истекла — остаётся прежнее; истечение заметит
-     синхронизация. */
+  /* Имя и номер кабинета — из аккаунта «Кванта» (/api/me). Берём при каждом
+     запуске: имя могли поправить у администратора. Фото «Кванта» спорт не
+     берёт — у спорта своё (модуль js/photos/). Нет сети или сессия истекла —
+     остаётся прежнее; истечение заметит синхронизация. */
   async refreshProfile() {
     const s = this.session;
     if (!s) return;
     const me = await this.request('/api/me').catch(() => null);
     if (!me || this.session !== s) return;
+    const { avatar, ...rest } = s;     // в сборке 31 фото «Кванта» лежало в сессии — убираем
     const next = {
-      ...s,
+      ...rest,
       displayName: me.displayName || s.displayName,
-      accountNo: me.accountNo || s.accountNo,
-      avatar: me.avatar || null
+      accountNo: me.accountNo || s.accountNo
     };
     if (gfStable(next) === gfStable(s)) return;
-    await this._keep(next);
-  },
-
-  /* Фотография аккаунта — одна на «Квант» и спорт: сменили здесь — сменилась
-     и там. Приходит уже сжатой (gfShrinkPhoto); пустая строка её убирает. */
-  async setAvatar(avatar) {
-    const s = this.session;
-    if (!s) return;
-    const res = await this.request('/api/me/avatar', { avatar });
-    if (this.session !== s) return;
-    await this._keep({ ...s, avatar: (res && res.avatar) || null });
-  },
-
-  async _keep(session) {
-    this.session = session;
-    await gfStore.setMeta('session', session);
+    this.session = next;
+    await gfStore.setMeta('session', next);
     this._emit();
   },
 

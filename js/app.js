@@ -49,6 +49,8 @@ async function bootstrap() {
 
     // Аккаунт «Кванта» и сохранение истории на сервере — модуль js/account/
     if (typeof GFAccount !== 'undefined') GFAccount.start({ dbReady });
+    // Фото профиля спорта и «Мой эталон» — модуль js/photos/
+    if (typeof GFPhotos !== 'undefined') GFPhotos.start({ dbReady });
 
     // Restore volume UI
     document.querySelectorAll('.vol-btn').forEach(b => {
