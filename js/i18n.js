@@ -1,6 +1,6 @@
 ﻿const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 35",
+    subtitle: "Architect Pro · сборка 36",
     tabs: { workout: "Тренировка", plan: "План", health: "Здоровье", stats: "Календарь", more: "Ещё" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -27,6 +27,9 @@
     voiceBreathOff: "• «Подсказки дыхания» выключены.",
     voiceDisabled: "• Обе настройки выключены — голос молчит целиком.",
     voiceSeeCheck: "Настройки → «Проверить голос»",
+    voiceModes: { voice: "выбранным голосом", lang: "по языку", plain: "голосом телефона" },
+    voiceWorks: m => "✅ Телефон говорит — способом «" + m + "», он запомнен для тренировок.",
+    voiceTried: "Пробовала: ",
     voiceWhy: {
       "not-allowed": "телефон не разрешил странице говорить — коснитесь экрана и нажмите проверку ещё раз",
       "language-unavailable": "нет русского голоса. Настройки телефона → «Синтез речи» → Google → загрузить русский",
@@ -229,7 +232,7 @@
     dayEmpty: "В этот день записей нет."
   },
   en: {
-    subtitle: "Architect Pro · build 35",
+    subtitle: "Architect Pro · build 36",
     tabs: { workout: "Workout", plan: "Plan", health: "Health", stats: "Calendar", more: "More" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -255,6 +258,9 @@
     voiceBreathOff: "• Breathing cues are off.",
     voiceDisabled: "• Both are off — the voice is silent.",
     voiceSeeCheck: "Settings → \"Test the voice\"",
+    voiceModes: { voice: "chosen voice", lang: "by language", plain: "phone default voice" },
+    voiceWorks: m => "✅ The phone speaks — way \"" + m + "\", remembered for workouts.",
+    voiceTried: "Tried: ",
     voiceWhy: {
       "not-allowed": "the phone did not allow the page to speak — tap the screen and test again",
       "language-unavailable": "no voice for this language. Phone settings → Text-to-speech → Google → install the language",
@@ -450,7 +456,7 @@
     dayEmpty: "Nothing recorded on this day."
   },
   ua: {
-    subtitle: "Architect Pro · збірка 35",
+    subtitle: "Architect Pro · збірка 36",
     tabs: { workout: "Тренування", plan: "План", health: "Здоров'я", stats: "Календар", more: "Ще" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -476,6 +482,9 @@
     voiceBreathOff: "• «Підказки дихання» вимкнено.",
     voiceDisabled: "• Обидва вимкнено — голос мовчить повністю.",
     voiceSeeCheck: "Налаштування → «Перевірити голос»",
+    voiceModes: { voice: "обраним голосом", lang: "за мовою", plain: "голосом телефона" },
+    voiceWorks: m => "✅ Телефон говорить — способом «" + m + "», його запам'ятано для тренувань.",
+    voiceTried: "Спробувала: ",
     voiceWhy: {
       "not-allowed": "телефон не дозволив сторінці говорити — торкніться екрана й перевірте ще раз",
       "language-unavailable": "немає голосу цієї мови. Налаштування телефона → «Синтез мовлення» → Google → завантажити мову",

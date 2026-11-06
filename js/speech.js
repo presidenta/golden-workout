@@ -13,16 +13,54 @@ class SpeechController {
     this.lastProblem = '';
   }
 
-  /* ГОЛОС ВЫБИРАЕМ ЯВНО (сборка 35). Владелец 06.11.2026: телефон перестал говорить при полной громкости,
-     а страница голос просила (проверено). Одного u.lang Chrome на Android бывает мало: язык не находит
-     голоса — и тишина без единой ошибки на экране. Берём из установленных на телефоне голос этого языка;
-     нет такого — говорим голосом по умолчанию, это лучше молчания. */
+  /* КАК ПРОСИТЬ ТЕЛЕФОН ГОВОРИТЬ (сборка 36).
+
+     Владелец 06.11.2026: голос пропал при полной громкости; проверка сборки 35 показала отказ телефона
+     «synthesis-failed» на русском голосе (голосов 89, выбран «русский Россия», ru_RU). Синтез на телефоне жив,
+     отказывает один способ просьбы. Способов три, и какой сработает, зависит от прошивки и движка речи:
+       voice — язык и голос, выбранный явно;
+       lang  — только язык (так было до сборки 35);
+       plain — ничего: голос и язык телефона по умолчанию.
+     Начинаем с запомненного; отказ «synthesis-failed» и родственные — фраза повторяется следующим способом,
+     и он запоминается. Кнопка «Проверить голос» пробует все три и оставляет первый сработавший. */
+  static get MODES() { return ['voice', 'lang', 'plain']; }
+
+  get mode() {
+    try {
+      const m = localStorage.getItem('gf.voiceMode');
+      if (SpeechController.MODES.includes(m)) return m;
+    } catch (e) { /* приватный режим — по умолчанию */ }
+    return 'voice';
+  }
+
+  set mode(m) {
+    try { localStorage.setItem('gf.voiceMode', m); } catch (e) { /* приватный режим */ }
+  }
+
   _voice() {
     if (!this.synth || !this.synth.getVoices) return null;
     const want = this.lang.toLowerCase().split('-')[0];
     const voices = this.synth.getVoices() || [];
     const same = voices.filter(v => String(v.lang).toLowerCase().replace('_', '-').split('-')[0] === want);
     return same.find(v => v.localService) || same[0] || null;
+  }
+
+  // Фраза для телефона, собранная выбранным способом
+  _utterance(text, mode, opts = {}) {
+    const u = new SpeechSynthesisUtterance(text);
+    if (mode !== 'plain') u.lang = this.lang;
+    if (mode === 'voice') {
+      const v = this._voice();
+      if (v) u.voice = v;
+    }
+    u.rate = opts.rate || 1;
+    u.pitch = opts.pitch || 1.0;
+    return u;
+  }
+
+  // Отказы, после которых имеет смысл попросить иначе
+  static failedHow(code) {
+    return ['synthesis-failed', 'synthesis-unavailable', 'language-unavailable', 'voice-unavailable'].includes(code);
   }
 
   // Отказ телефона, а не наша остановка (cancel даёт interrupted/canceled — это не беда)
@@ -51,45 +89,74 @@ class SpeechController {
       if (interrupt) this.synth.cancel();
       // Chrome на Android оставляет синтез на «паузе» после фона — тогда молчит всё, что встаёт в очередь
       if (this.synth.paused) this.synth.resume();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = this.lang;
-      const voice = this._voice();
-      if (voice) u.voice = voice;
-      u.rate = opts.rate || 1.15;   // чуть быстрее: короткие слова должны успевать за темпом
-      u.pitch = opts.pitch || 1.0;
       let called = false;
       const once = () => { if (!called) { called = true; if (done) done(); } };
-      u.onend = once;
-      u.onerror = e => { this._problem(e && e.error); once(); };
-      this.synth.speak(u);
+      const say = (mode, tries) => {
+        // чуть быстрее обычного: короткие слова должны успевать за темпом
+        const u = this._utterance(text, mode, { rate: opts.rate || 1.15, pitch: opts.pitch });
+        u.onend = once;
+        u.onerror = e => {
+          const code = e && e.error;
+          const modes = SpeechController.MODES;
+          const next = modes[(modes.indexOf(mode) + 1) % modes.length];
+          if (SpeechController.failedHow(code) && tries < modes.length - 1) {
+            // Этот способ телефон не принял — эту же фразу другим, и он остаётся для следующих
+            this.mode = next;
+            say(next, tries + 1);
+            return;
+          }
+          this._problem(code);
+          once();
+        };
+        this.synth.speak(u);
+      };
+      say(this.mode, 0);
     } catch (e) {
       console.warn('TTS error', e);
       if (done) setTimeout(done, 0);
     }
   }
 
-  /* ПРОВЕРКА ГОЛОСА — кнопка в настройках (сборка 35). Говорит фразу независимо от настроек и отвечает, что
-     было на самом деле: есть ли синтез, сколько голосов и какой выбран, начал ли телефон говорить и чем отказал.
-     result: ok | no-synth | no-start (принял и молчит) | ended-silent | error:<код Chrome> */
-  check(phrase) {
+  // Одна попытка сказать фразу способом mode: ok | no-start | ended-silent | error:<код>
+  _try(phrase, mode) {
     return new Promise(resolve => {
-      const итог = { synth: !!this.synth, lang: this.lang, voices: 0, voice: '', result: '' };
-      if (!this.synth) { итог.result = 'no-synth'; resolve(итог); return; }
-      const run = () => {
-        итог.voices = (this.synth.getVoices() || []).length;
-        const v = this._voice();
-        итог.voice = v ? `${v.name} (${v.lang})` : '';
-        try { this.synth.cancel(); if (this.synth.paused) this.synth.resume(); } catch (e) {}
-        const u = new SpeechSynthesisUtterance(phrase);
-        u.lang = this.lang;
-        if (v) u.voice = v;
-        let started = false, done = false;
-        const finish = r => { if (done) return; done = true; итог.result = r; resolve(итог); };
+      let started = false, done = false;
+      const finish = r => { if (!done) { done = true; resolve(r); } };
+      try { this.synth.cancel(); if (this.synth.paused) this.synth.resume(); } catch (e) {}
+      // После cancel Chrome на Android сразу новую фразу иногда роняет — даём ему мгновение
+      setTimeout(() => {
+        // Та же скорость, что на тренировке: проверка испытывает ровно то, что потом звучит
+        const u = this._utterance(phrase, mode, { rate: 1.15 });
         u.onstart = () => { started = true; };
         u.onend = () => finish(started ? 'ok' : 'ended-silent');
         u.onerror = e => finish('error:' + ((e && e.error) || 'unknown'));
-        setTimeout(() => finish(started ? 'ok' : 'no-start'), 8000);
-        this.synth.speak(u);
+        setTimeout(() => finish(started ? 'ok' : 'no-start'), 7000);
+        try { this.synth.speak(u); } catch (e) { finish('error:' + e.message); }
+      }, 300);
+    });
+  }
+
+  /* ПРОВЕРКА ГОЛОСА — кнопка в настройках. Пробует способы по очереди, начиная с запомненного, до первого
+     сработавшего и запоминает его. Отвечает, что было на самом деле.
+     { synth, voices, voice, mode (сработавший или ''), tries: [{ mode, result }], result } */
+  check(phrase) {
+    return new Promise(resolve => {
+      const итог = { synth: !!this.synth, lang: this.lang, voices: 0, voice: '', mode: '', tries: [], result: '' };
+      if (!this.synth) { итог.result = 'no-synth'; resolve(итог); return; }
+      const run = async () => {
+        итог.voices = (this.synth.getVoices() || []).length;
+        const v = this._voice();
+        итог.voice = v ? `${v.name} (${v.lang})` : '';
+        const modes = SpeechController.MODES;
+        const start = modes.indexOf(this.mode);
+        const order = modes.slice(start).concat(modes.slice(0, start));
+        for (const mode of order) {
+          const r = await this._try(phrase, mode);
+          итог.tries.push({ mode, result: r });
+          if (r === 'ok') { итог.mode = mode; this.mode = mode; break; }
+        }
+        итог.result = итог.mode ? 'ok' : итог.tries[итог.tries.length - 1].result;
+        resolve(итог);
       };
       // Голоса Chrome отдаёт не сразу: ждём их появления, но не дольше полутора секунд
       if ((this.synth.getVoices() || []).length) { run(); return; }

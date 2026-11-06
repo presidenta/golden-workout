@@ -3356,7 +3356,8 @@
     if (!r.synth) {
       lines.push(t.voiceNoSynth);
     } else {
-      lines.push(r.result === 'ok' ? t.voiceOk : t.voiceFail(this._voiceWhy(r.result)));
+      lines.push(r.mode ? t.voiceWorks(t.voiceModes[r.mode]) : t.voiceFail(this._voiceWhy(r.result)));
+      lines.push(t.voiceTried + r.tries.map(x => `${t.voiceModes[x.mode]} ${x.result === 'ok' ? '✅' : '❌ ' + String(x.result).replace(/^error:/, '')}`).join('; '));
       lines.push(t.voiceVoices(r.voices, r.voice || t.voiceNoLangVoice));
     }
     if (s.countAloud === false) lines.push(t.voiceCountOff);
