@@ -2019,3 +2019,16 @@ input:checked + .slider:before { transform: translateX(18px); }
   font-size: 0.8rem; line-height: 1.45; white-space: pre-line;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
+
+/* Слова кружка «сохранить и обновить» (js/update.js, сборка 37) */
+.gf-update-toast {
+  position: fixed; left: 12px; right: 12px; bottom: calc(88px + env(safe-area-inset-bottom));
+  z-index: 500; max-width: 476px; margin: 0 auto;
+  padding: 11px 14px; border-radius: 14px; text-align: center;
+  background: rgba(18, 18, 23, 0.97);
+  border: 1px solid var(--gold-primary);
+  color: var(--gold-light);
+  font-size: 0.82rem; font-weight: 700;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+.gf-update-toast.hidden { display: none; }

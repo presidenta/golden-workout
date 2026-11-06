@@ -185,7 +185,12 @@ const gfPanel = {
       gfEl('button', {
         class: `gf-mini gf-mini-icon${syncing ? ' spinning' : ''}`, type: 'button',
         'aria-label': t.syncNow, title: t.syncNow,
-        onclick: () => gfSync.sync()
+        /* Кружок — «сохранить и обновить» (сборка 37). Владелец 07.11.2026: «он должен делать обновление и
+           смотреть, есть ли изменения». Прежде только сохранял историю на сервер. */
+        onclick: () => {
+          gfSync.sync();
+          if (typeof GFUpdate !== 'undefined') GFUpdate.check({ manual: true });
+        }
       }, gfIcon(GF_ICON_SYNC, 16)),
       gfEl('button', { class: 'gf-mini', type: 'button', text: t.logout, onclick: () => this._logout() }));
   },

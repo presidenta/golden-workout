@@ -4,7 +4,7 @@
    просит стили и скрипты именно с этой меткой, и кэш ищет их по
    полному адресу. Без метки заготовленные файлы не находились ни разу
    и лежали в кэше зря. */
-const VERSION = '36';
+const VERSION = '37';
 const CACHE_NAME = 'golden-workout-v' + VERSION;
 const STATIC_ASSETS = [
   './',
@@ -33,7 +33,8 @@ const STATIC_ASSETS = [
   './js/photos/texts.js?v=' + VERSION,
   './js/photos/store.js?v=' + VERSION,
   './js/photos/sync.js?v=' + VERSION,
-  './js/photos/panel.js?v=' + VERSION
+  './js/photos/panel.js?v=' + VERSION,
+  './js/update.js?v=' + VERSION
 ];
 
 /* addAll работает по принципу «всё или ничего»: один недоступный файл
@@ -55,7 +56,10 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      /* Только свои старые запасы (сборка 37). Сайт presidenta.github.io общий с «Квантом», и запасы у
+         них в одном хранилище: прежде здесь стиралось всё, кроме своего, — и «Квант» в браузере после
+         каждого обновления спорта оставался без работы без интернета. */
+      Promise.all(keys.filter(k => k.startsWith('golden-workout-') && k !== CACHE_NAME).map(k => caches.delete(k)))
     )
   );
   self.clients.claim();
@@ -64,14 +68,21 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const { request } = e;
   const url = new URL(request.url);
+  /* Просьба «мимо кэша» — проверка обновления (js/update.js): ей нужен честный ответ сайта, и в запас она
+     не ложится. Прежде её ловил запас ниже и клал туда каждый адрес проверки. */
+  if (request.cache === 'no-store') return;
 
   /* Сама страница — сначала из сети, кэш только без интернета. Из кэша
      первой она держала телефон на старой сборке: новые скрипты с новой
      меткой ?v= страница просто не просила. Скрипты и стили ниже идут из
      кэша — их адрес меняется с каждой сборкой, устареть они не могут. */
   if (request.mode === 'navigate') {
+    /* С проверкой у сайта (сборка 37): просто fetch брал страницу из кэша браузера, а GitHub разрешает
+       держать её 10 минут — столько после выкладки телефон открывал прежнюю сборку. Запрос пересобран по
+       адресу: копию перехода с другим режимом кэша браузер не принимает. */
+    const fresh = new Request(request.url, { cache: 'no-cache', credentials: 'same-origin' });
     e.respondWith(
-      fetch(request).then(response => {
+      fetch(fresh).then(response => {
         if (response && response.ok) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(request, clone));

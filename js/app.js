@@ -74,6 +74,8 @@ try {
       .then(reg => console.log('[SW] Registered:', reg.scope))
       .catch(err => console.warn('[SW] Registration failed:', err));
   }
+  // Новая сборка на сайте — при открытии и возвращении в приложение (js/update.js, сборка 37)
+  if (typeof GFUpdate !== 'undefined') GFUpdate.start();
 } catch (err) {
   console.warn('[SW] Service Worker not available (file://?):', err);
 }
