@@ -231,8 +231,7 @@ const GFPhotos = {
     const was = !host.classList.contains('hidden');
     const now = this._trainVisible();
     host.classList.toggle('hidden', !now);
-    // Только что показали — встать на выбранное фото: у скрытой ленты ширины нет, сдвиг не держится
-    if (now && !was) this._trainGo(this._trainIndex(), false);
+    if (now && !was) this._trainGo(this._trainIndex());
     this._restartAuto();
   },
 
@@ -241,6 +240,12 @@ const GFPhotos = {
     return i < 0 ? 0 : i;
   },
 
+  /* ОДНО ФОТО, А НЕ ЛЕНТА (сборка 39). Владелец 07.11.2026: на снимке лента встала между двумя фото —
+     половина одного, чёрная полоса, край другого; и фото появлялись с опозданием после «Старт подхода».
+     Лента держала текущее фото положением прокрутки, а оно сбивается, если блок показан до того, как
+     разложен. Теперь в рамке ровно одно фото: какое — знает _trainId, «между» не бывает. Свайп в сторону —
+     соседнее, касание — открыть целиком. Все снимки раскрываются заранее (_trainPreload), пока блок скрыт:
+     показ со «Старт подхода» — мгновенный. */
   _renderTrain() {
     const host = document.getElementById('gpTrainGoal');
     if (!host) return;
@@ -248,12 +253,10 @@ const GFPhotos = {
     if (!goals.length) { host.replaceChildren(); this._showTrain(); return; }
     const t = gpText();
     if (!goals.some(p => p.id === this._trainId)) this._trainId = goals[0].id;
+    this._trainPreload(goals);
 
-    const strip = gpEl('div', { class: 'gp-train-strip' },
-      goals.map((p, i) => gpEl('button', {
-        class: 'gp-train-slide', type: 'button', 'aria-label': `${t.open} ${i + 1}`,
-        onclick: () => this._open(goals, i, 'goal')
-      }, gpEl('img', { src: this._full(p), alt: '' }))));
+    const img = gpEl('img', { class: 'gp-train-img', alt: '', decoding: 'sync' });
+    const frame = gpEl('div', { class: 'gp-train-frame', role: 'button', tabindex: '0', 'aria-label': t.open }, img);
     const count = gpEl('span', { class: 'gp-train-count' });
     const auto = gpEl('button', {
       class: 'gp-auto-btn', type: 'button', 'aria-pressed': String(this._auto.on), title: t.autoHint,
@@ -266,23 +269,40 @@ const GFPhotos = {
         return o;
       }));
     every.addEventListener('change', () => this._setAuto({ sec: Number(every.value) }));
-    host.replaceChildren(strip, gpEl('div', { class: 'gp-train-bar' }, auto, every, count));
+    host.replaceChildren(frame, gpEl('div', { class: 'gp-train-bar' }, auto, every, count));
 
-    // Перелистнули пальцем — это фото и стоит; при «Авто» отсчёт до следующего — заново
-    let ждём = null;
-    strip.addEventListener('scroll', () => {
-      clearTimeout(ждём);
-      ждём = setTimeout(() => {
-        const i = Math.round(strip.scrollLeft / Math.max(1, strip.clientWidth));
-        const p = this.goals()[Math.min(i, this.goals().length - 1)];
-        if (p && p.id !== this._trainId) { this._trainId = p.id; this._restartAuto(); }
-        this._trainCount();
-      }, 120);
-    }, { passive: true });
-    strip.addEventListener('touchstart', () => this._restartAuto(), { passive: true });
+    /* Палец: вбок дальше 40 точек — соседнее фото, и оно стоит (при «Авто» отсчёт до следующего — заново);
+       почти на месте — касание, открыть целиком. Вверх-вниз страница листается как обычно (touch-action). */
+    let x0 = null, y0 = 0;
+    frame.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    frame.addEventListener('touchend', e => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+      x0 = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+        this._trainGo(this._trainIndex() + (dx < 0 ? 1 : -1));
+        this._restartAuto();
+      } else if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+        this._open(this.goals(), this._trainIndex(), 'goal');
+      }
+      e.preventDefault();             // без «клика» следом: касание уже обработано
+    });
+    frame.addEventListener('click', () => this._open(this.goals(), this._trainIndex(), 'goal'));
 
-    this._trainGo(this._trainIndex(), false);
+    this._trainGo(this._trainIndex());
     this._showTrain();
+  },
+
+  // Раскрыть снимки заранее: большой JPEG телефон раскрывает заметное время, и при первом показе было пусто
+  _trainPreload(goals) {
+    this._decoded = this._decoded || new Map();
+    for (const p of goals) {
+      if (this._decoded.has(p.id)) continue;
+      const im = new Image();
+      im.src = this._full(p);
+      this._decoded.set(p.id, im);
+      if (im.decode) im.decode().catch(() => { /* не раскрылся заранее — раскроется при показе */ });
+    }
   },
 
   _trainCount() {
@@ -291,13 +311,22 @@ const GFPhotos = {
     if (count) count.textContent = `${this._trainIndex() + 1}/${this.goals().length}`;
   },
 
-  _trainGo(i, smooth) {
+  // Показать фото номер i (по кругу); смена — плавная, через короткое затухание
+  _trainGo(i) {
     const goals = this.goals();
-    const strip = document.querySelector('#gpTrainGoal .gp-train-strip');
-    if (!goals.length || !strip) return;
+    const img = document.querySelector('#gpTrainGoal .gp-train-img');
+    if (!goals.length || !img) return;
     const k = ((i % goals.length) + goals.length) % goals.length;
-    this._trainId = goals[k].id;
-    strip.scrollTo({ left: k * strip.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
+    const p = goals[k];
+    this._trainId = p.id;
+    const src = this._full(p);
+    if (img.getAttribute('src') !== src) {
+      if (!img.getAttribute('src')) img.src = src;
+      else {
+        img.classList.add('gp-fade');
+        setTimeout(() => { img.src = src; img.classList.remove('gp-fade'); }, 160);
+      }
+    }
     this._trainCount();
   },
 
@@ -315,7 +344,7 @@ const GFPhotos = {
     if (!this._auto.on || this.goals().length < 2 || !this._trainVisible()) return;
     this._autoTimer = setInterval(() => {
       if (document.hidden || this._viewer) return;
-      this._trainGo(this._trainIndex() + 1, true);
+      this._trainGo(this._trainIndex() + 1);
     }, this._auto.sec * 1000);
   },
 

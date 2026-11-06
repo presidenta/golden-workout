@@ -55,25 +55,25 @@
 .gp-tile-add .gp-plus { font-size: 1.8rem; }
 
 /* ----- Эталон над счётчиком подходов (сборка 33) -----
-   Одно фото на всю ширину: листается пальцем с защёлкой на каждом снимке, тело видно целиком. */
+   Одно фото, «Авто» и интервал под ним. */
 #gpTrainGoal { margin-bottom: 10px; }
-.gp-train-strip {
-  display: flex;
+/* Одно фото в рамке (сборка 39): тело видно целиком; вбок листает палец (обработчик в panel.js),
+   вверх-вниз — как всегда, страница. */
+.gp-train-frame {
   height: min(40vh, 340px);
-  overflow-x: auto; scroll-snap-type: x mandatory;
   border-radius: 14px;
   border: 1px solid rgba(212, 175, 55, 0.35);
   background: #0c0c10;
-  scrollbar-width: none;
-}
-.gp-train-strip::-webkit-scrollbar { display: none; }
-.gp-train-slide {
-  flex: 0 0 100%; height: 100%; padding: 0;
-  border: 0; background: none;
-  scroll-snap-align: center; scroll-snap-stop: always;
+  overflow: hidden;
+  touch-action: pan-y;
   cursor: pointer;
 }
-.gp-train-slide img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.gp-train-img {
+  display: block; width: 100%; height: 100%; object-fit: contain;
+  transition: opacity 0.16s ease;
+  -webkit-user-drag: none; user-select: none;
+}
+.gp-train-img.gp-fade { opacity: 0; }
 .gp-train-bar { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
 .gp-auto-btn {
   height: 32px; padding: 0 16px;
