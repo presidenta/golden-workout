@@ -2032,3 +2032,13 @@ input:checked + .slider:before { transform: translateX(18px); }
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 .gf-update-toast.hidden { display: none; }
+
+/* Инструкция упражнения свёрнута в строку «Техника ▸» (сборка 40) */
+.instructions-box summary {
+  cursor: pointer; font-weight: 700; color: var(--gold-light);
+  list-style: none;
+}
+.instructions-box summary::-webkit-details-marker { display: none; }
+.instructions-box summary::after { content: ' ▸'; }
+.instructions-box details[open] summary::after { content: ' ▾'; }
+.instructions-box details[open] summary { margin-bottom: 4px; }

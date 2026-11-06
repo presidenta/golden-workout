@@ -889,7 +889,8 @@
 
     // Instructions
     const ib = document.getElementById('instructionsBox');
-    ib.innerHTML = `<strong>${t.instructions}:</strong> ${this._esc(loc.instructions)}`;
+    /* Свёрнута (сборка 40): владелец 07.11.2026 — «куча текста на всю страницу»; нужна — одно нажатие */
+    ib.innerHTML = `<details><summary>${this._esc(t.instructions)}</summary>${this._esc(loc.instructions)}</details>`;
 
     // Previous result
     this._showPrevResult(ex.id);
@@ -3367,6 +3368,9 @@
 
   // Во время занятия — одна плашка на отказ, не на каждое слово
   _voiceProblem(code) {
+    /* «not-allowed» — браузер не даёт говорить до первого касания экрана (напоминание при открытии и т. п.).
+       Это не поломка: после касания голос есть. Кнопка «Проверить голос» по-прежнему его покажет. */
+    if (code === 'not-allowed') return;
     if (this._voiceProblemShown === code) return;
     this._voiceProblemShown = code;
     const box = document.createElement('div');
