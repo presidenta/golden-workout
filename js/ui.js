@@ -14,6 +14,8 @@
   async init(deps) {
     this.speech = deps.speech;
     this.engine = deps.engine;
+    // Телефон отказался говорить — причина на экране, а не тихо в консоли (сборка 35)
+    if (this.speech) this.speech.onProblem = code => this._voiceProblem(code);
     this.currentLang = store.getState().lang;
     this.t = this.i18n[this.currentLang];
     await this._loadPrograms();
@@ -150,6 +152,7 @@
     // Settings
     on('btnSettings', 'click', () => this._toggleSettings(true));
     on('btnSaveSettings', 'click', () => this._saveSettings());
+    on('btnVoiceCheck', 'click', () => this._voiceCheck());
     on('btnCloseSettings', 'click', () => { this._toggleSettings(false); this._updateBackButton(); });
     on('btnDismissReminder', 'click', () => document.getElementById('reminderBanner').classList.add('hidden'));
 
@@ -3334,7 +3337,50 @@
     document.getElementById('settingsModal').classList.toggle('hidden', !show);
   }
 
+  /* ГОЛОС: ПРОВЕРКА И ПРИЧИНА ОТКАЗА (сборка 35). Владелец 06.11.2026: громкость на месте, а телефон молчит.
+     Страница голос просила — отказ был в самом телефоне, и Chrome называл его кодом, который никто не видел. */
+  _voiceWhy(code) {
+    const why = this.t.voiceWhy || {};
+    const key = String(code).replace(/^error:/, '');
+    return why[key] || key;
+  }
+
+  async _voiceCheck() {
+    const box = document.getElementById('voiceCheckResult');
+    if (!box || !this.speech) return;
+    const t = this.t;
+    box.textContent = t.voiceChecking;
+    const r = await this.speech.check(t.voiceCheckPhrase);
+    const s = store.getState();
+    const lines = [];
+    if (!r.synth) {
+      lines.push(t.voiceNoSynth);
+    } else {
+      lines.push(r.result === 'ok' ? t.voiceOk : t.voiceFail(this._voiceWhy(r.result)));
+      lines.push(t.voiceVoices(r.voices, r.voice || t.voiceNoLangVoice));
+    }
+    if (s.countAloud === false) lines.push(t.voiceCountOff);
+    if ((s.breathMode || 'inhale') === 'off') lines.push(t.voiceBreathOff);
+    if (!this.speech.enabled) lines.push(t.voiceDisabled);
+    box.textContent = lines.join('\n');
+  }
+
+  // Во время занятия — одна плашка на отказ, не на каждое слово
+  _voiceProblem(code) {
+    if (this._voiceProblemShown === code) return;
+    this._voiceProblemShown = code;
+    const box = document.createElement('div');
+    box.className = 'voice-problem';
+    box.setAttribute('role', 'alert');
+    box.textContent = `${this.t.voiceFail(this._voiceWhy(code))}\n${this.t.voiceSeeCheck}`;
+    box.addEventListener('click', () => box.remove());
+    document.body.appendChild(box);
+    setTimeout(() => box.remove(), 12000);
+  }
+
   _fillSettingsForm() {
+    const box = document.getElementById('voiceCheckResult');
+    if (box) box.textContent = '';
     const s = store.getState();
     document.getElementById('inputGlobalSets').value = s.globalSets;
     document.getElementById('inputGlobalTempo').value = s.globalTempo;

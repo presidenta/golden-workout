@@ -2000,3 +2000,22 @@ input:checked + .slider:before { transform: translateX(18px); }
   .eyes-affirm { font-size: 0.8rem; margin-top: 6px; }
   .eyes-exit-btn { margin-top: 8px; padding: 9px; font-size: 0.78rem; }
 }
+
+/* Проверка голоса в настройках и плашка отказа голоса во время занятия (сборка 35) */
+.voice-check-result {
+  margin-top: 8px;
+  font-size: 0.78rem; line-height: 1.45;
+  color: var(--text-main);
+  white-space: pre-line;
+}
+.voice-check-result:empty { display: none; }
+.voice-problem {
+  position: fixed; left: 12px; right: 12px; top: calc(12px + env(safe-area-inset-top));
+  z-index: 500; max-width: 476px; margin: 0 auto;
+  padding: 12px 14px; border-radius: 14px;
+  background: rgba(18, 18, 23, 0.97);
+  border: 1px solid var(--accent-red);
+  color: var(--text-main);
+  font-size: 0.8rem; line-height: 1.45; white-space: pre-line;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
