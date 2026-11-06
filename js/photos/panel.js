@@ -5,11 +5,15 @@
 
    Места на странице:
    #gpGoalCard  — карточка «Мой эталон» на вкладке «Тренировка»;
-   #gpRestGoal  — эталон на экране отдыха: между подходами человек как раз смотрит на телефон.
+   #gpTrainGoal — эталоны над счётчиком подходов, всю тренировку: листаются пальцем или сами («Авто»).
    Фото профиля показывает карточка аккаунта (js/account/panel.js) через GFPhotos.avatar().
    Просмотр во весь экран — окно, которое модуль строит сам.
 
    Снаружи модуль запускается одной строкой из app.js: GFPhotos.start(). */
+
+// Карусель над подходами: интервалы на выбор (с) и что стоит, пока человек не выбрал сам
+const GP_AUTO_STEPS = [5, 10, 15, 30, 60];
+const GP_AUTO_DEFAULT = { on: false, sec: 10 };
 
 function gpEl(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -27,7 +31,9 @@ const GFPhotos = {
   _thumbs: new Map(),     // id → адрес уменьшенной копии
   _fulls: new Map(),      // id → адрес снимка целиком (заводится при первом показе)
   _listeners: [],
-  _restTurn: 0,
+  _trainId: null,         // какой эталон сейчас над подходами — по id, чтобы перерисовка его не сбивала
+  _auto: { ...GP_AUTO_DEFAULT },
+  _autoTimer: null,
   _viewer: null,
   started: false,
 
@@ -40,10 +46,12 @@ const GFPhotos = {
       return;
     }
     this.started = true;
+    const auto = await gpStore.getMeta('auto').catch(() => null);
+    if (auto) this._auto = { on: !!auto.on, sec: GP_AUTO_STEPS.includes(auto.sec) ? auto.sec : GP_AUTO_DEFAULT.sec };
     await this._load();
     this._render();
     this._notify();             // карточка аккаунта могла нарисоваться раньше — без фото
-    this._watchRest();
+    this._watchTraining();
 
     let lang = store.getState().lang;
     store.subscribe(s => { if (s.lang !== lang) { lang = s.lang; this._render(); } });
@@ -163,7 +171,7 @@ const GFPhotos = {
 
   _render() {
     this._renderGoalCard();
-    this._renderRest(false);
+    this._renderTrain();
     if (this._viewer) this._paintViewer();
   },
 
@@ -196,33 +204,119 @@ const GFPhotos = {
     host.replaceChildren(head, strip);
   },
 
-  /* ----- Эталон на экране отдыха -----
-     Каждый отдых — следующий эталон по кругу. Экран отдыха показывает ui.js; модуль узнаёт об этом
-     сам, по смене его класса, — правок в ui.js не нужно. */
-  _watchRest() {
-    const rest = document.getElementById('restScreen');
-    if (!rest) return;
-    // Новый отдых — экран был скрыт хотя бы в одной из пачки перемен и сейчас открыт
-    new MutationObserver(records => {
-      const wasHidden = records.some(r => (r.oldValue || '').split(/\s+/).includes('hidden'));
-      if (wasHidden && !rest.classList.contains('hidden')) this._renderRest(true);
-    }).observe(rest, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
+
+  /* ----- Эталон над счётчиком подходов (сборка 33) -----
+     Владелец 06.11.2026: фото — вверху, над счётчиком подходов, всю тренировку: «смотришь определённую
+     группу мышц, когда качаешь, как она выглядит на фото». Два способа листать:
+       пальцем — выбрал фото, и оно стоит, пока не перелистнёшь;
+       «Авто» — фото меняются сами, интервал выбирается (по умолчанию 10 с). Без «Авто» ничего не движется.
+     Блок виден, пока виден счётчик подходов (#sessionProgress — и во время подхода, и на отдыхе); прежнее
+     фото на экране отдыха убрано — было бы вторым. Выбор «Авто» и интервала помнит этот телефон. */
+  _watchTraining() {
+    const bar = document.getElementById('sessionProgress');
+    if (!bar) return;
+    new MutationObserver(() => this._showTrain())
+      .observe(bar, { attributes: true, attributeFilter: ['class'] });
+    this._showTrain();
   },
 
-  _renderRest(next) {
-    const host = document.getElementById('gpRestGoal');
+  _trainVisible() {
+    const bar = document.getElementById('sessionProgress');
+    return !!bar && !bar.classList.contains('hidden') && this.goals().length > 0;
+  },
+
+  _showTrain() {
+    const host = document.getElementById('gpTrainGoal');
+    if (!host) return;
+    const was = !host.classList.contains('hidden');
+    const now = this._trainVisible();
+    host.classList.toggle('hidden', !now);
+    // Только что показали — встать на выбранное фото: у скрытой ленты ширины нет, сдвиг не держится
+    if (now && !was) this._trainGo(this._trainIndex(), false);
+    this._restartAuto();
+  },
+
+  _trainIndex() {
+    const i = this.goals().findIndex(p => p.id === this._trainId);
+    return i < 0 ? 0 : i;
+  },
+
+  _renderTrain() {
+    const host = document.getElementById('gpTrainGoal');
     if (!host) return;
     const goals = this.goals();
-    if (!goals.length) { host.replaceChildren(); host.classList.add('hidden'); return; }
-    if (next) this._restTurn++;
-    const i = this._restTurn % goals.length;
-    const p = goals[i];
-    host.classList.remove('hidden');
-    host.replaceChildren(gpEl('button', {
-      class: 'gp-rest-photo', type: 'button', 'aria-label': gpText().open,
-      onclick: () => this._open(goals, i, 'goal')
-    }, gpEl('img', { src: this._full(p), alt: '' }),
-    gpEl('span', { class: 'gp-rest-caption', text: gpText().restCaption })));
+    if (!goals.length) { host.replaceChildren(); this._showTrain(); return; }
+    const t = gpText();
+    if (!goals.some(p => p.id === this._trainId)) this._trainId = goals[0].id;
+
+    const strip = gpEl('div', { class: 'gp-train-strip' },
+      goals.map((p, i) => gpEl('button', {
+        class: 'gp-train-slide', type: 'button', 'aria-label': `${t.open} ${i + 1}`,
+        onclick: () => this._open(goals, i, 'goal')
+      }, gpEl('img', { src: this._full(p), alt: '' }))));
+    const count = gpEl('span', { class: 'gp-train-count' });
+    const auto = gpEl('button', {
+      class: 'gp-auto-btn', type: 'button', 'aria-pressed': String(this._auto.on), title: t.autoHint,
+      onclick: () => this._setAuto({ on: !this._auto.on })
+    }, t.auto);
+    const every = gpEl('select', { class: 'gp-auto-every', 'aria-label': t.autoEvery },
+      GP_AUTO_STEPS.map(sec => {
+        const o = gpEl('option', { value: String(sec), text: t.everySec(sec) });
+        if (sec === this._auto.sec) o.selected = true;
+        return o;
+      }));
+    every.addEventListener('change', () => this._setAuto({ sec: Number(every.value) }));
+    host.replaceChildren(strip, gpEl('div', { class: 'gp-train-bar' }, auto, every, count));
+
+    // Перелистнули пальцем — это фото и стоит; при «Авто» отсчёт до следующего — заново
+    let ждём = null;
+    strip.addEventListener('scroll', () => {
+      clearTimeout(ждём);
+      ждём = setTimeout(() => {
+        const i = Math.round(strip.scrollLeft / Math.max(1, strip.clientWidth));
+        const p = this.goals()[Math.min(i, this.goals().length - 1)];
+        if (p && p.id !== this._trainId) { this._trainId = p.id; this._restartAuto(); }
+        this._trainCount();
+      }, 120);
+    }, { passive: true });
+    strip.addEventListener('touchstart', () => this._restartAuto(), { passive: true });
+
+    this._trainGo(this._trainIndex(), false);
+    this._showTrain();
+  },
+
+  _trainCount() {
+    const host = document.getElementById('gpTrainGoal');
+    const count = host && host.querySelector('.gp-train-count');
+    if (count) count.textContent = `${this._trainIndex() + 1}/${this.goals().length}`;
+  },
+
+  _trainGo(i, smooth) {
+    const goals = this.goals();
+    const strip = document.querySelector('#gpTrainGoal .gp-train-strip');
+    if (!goals.length || !strip) return;
+    const k = ((i % goals.length) + goals.length) % goals.length;
+    this._trainId = goals[k].id;
+    strip.scrollTo({ left: k * strip.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
+    this._trainCount();
+  },
+
+  async _setAuto(change) {
+    this._auto = { ...this._auto, ...change };
+    gpStore.setMeta('auto', this._auto).catch(e => console.warn('[Photos] «Авто» не запомнилось:', e));
+    const btn = document.querySelector('#gpTrainGoal .gp-auto-btn');
+    if (btn) btn.setAttribute('aria-pressed', String(this._auto.on));
+    this._restartAuto();
+  },
+
+  _restartAuto() {
+    clearInterval(this._autoTimer);
+    this._autoTimer = null;
+    if (!this._auto.on || this.goals().length < 2 || !this._trainVisible()) return;
+    this._autoTimer = setInterval(() => {
+      if (document.hidden || this._viewer) return;
+      this._trainGo(this._trainIndex() + 1, true);
+    }, this._auto.sec * 1000);
   },
 
   /* ----- Просмотр во весь экран -----

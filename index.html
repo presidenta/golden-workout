@@ -18,9 +18,9 @@
   <link rel="icon" href="assets/icon-192.png">
 
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css?v=32">
-  <link rel="stylesheet" href="js/account/account.css?v=32">
-  <link rel="stylesheet" href="js/photos/photos.css?v=32">
+  <link rel="stylesheet" href="css/style.css?v=33">
+  <link rel="stylesheet" href="js/account/account.css?v=33">
+  <link rel="stylesheet" href="js/photos/photos.css?v=33">
 </head>
 <body>
 <div class="app-wrapper">
@@ -173,6 +173,9 @@
       </div>
     </div>
 
+    <!-- «Мой эталон» над счётчиком подходов — всю тренировку, листаются пальцем или сами («Авто»). Модуль js/photos/ -->
+    <div id="gpTrainGoal" class="hidden"></div>
+
     <!-- ОБЩИЙ ПРОГРЕСС ТРЕНИРОВКИ — виден и во время подхода, и на отдыхе -->
     <div id="sessionProgress" class="session-progress hidden">
       <div class="session-progress-head">
@@ -203,8 +206,6 @@
         <button class="btn-gold" id="btnSkipRest" style="width:auto;padding:10px 24px;" data-i18n="skipRest">Пропустить отдых</button>
         <button class="icon-btn" id="btnRestPlus" title="+10 сек">+</button>
       </div>
-      <!-- Эталон на отдыхе — модуль js/photos/ -->
-      <div id="gpRestGoal" class="hidden"></div>
     </div>
 
     <!-- ВКЛАДКА 1: ТРЕНИРОВКА -->
@@ -734,26 +735,26 @@
   </button>
 </nav>
 
-<script src="js/data.js?v=32"></script>
-<script src="js/methodology.js?v=32"></script>
-<script src="js/eyes.js?v=32"></script>
-<script src="js/treadmill.js?v=32"></script>
-<script src="js/recovery.js?v=32"></script>
-<script src="js/i18n.js?v=32"></script>
-<script src="js/store.js?v=32"></script>
-<script src="js/db.js?v=32"></script>
-<script src="js/timer.js?v=32"></script>
-<script src="js/speech.js?v=32"></script>
-<script src="js/workout.js?v=32"></script>
-<script src="js/ui.js?v=32"></script>
-<script src="js/account/texts.js?v=32"></script>
-<script src="js/account/session.js?v=32"></script>
-<script src="js/account/sync.js?v=32"></script>
-<script src="js/account/panel.js?v=32"></script>
-<script src="js/photos/texts.js?v=32"></script>
-<script src="js/photos/store.js?v=32"></script>
-<script src="js/photos/sync.js?v=32"></script>
-<script src="js/photos/panel.js?v=32"></script>
-<script src="js/app.js?v=32"></script>
+<script src="js/data.js?v=33"></script>
+<script src="js/methodology.js?v=33"></script>
+<script src="js/eyes.js?v=33"></script>
+<script src="js/treadmill.js?v=33"></script>
+<script src="js/recovery.js?v=33"></script>
+<script src="js/i18n.js?v=33"></script>
+<script src="js/store.js?v=33"></script>
+<script src="js/db.js?v=33"></script>
+<script src="js/timer.js?v=33"></script>
+<script src="js/speech.js?v=33"></script>
+<script src="js/workout.js?v=33"></script>
+<script src="js/ui.js?v=33"></script>
+<script src="js/account/texts.js?v=33"></script>
+<script src="js/account/session.js?v=33"></script>
+<script src="js/account/sync.js?v=33"></script>
+<script src="js/account/panel.js?v=33"></script>
+<script src="js/photos/texts.js?v=33"></script>
+<script src="js/photos/store.js?v=33"></script>
+<script src="js/photos/sync.js?v=33"></script>
+<script src="js/photos/panel.js?v=33"></script>
+<script src="js/app.js?v=33"></script>
 </body>
 </html>

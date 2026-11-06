@@ -4,7 +4,7 @@
    просит стили и скрипты именно с этой меткой, и кэш ищет их по
    полному адресу. Без метки заготовленные файлы не находились ни разу
    и лежали в кэше зря. */
-const VERSION = '32';
+const VERSION = '33';
 const CACHE_NAME = 'golden-workout-v' + VERSION;
 const STATIC_ASSETS = [
   './',
