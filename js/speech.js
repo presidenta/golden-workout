@@ -92,6 +92,15 @@ class SpeechController {
     });
   }
 
+  /* ПРОЧИТАТЬ ВСЛУХ ПО ПРОСЬБЕ — кнопка 🔊 у свёрнутого текста (сборка 41). Звучит и при выключенных «Счёт вслух»
+     и дыхании: человек нажал сам. Обрывает сказанное до этого; onEnd — дочитано или оборвано. */
+  read(text, onEnd) {
+    const was = this.enabled;
+    this.enabled = true;
+    this.speak(text, true, { rate: 1, onEnd });
+    this.enabled = was;
+  }
+
   // Оборвать всё сказанное — при паузе и выходе из подхода
   stopSpeaking() {
     if (!this.synth) return;

@@ -1,6 +1,6 @@
 ﻿const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 40",
+    subtitle: "Architect Pro · сборка 41",
     tabs: { workout: "Тренировка", plan: "План", health: "Здоровье", stats: "Календарь", more: "Ещё" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -63,6 +63,7 @@
     chooseProgram: "Выберите программу",
     exCount: (n) => `${n} ${n % 10 === 1 && n % 100 !== 11 ? 'упражнение' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'упражнения' : 'упражнений')}`,
     breathingTitle: "Дыхание",
+    readAloud: "Прочитать вслух", expandText: "Раскрыть текст",
     breathingGuide: {
       press: "Вдох — когда опускаетесь, выдох — когда выжимаете себя вверх. Правило простое: выдох всегда на усилии. Так делают потому, что на выдохе включается брюшной пресс и растёт внутрибрюшное давление — оно держит позвоночник жёстким и даёт опору для толчка. Дыхание не задерживайте: при задержке давление в грудной клетке подскакивает, приток крови к сердцу падает, и в глазах темнеет.",
       pull: "Вдох — когда опускаетесь и сводите лопатки, выдох — когда отталкиваетесь и разводите их. Вдох здесь помогает раскрыть грудную клетку: рёбра расходятся, лопаткам становится куда сойтись. Поэтому в нижней точке имеет смысл задержаться на полсекунды — на полном вдохе.",
@@ -228,7 +229,7 @@
     dayEmpty: "В этот день записей нет."
   },
   en: {
-    subtitle: "Architect Pro · build 40",
+    subtitle: "Architect Pro · build 41",
     tabs: { workout: "Workout", plan: "Plan", health: "Health", stats: "Calendar", more: "More" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -290,6 +291,7 @@
     chooseProgram: "Choose a program",
     exCount: (n) => `${n} ${n === 1 ? 'exercise' : 'exercises'}`,
     breathingTitle: "Breathing",
+    readAloud: "Read aloud", expandText: "Show full text",
     breathingGuide: {
       press: "Inhale as you lower, exhale as you push yourself up. The rule is simple: exhale on the effort. On the exhale the abs engage and intra-abdominal pressure rises — it keeps the spine rigid and gives the push something to work against. Never hold your breath: pressure in the chest spikes, blood return to the heart drops, and your vision goes dark.",
       pull: "Inhale as you lower and squeeze the shoulder blades together, exhale as you push away. The inhale opens the ribcage here, giving the blades room to meet. That is why a half-second pause at the bottom, on a full breath, is worth it.",
@@ -448,7 +450,7 @@
     dayEmpty: "Nothing recorded on this day."
   },
   ua: {
-    subtitle: "Architect Pro · збірка 40",
+    subtitle: "Architect Pro · збірка 41",
     tabs: { workout: "Тренування", plan: "План", health: "Здоров'я", stats: "Календар", more: "Ще" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
@@ -510,6 +512,7 @@
     chooseProgram: "Оберіть програму",
     exCount: (n) => `${n} ${n % 10 === 1 && n % 100 !== 11 ? 'вправа' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'вправи' : 'вправ')}`,
     breathingTitle: "Дихання",
+    readAloud: "Прочитати вголос", expandText: "Розгорнути текст",
     breathingGuide: {
       press: "Вдих — коли опускаєтесь, видих — коли виштовхуєте себе вгору. Правило просте: видих завжди на зусиллі. Так роблять тому, що на видиху вмикається черевний прес і зростає внутрішньочеревний тиск — він тримає хребет жорстким і дає опору для поштовху. Дихання не затримуйте: при затримці тиск у грудній клітці підскакує, приплив крові до серця падає, і в очах темніє.",
       pull: "Вдих — коли опускаєтесь і зводите лопатки, видих — коли відштовхуєтесь. Вдих тут допомагає розкрити грудну клітку: ребра розходяться, лопаткам є куди зійтися. Тому внизу варто затриматись на пів секунди — на повному вдиху.",

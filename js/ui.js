@@ -153,6 +153,7 @@
     on('btnSettings', 'click', () => this._toggleSettings(true));
     on('btnSaveSettings', 'click', () => this._saveSettings());
     on('btnVoiceCheck', 'click', () => this._voiceCheck());
+    this._bindFolds();
     on('btnCloseSettings', 'click', () => { this._toggleSettings(false); this._updateBackButton(); });
     on('btnDismissReminder', 'click', () => document.getElementById('reminderBanner').classList.add('hidden'));
 
@@ -889,8 +890,8 @@
 
     // Instructions
     const ib = document.getElementById('instructionsBox');
-    /* Свёрнута (сборка 40): владелец 07.11.2026 — «куча текста на всю страницу»; нужна — одно нажатие */
-    ib.innerHTML = `<details><summary>${this._esc(t.instructions)}</summary>${this._esc(loc.instructions)}</details>`;
+    // Свёрнута в строку (сборки 40–41): «куча текста на всю страницу» — раскрывается стрелкой, 🔊 читает вслух
+    ib.innerHTML = this._foldHtml(t.instructions, loc.instructions);
 
     // Previous result
     this._showPrevResult(ex.id);
@@ -1164,15 +1165,12 @@
     document.getElementById('previewPlan').textContent =
       `${this._getEffectiveSets()} ${this.t.setsShort} × ${ex.reps} ${this.t.reps} · ${this.t.restBetween(restSecondsFor(ex, prog))}`;
     document.getElementById('previewDesc').textContent = loc.desc;
-    document.getElementById('previewInstructions').innerHTML =
-      `<strong>${this.t.instructions}:</strong> ${this._esc(loc.instructions)}`;
+    document.getElementById('previewInstructions').innerHTML = this._foldHtml(this.t.instructions, loc.instructions);
 
     // Как дышать в этом движении и почему именно так
     const breathBox = document.getElementById('previewBreathing');
     const guide = this.t.breathingGuide[ex.breath];
-    breathBox.innerHTML = guide
-      ? `<strong>${this.t.breathingTitle}:</strong> ${this._esc(guide)}`
-      : '';
+    breathBox.innerHTML = guide ? this._foldHtml(this.t.breathingTitle, guide) : '';
     document.getElementById('btnPreviewStart').textContent = this.t.previewStart;
     document.getElementById('btnPreviewClose').textContent = this.t.close;
 
@@ -2124,7 +2122,7 @@
           <span class="eye-item-amount">${this._esc(amount)}</span>
         </div>
         <div class="eye-item-desc">${this._esc(loc.desc)}</div>
-        <div class="eye-item-how">${this._esc(loc.how)}</div>
+        <div class="eye-item-how">${this._foldHtml('', loc.how)}</div>
         <div class="eye-item-src">${this._esc(this.t.bySource)} ${this._esc(ex.source)}</div>`;
       box.appendChild(row);
     });
@@ -2181,7 +2179,7 @@
     document.getElementById('eyesStepName').textContent =
       dir ? `${loc.name} · ${dir}` : loc.name;
     document.getElementById('eyesStepDesc').textContent = loc.desc;
-    document.getElementById('eyesStepHow').textContent = loc.how;
+    document.getElementById('eyesStepHow').innerHTML = this._foldHtml('', loc.how);
     document.getElementById('btnEyesToggle').textContent = this.t.pause;
     document.getElementById('eyesAffirm').textContent = '';
 
@@ -3336,6 +3334,51 @@
   _toggleSettings(show) {
     if (show) this._fillSettingsForm();
     document.getElementById('settingsModal').classList.toggle('hidden', !show);
+  }
+
+  /* СВЁРНУТЫЙ ТЕКСТ (сборка 41). Владелец 07.11.2026: «два огромных текста — техника и дыхание… узкая
+     полосочка в одну строчку, стрелочка сбоку открывает весь текст; нажимаешь звук — озвучивается».
+     Одна строка: заголовок и начало текста с многоточием, справа 🔊 и стрелка. Стрелка или сама строка —
+     раскрыть и свернуть; 🔊 — прочитать вслух, ещё раз — замолчать. Один помощник на все длинные тексты:
+     техника и дыхание в карточке упражнения, техника на экране подхода, «как делать» в гимнастике глаз. */
+  _foldHtml(title, text) {
+    if (!text) return '';
+    const head = title ? `<strong>${this._esc(title)}:</strong> ` : '';
+    return `<div class="fold">` +
+      `<button type="button" class="fold-main" aria-expanded="false"><span class="fold-line">${head}<span class="fold-text">${this._esc(text)}</span></span></button>` +
+      `<button type="button" class="fold-say" aria-label="${this._esc(this.t.readAloud)}" title="${this._esc(this.t.readAloud)}">` +
+        `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7M18.5 6a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>` +
+      `<button type="button" class="fold-arrow" aria-expanded="false" aria-label="${this._esc(this.t.expandText)}">` +
+        `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` +
+    `</div>`;
+  }
+
+  /* Одним обработчиком на всю страницу и на перехвате: свёрнутые тексты стоят и внутри нажимаемых строк
+     (список упражнений для глаз) — нажатие на стрелку или 🔊 не должно открывать то, что под ними. */
+  _bindFolds() {
+    document.addEventListener('click', e => {
+      const fold = e.target.closest && e.target.closest('.fold');
+      if (!fold) return;
+      if (e.target.closest('.fold-say')) {
+        e.stopPropagation();
+        this._foldSay(fold);
+      } else if (e.target.closest('.fold-main, .fold-arrow')) {
+        e.stopPropagation();
+        const open = !fold.classList.contains('open');
+        fold.classList.toggle('open', open);
+        fold.querySelectorAll('[aria-expanded]').forEach(b => b.setAttribute('aria-expanded', String(open)));
+      }
+    }, true);
+  }
+
+  _foldSay(fold) {
+    if (!this.speech) return;
+    const btn = fold.querySelector('.fold-say');
+    const was = btn.classList.contains('saying');
+    document.querySelectorAll('.fold-say.saying').forEach(b => b.classList.remove('saying'));
+    if (was) { this.speech.stopSpeaking(); return; }
+    btn.classList.add('saying');
+    this.speech.read(fold.querySelector('.fold-line').textContent, () => btn.classList.remove('saying'));
   }
 
   /* ГОЛОС: ПРОВЕРКА И ПРИЧИНА ОТКАЗА (сборка 35). Владелец 06.11.2026: громкость на месте, а телефон молчит.

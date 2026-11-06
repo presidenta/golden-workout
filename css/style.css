@@ -2033,12 +2033,24 @@ input:checked + .slider:before { transform: translateX(18px); }
 }
 .gf-update-toast.hidden { display: none; }
 
-/* Инструкция упражнения свёрнута в строку «Техника ▸» (сборка 40) */
-.instructions-box summary {
-  cursor: pointer; font-weight: 700; color: var(--gold-light);
-  list-style: none;
+/* Свёрнутый текст (сборка 41): одна строка с многоточием, справа 🔊 и стрелка; раскрывается стрелкой или
+   нажатием на строку. Стоит внутри .instructions-box, .breathing-box, .eyes-how, .eye-item-how — их цвет и
+   рамка остаются. */
+.fold { display: flex; align-items: flex-start; gap: 6px; }
+.fold-main {
+  flex: 1; min-width: 0; padding: 4px 0; margin: 0;
+  background: none; border: 0; color: inherit; font: inherit; line-height: inherit;
+  text-align: left; cursor: pointer;
 }
-.instructions-box summary::-webkit-details-marker { display: none; }
-.instructions-box summary::after { content: ' ▸'; }
-.instructions-box details[open] summary::after { content: ' ▾'; }
-.instructions-box details[open] summary { margin-bottom: 4px; }
+.fold-line { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fold.open .fold-line { white-space: normal; }
+.fold-say, .fold-arrow {
+  flex: none; width: 30px; height: 30px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 15px; border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.04); color: var(--gold-light);
+  cursor: pointer;
+}
+.fold-arrow svg { transition: transform 0.2s ease; }
+.fold.open .fold-arrow svg { transform: rotate(90deg); }
+.fold-say.saying { background: var(--gold-gradient); color: #141008; border-color: transparent; }
