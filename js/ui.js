@@ -300,12 +300,14 @@
       });
     return open || (this._tabHistory && this._tabHistory.length > 0)
         || store.getState().currentTab !== 'workout'
-        || (typeof GFPhotos !== 'undefined' && GFPhotos.isOpen());
+        || (typeof GFPhotos !== 'undefined' && GFPhotos.isOpen())
+        || (typeof GFExerciseSettings !== 'undefined' && GFExerciseSettings.isOpen());
   }
 
   _goBack() {
     // Открытое во весь экран фото (модуль js/photos/) — поверх всего, закрывается первым
     if (typeof GFPhotos !== 'undefined' && GFPhotos.close()) { this._updateBackButton(); return; }
+    if (typeof GFExerciseSettings !== 'undefined' && GFExerciseSettings.close()) { this._updateBackButton(); return; }
     // Сначала закрываем то, что открыто поверх раздела
     const close = [
       ['tmLogModal', () => this._skipTreadmillLog()],
@@ -721,7 +723,6 @@
     box.innerHTML = '';
     const prog = this.programs[store.getState().currentProgram];
     if (!prog) return;
-    const effSets = this._getEffectiveSets();
     const items = {};
 
     prog.exercises.forEach((key, idx) => {
@@ -734,7 +735,7 @@
         <img class="exercise-thumb lazy" alt="" loading="lazy">
         <div class="exercise-info">
           <div class="exercise-name">${this._esc(loc.name)}</div>
-          <div class="exercise-details">${effSets} ${this.t.setsShort} × ${ex.reps} ${this.t.reps} | ${this._esc(loc.desc)}</div>
+          <div class="exercise-details">${setsFor(ex, prog)} ${this.t.setsShort} × ${repsFor(ex)} ${this.t.reps} | ${this._esc(loc.desc)}</div>
         </div>
         <div class="exercise-status">⭕</div>
       `;
@@ -866,6 +867,7 @@
 
     document.getElementById('activeExTitle').textContent = loc.name;
     document.getElementById('activeSetBadge').textContent = t.setInfo(st.set, st.totalSets);
+    if (typeof GFExerciseSettings !== 'undefined') GFExerciseSettings.refresh();
     this._setFrames(ex);
     document.getElementById('repDisplay').textContent = '0';
     document.getElementById('phaseDisplay').textContent = t.ready;
@@ -972,14 +974,15 @@
     if (typeof this.currentRep !== 'number') this.currentRep = 0;
     this._clearRepTimers();
     // Паузу поставили уже после последнего повтора — продолжать нечего
-    if (this.currentRep >= ex.reps) { this._finishSet(); return; }
+    if (this.currentRep >= repsFor(ex)) { this._finishSet(); return; }
 
     // Пока идёт подход, кадрами управляют фазы дыхания
     this._stopFrameLoop();
 
     if (ex.breath === 'static') { this._startHoldTimer(ex); return; }
 
-    const tempo = store.getState().globalTempo;
+    // Свой темп упражнения, иначе общий (сборка 42)
+    const tempo = tempoFor(ex);
     const half = tempo * 500;
 
     const overlay = document.getElementById('breathOverlay');
@@ -1037,7 +1040,8 @@
         if (this.speech) this.speech.speak(this.t.exhale);
       }, half + 200);
 
-      if (rep >= ex.reps) {
+      // Своё число повторов читается на каждом повторе: поменяли посреди подхода — считает до нового
+      if (rep >= repsFor(ex)) {
         clearInterval(this.repTimer);
         this.repTimer = null;
         this._repLater(() => this._finishSet(), half + 600);
@@ -1046,7 +1050,7 @@
 
     tick();
     // Последний повтор мог прийти уже в первом тике — тогда счёт не нужен
-    if (this.currentRep < ex.reps) this.repTimer = setInterval(tick, tempo * 1000);
+    if (this.currentRep < repsFor(ex)) this.repTimer = setInterval(tick, tempo * 1000);
   }
 
   /* Статика — планка, удержание в раскате. Здесь reps — это секунды
@@ -1067,10 +1071,10 @@
       const sec = this.currentRep;
       document.getElementById('repDisplay').textContent = sec;
       this._updateSetProgress();
-      if (this.speech && store.getState().countAloud !== false && sec % 10 === 0 && sec < ex.reps) {
+      if (this.speech && store.getState().countAloud !== false && sec % 10 === 0 && sec < repsFor(ex)) {
         this.speech.speak(String(sec));
       }
-      if (sec >= ex.reps) {
+      if (sec >= repsFor(ex)) {
         clearInterval(this.repTimer);
         this.repTimer = null;
         this._repLater(() => this._finishSet(), 600);
@@ -1097,7 +1101,7 @@
   _finishSet() {
     this._clearRepTimers();
     const ex = this.engine.getCurrentExercise();
-    const reps = this.currentRep > 0 ? this.currentRep : (ex ? ex.reps : 0);
+    const reps = this.currentRep > 0 ? this.currentRep : (ex ? repsFor(ex) : 0);
     this.currentRep = 0;
     this._startFrameLoop();
     document.getElementById('actionBtn').dataset.mode = '';
@@ -1163,7 +1167,7 @@
 
     document.getElementById('previewName').textContent = loc.name;
     document.getElementById('previewPlan').textContent =
-      `${this._getEffectiveSets()} ${this.t.setsShort} × ${ex.reps} ${this.t.reps} · ${this.t.restBetween(restSecondsFor(ex, prog))}`;
+      `${setsFor(ex, prog)} ${this.t.setsShort} × ${repsFor(ex)} ${this.t.reps} · ${this.t.restBetween(restSecondsFor(ex, prog))}`;
     document.getElementById('previewDesc').textContent = loc.desc;
     document.getElementById('previewInstructions').innerHTML = this._foldHtml(this.t.instructions, loc.instructions);
 
@@ -1460,7 +1464,7 @@
 
     const totalSets = this.engine.setsForIndex(this.engine.currentExIndex);
     const currentSet = this.engine.currentSet;
-    const totalReps = ex.reps || 0;
+    const totalReps = repsFor(ex) || 0;
     const doneReps = Math.min(this.currentRep || 0, totalReps);
     const leftReps = Math.max(0, totalReps - doneReps);
 
@@ -2748,7 +2752,7 @@
         <span class="manual-nums">
           <input type="number" class="manual-sets" min="1" max="20" value="${sets}" aria-label="${this._esc(this.t.setsShort)}">
           <span class="manual-x">×</span>
-          <input type="number" class="manual-reps" min="1" max="300" value="${ex.reps}" aria-label="${this._esc(this.t.reps)}">
+          <input type="number" class="manual-reps" min="1" max="300" value="${repsFor(ex)}" aria-label="${this._esc(this.t.reps)}">
         </span>`;
       box.appendChild(row);
     });
@@ -3334,6 +3338,21 @@
   _toggleSettings(show) {
     if (show) this._fillSettingsForm();
     document.getElementById('settingsModal').classList.toggle('hidden', !show);
+  }
+
+  /* Поменяли свои числа упражнения (js/exercise-settings/, сборка 42) — всё, где они видны: список
+     программы, открытая карточка, идущий подход (номер подхода, полоски, общий счёт), плашка с числами. */
+  _exerciseSettingsChanged() {
+    this._safe('planList', () => this._renderPlanList());
+    const preview = document.getElementById('previewModal');
+    if (preview && !preview.classList.contains('hidden') && this.previewIndex != null) this._openPreview(this.previewIndex);
+    if (this.engine && this.engine.exercises && this.engine.getCurrentExercise()) {
+      const st = this.engine.getCurrentState();
+      document.getElementById('activeSetBadge').textContent = this.t.setInfo(st.set, st.totalSets);
+      this._safe('setProgress', () => this._updateSetProgress());
+      this._safe('sessionProgress', () => this._updateSessionProgress());
+    }
+    if (typeof GFExerciseSettings !== 'undefined') GFExerciseSettings.refresh();
   }
 
   /* СВЁРНУТЫЙ ТЕКСТ (сборка 41). Владелец 07.11.2026: «два огромных текста — техника и дыхание… узкая

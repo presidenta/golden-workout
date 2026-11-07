@@ -1,0 +1,56 @@
+/* Окно «Настройка упражнения» и кнопки к нему (js/exercise-settings/, сборка 42) */
+
+/* Экран подхода: действующие числа рядом с номером подхода — нажатие открывает окно */
+.ges-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 12px;
+  border-radius: 15px; border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.04); color: var(--gold-light);
+  font-size: 0.78rem; font-weight: 700; font-variant-numeric: tabular-nums;
+  cursor: pointer; white-space: nowrap;
+}
+.ges-badge.own { border-color: var(--gold-primary); background: rgba(212, 175, 55, 0.12); }
+
+/* Карточка упражнения: словами */
+.ges-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 2px 0 10px; padding: 6px 12px;
+  border-radius: 15px; border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.04); color: var(--gold-light);
+  font-size: 0.78rem; font-weight: 700; cursor: pointer;
+}
+
+.ges-overlay {
+  position: fixed; inset: 0; z-index: 450;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+}
+.ges-sheet {
+  position: relative; width: 100%; max-width: 500px;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  border-radius: 22px 22px 0 0;
+  border: 1px solid var(--card-border); border-bottom: 0;
+  background: var(--card-bg);
+  display: grid; gap: 12px;
+}
+.ges-title { font-size: 0.8rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--gold-primary); }
+.ges-name { font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin-top: -6px; padding-right: 40px; }
+.ges-state { font-size: 0.74rem; color: var(--text-muted); margin-top: -6px; }
+.ges-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ges-label { font-size: 0.92rem; font-weight: 700; color: var(--text-main); }
+.ges-unit { font-weight: 400; color: var(--text-muted); }
+.ges-stepper { display: flex; align-items: center; gap: 6px; }
+.ges-step {
+  width: 44px; height: 44px; border-radius: 22px;
+  border: 1px solid var(--gold-primary); background: rgba(212, 175, 55, 0.08);
+  color: var(--gold-light); font-size: 1.4rem; line-height: 1; cursor: pointer;
+}
+.ges-input {
+  width: 64px; height: 44px; text-align: center;
+  border-radius: 12px; border: 1px solid var(--card-border);
+  background: #0c0c10; color: var(--text-main);
+  font-size: 1.15rem; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.ges-hint { font-size: 0.72rem; color: var(--text-muted); margin-top: -6px; }
+.ges-badge-row { display: flex; justify-content: center; margin: 2px 0 8px; }
+.ges-sheet .modal-close { position: absolute; top: 14px; right: 14px; }

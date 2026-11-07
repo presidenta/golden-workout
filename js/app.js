@@ -51,6 +51,8 @@ async function bootstrap() {
     if (typeof GFAccount !== 'undefined') GFAccount.start({ dbReady });
     // Фото профиля спорта и «Мой эталон» — модуль js/photos/
     if (typeof GFPhotos !== 'undefined') GFPhotos.start({ dbReady });
+    // Свои подходы, повторы и темп у каждого упражнения — модуль js/exercise-settings/
+    if (typeof GFExerciseSettings !== 'undefined') GFExerciseSettings.start({ ui });
 
     // Restore volume UI
     document.querySelectorAll('.vol-btn').forEach(b => {

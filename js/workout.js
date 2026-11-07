@@ -55,14 +55,13 @@ class WorkoutEngine {
 
   /* ----- Общий объём тренировки ----- */
 
-  // Сколько подходов у упражнения по его номеру.
-  // У разминки и заминки всегда один, у основных — по настройке объёма.
+  // Сколько подходов у упражнения по его номеру. У разминки и заминки один, у основных — по настройке
+  // объёма; своё число упражнения (сборка 42) — поверх того и другого.
   setsForIndex(idx) {
-    if (!this.withWarmup) return this.getEffectiveSets();
     const mainStart = WARMUP_EXERCISES.length;
     const mainEnd = this.exercises.length - COOLDOWN_EXERCISES.length;
-    const isAccessory = idx < mainStart || idx >= mainEnd;
-    return isAccessory ? 1 : this.getEffectiveSets();
+    const isAccessory = this.withWarmup && (idx < mainStart || idx >= mainEnd);
+    return setsFor(this.exercises[idx], this.prog, isAccessory);
   }
 
   // Всего подходов за тренировку — с разминкой и заминкой.
@@ -95,7 +94,7 @@ class WorkoutEngine {
       exerciseId: ex.id,
       set: this.currentSet,
       weight: data.weight || 0,
-      actualReps: data.actualReps || ex.reps,
+      actualReps: data.actualReps || repsFor(ex),
       rpe: data.rpe || 7,
       notes: data.notes || '',
       timestamp: Date.now()
@@ -104,9 +103,7 @@ class WorkoutEngine {
 
   nextSet() {
     const ex = this.getCurrentExercise();
-    const totalSets = this.getEffectiveSets();
-    const isAccessory = this.isWarmup() || this.isCooldown();
-    const setsForThis = isAccessory ? 1 : totalSets;
+    const setsForThis = this.setsForIndex(this.currentExIndex);
 
     if (this.currentSet < setsForThis) {
       this.currentSet++;
@@ -193,7 +190,7 @@ class WorkoutEngine {
       phase: this.phase,
       exercise: this.getCurrentExercise(),
       set: this.currentSet,
-      totalSets: this.isWarmup() || this.isCooldown() ? 1 : this.getEffectiveSets(),
+      totalSets: this.setsForIndex(this.currentExIndex),
       progress: `${this.currentExIndex + 1}/${this.exercises.length}`
     };
   }
@@ -209,6 +206,32 @@ function effectiveSets(prog, s = store.getState()) {
   if (s.volumeLevel === 'min') return Math.max(1, base - 1);
   if (s.volumeLevel === 'max') return base + 2;
   return base;
+}
+
+/* СВОИ ЧИСЛА У КАЖДОГО УПРАЖНЕНИЯ (сборка 42).
+
+   Владелец 07.11.2026: «делаю доску синюю — грудь, отжимаюсь двадцать, а там забито двенадцать, и
+   поменять негде; общая настройка неправильная — нужна своя в каждом упражнении: подходы, повторы,
+   скорость». Свои числа лежат в настройках (exerciseSettings: { id: { sets, reps, tempo } }) и уходят на
+   сервер вместе с остальными. Чего у упражнения своего нет — берётся как прежде: повторы из описания
+   упражнения, подходы из программы и объёма, темп общий. Окно правки — js/exercise-settings/. */
+function exerciseOwn(ex, s = store.getState()) {
+  return (ex && s.exerciseSettings && s.exerciseSettings[ex.id]) || {};
+}
+
+// Повторы (у статики — секунды удержания)
+function repsFor(ex, s = store.getState()) {
+  return exerciseOwn(ex, s).reps || (ex ? ex.reps : 0);
+}
+
+// Секунд на одно повторение: с этим шагом идут счёт и «вдох»
+function tempoFor(ex, s = store.getState()) {
+  return exerciseOwn(ex, s).tempo || s.globalTempo || 4;
+}
+
+// Подходы: своё число упражнения, иначе один у разминки и заминки, иначе по программе и объёму
+function setsFor(ex, prog, isAccessory = false, s = store.getState()) {
+  return exerciseOwn(ex, s).sets || (isAccessory ? 1 : effectiveSets(prog, s));
 }
 
 /* Отдых после подхода. Свой у каждого упражнения: суставной хватает

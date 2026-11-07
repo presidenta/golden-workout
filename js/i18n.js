@@ -1,6 +1,6 @@
 ﻿const I18N = {
   ru: {
-    subtitle: "Architect Pro · сборка 41",
+    subtitle: "Architect Pro · сборка 42",
     tabs: { workout: "Тренировка", plan: "План", health: "Здоровье", stats: "Календарь", more: "Ещё" },
     settings: "Системные настройки",
     volume: { min: "📉 Мин (-1 подх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 подх)" },
@@ -229,7 +229,7 @@
     dayEmpty: "В этот день записей нет."
   },
   en: {
-    subtitle: "Architect Pro · build 41",
+    subtitle: "Architect Pro · build 42",
     tabs: { workout: "Workout", plan: "Plan", health: "Health", stats: "Calendar", more: "More" },
     settings: "Settings",
     volume: { min: "📉 Min (-1 set)", norm: "⭐ 100% Standard", max: "🔥 Max (+2 sets)" },
@@ -450,7 +450,7 @@
     dayEmpty: "Nothing recorded on this day."
   },
   ua: {
-    subtitle: "Architect Pro · збірка 41",
+    subtitle: "Architect Pro · збірка 42",
     tabs: { workout: "Тренування", plan: "План", health: "Здоров'я", stats: "Календар", more: "Ще" },
     settings: "Системні налаштування",
     volume: { min: "📉 Мін (-1 підх)", norm: "⭐ 100% Стандарт", max: "🔥 Макс (+2 підх)" },
