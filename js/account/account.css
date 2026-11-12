@@ -114,3 +114,37 @@
 }
 .gf-link { font-size: 0.78rem; color: var(--gold-light); text-align: center; }
 .gf-msg { font-size: 0.8rem; color: var(--gold-light); }
+
+/* Доступ закрыт (access.js): поверх всего приложения, по центру */
+.gf-access-closed {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(7, 7, 9, 0.96);
+}
+.gf-access-closed__card {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 420px);
+  padding: 24px;
+  border: 1px solid var(--gold-primary);
+  border-radius: 18px;
+  background: #121216;
+  text-align: center;
+}
+.gf-access-closed__lock { font-size: 2rem; }
+.gf-access-closed h2 { margin: 0; color: var(--gold-primary); font-size: 1.2rem; }
+.gf-access-closed__until { margin: 0; color: var(--gold-light); font-size: 0.85rem; }
+.gf-access-closed__until:empty { display: none; }
+.gf-access-closed__text { margin: 0; color: var(--text-muted); font-size: 0.9rem; line-height: 1.45; }
+.gf-access-closed button {
+  min-height: 44px;
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 700;
+}
+.gf-access-closed__check { border: 0; background: var(--gold-primary); color: #121216; }
+.gf-access-closed__out { border: 1px solid var(--gold-primary); background: none; color: var(--gold-primary); }

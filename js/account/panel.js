@@ -339,6 +339,8 @@ const GFAccount = {
     gfSync.onExpired = () => gfPanel.showMessage(gfText().err.unauthorized);
     gfPanel._sessionId = gfAccount.session && gfAccount.session.userId;
     gfAccount.onChange(() => gfPanel._sessionChanged());
+    // Доступ к GoldenFit — как у «Кванта»: срок с сервера, закрытие по дате (access.js)
+    gfAccessGate.start();
     if (typeof GFPhotos !== 'undefined') GFPhotos.onChange(() => gfPanel.render());
 
     let lang = store.getState().lang;

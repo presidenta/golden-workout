@@ -127,7 +127,11 @@ const gfSync = {
       else if (changed.size && this.onRemoteChange) this.onRemoteChange(changed);
       return true;
     } catch (e) {
-      if (e.status === 401) {
+      // Доступ к GoldenFit закрыт администратором или вышел срок — закрываемся (access.js), сессию не трогаем
+      if (e.code === 'access_expired') {
+        gfAccess.close();
+        gfAccount._emit();
+      } else if (e.status === 401) {
         await gfAccount.expired();
         if (this.onExpired) this.onExpired();
       }

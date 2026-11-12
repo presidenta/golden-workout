@@ -102,8 +102,10 @@ const gfAccount = {
   },
 
   async loginWithPassword(login, password) {
-    const { token, userId } = await this.request('/api/session/login', { login, password }, null);
-    const me = await this.request('/api/me', undefined, token).catch(() => null);
+    // app — сервер проверяет доступ к GoldenFit, а не к «Кванту» (access/apps.js)
+    const { token, userId } = await this.request('/api/session/login', { login, password, app: 'goldenfit' }, null);
+    const me = await this.request('/api/me?app=goldenfit', undefined, token).catch(() => null);
+    if (me && 'accessUntil' in me) gfAccess.remember(me.accessUntil);
     return this._adopt({ token, userId, displayName: me && me.displayName, accountNo: me && me.accountNo });
   },
 
@@ -131,8 +133,16 @@ const gfAccount = {
   async refreshProfile() {
     const s = this.session;
     if (!s) return;
-    const me = await this.request('/api/me').catch(() => null);
+    // Заодно срок доступа к GoldenFit (js/account/access.js): закрыли — закрываемся, прислали дату — помним
+    let me = null;
+    try {
+      me = await this.request('/api/me?app=goldenfit');
+    } catch (e) {
+      if (e.code === 'access_expired' && this.session === s) { gfAccess.close(); this._emit(); }
+      return;
+    }
     if (!me || this.session !== s) return;
+    if ('accessUntil' in me) { gfAccess.remember(me.accessUntil); this._emit(); }
     const { avatar, ...rest } = s;     // в сборке 31 фото «Кванта» лежало в сессии — убираем
     const next = {
       ...rest,
@@ -151,6 +161,7 @@ const gfAccount = {
   async logout() {
     const s = this.session;
     this.session = null;
+    gfAccess.forget();
     await gfStore.setMeta('session', null);
     this._emit();
     if (s) await this.request('/api/session/logout', {}, s.token).catch(() => {});
@@ -159,6 +170,7 @@ const gfAccount = {
   // Сервер больше не принимает сессию: срок вышел, сменили пароль, заблокировали
   async expired() {
     this.session = null;
+    gfAccess.forget();
     await gfStore.setMeta('session', null);
     this._emit();
   },
