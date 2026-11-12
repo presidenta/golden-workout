@@ -148,3 +148,15 @@
 }
 .gf-access-closed__check { border: 0; background: var(--gold-primary); color: #121216; }
 .gf-access-closed__out { border: 1px solid var(--gold-primary); background: none; color: var(--gold-primary); }
+
+/* Вход обязателен: экран «Вход в GoldenFit» с карточкой входа (access.js → login) */
+.gf-login-gate { overflow-y: auto; align-items: start; background: var(--bg-color, #070709); }
+.gf-login-gate__inner {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 440px);
+  margin: 10vh auto 24px;
+  text-align: center;
+}
+.gf-login-gate__inner h2 { margin: 0; color: var(--gold-primary); font-size: 1.3rem; }
+.gf-login-gate__inner .gf-card { text-align: left; }

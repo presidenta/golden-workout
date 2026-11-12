@@ -7,7 +7,8 @@
    следующей связи сервер не пришлёт новую; сервер ответил access_expired — закрыто сразу. Сеть и падение
    сервера закрытием не считаются. История тренировок при закрытии НЕ стирается.
 
-   Закрыто и человек вошёл — поверх всего экран «Доступ закрыт» с кнопками «Проверить» и «Выйти». */
+   Закрыто и человек вошёл — поверх всего экран «Доступ закрыт» с кнопками «Проверить» и «Выйти».
+   Не вошёл — экран «Вход в GoldenFit»: без аккаунта приложение не работает (владелец 13.11.2026). */
 
 const GF_ACCESS_KEY = 'gf-access';
 const GF_ACCESS_UNLIMITED = 'unlimited';
@@ -59,7 +60,43 @@ const gfAccessGate = {
   node: null,
   checkedAt: 0,
 
+  /* Вход обязателен (владелец 13.11.2026: «в любое приложение должен быть доступ»): без аккаунта GoldenFit
+     закрыт экраном «Вход в GoldenFit». На нём та же карточка входа, что на вкладке «Ещё» (#gfAccountCard):
+     она переезжает сюда и возвращается на место после входа. Вошла — дальше работает и без интернета. */
+  loginNode: null,
+  home: null,
+
+  login(show) {
+    const card = document.getElementById('gfAccountCard');
+    if (show && !this.loginNode && card) {
+      const t = gfText();
+      const box = document.createElement('div');
+      box.className = 'gf-access-closed gf-login-gate';
+      box.setAttribute('role', 'dialog');
+      box.setAttribute('aria-modal', 'true');
+      const inner = document.createElement('div');
+      inner.className = 'gf-login-gate__inner';
+      const h = document.createElement('h2');
+      h.textContent = t.loginTitle;
+      const p = document.createElement('p');
+      p.className = 'gf-access-closed__text';
+      p.textContent = t.loginText;
+      this.home = document.createComment('gfAccountCard');
+      card.before(this.home);
+      inner.append(h, p, card);
+      box.append(inner);
+      document.body.appendChild(box);
+      this.loginNode = box;
+    } else if (!show && this.loginNode) {
+      if (card && this.home) this.home.replaceWith(card);
+      this.loginNode.remove();
+      this.loginNode = null;
+      this.home = null;
+    }
+  },
+
   update() {
+    this.login(!gfAccount.session);
     const closed = !!(gfAccount.session && !gfAccess.isOpen());
     if (!closed) {
       if (this.node) { this.node.remove(); this.node = null; }
