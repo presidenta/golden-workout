@@ -89,7 +89,7 @@ const GF_ACCOUNT_TEXTS = {
     check: 'Перевірити',
     stillClosed: 'Доступ поки закрито. Напишіть адміністратору «Кванта».',
     err: {
-      invalid_credentials: 'Невірний логін або пароль',
+      invalid_credentials: 'Неправильний логін або пароль',
       pending_approval: 'Заявку ще не схвалено',
       blocked: 'Акаунт заблоковано',
       access_expired: 'Термін доступу до кабінету закінчився',

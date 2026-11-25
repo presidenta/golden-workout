@@ -78,7 +78,7 @@
     frames: ["assets/exercises/crunches/0.jpg", "assets/exercises/crunches/1.jpg"],
     ru: { name: "Скручивания на пресс", desc: "Проработка мышц живота.", instructions: "Руки за головой, не тяните шею. Лопатки отрываются от пола. Поясница прижата." },
     en: { name: "Ab Crunches", desc: "Core definition.", instructions: "Hands behind head, don't pull neck. Shoulders off floor. Lower back pressed." },
-    ua: { name: "Скручування на прес", desc: "М'язи живота.", instructions: "Руки за головою, не тягніть шию. Лопатки відриваються. Поясниця притиснута." }
+    ua: { name: "Скручування на прес", desc: "М'язи живота.", instructions: "Руки за головою, не тягніть шию. Лопатки відриваються. Поперек притиснутий." }
   },
   biceps_curl: {
     id: 'biceps_curl', reps: 15, rest: 60,
@@ -105,7 +105,7 @@
     frames: ["assets/exercises/plank/0.jpg", "assets/exercises/plank/1.jpg"],
     ru: { name: "Планка (сек)", desc: "Статический кор и стабилизаторы.", instructions: "Локти под плечами. Тело — прямая доска. Не провисать поясницей. Дышать." },
     en: { name: "Plank (sec)", desc: "Static core stability.", instructions: "Elbows under shoulders. Body straight plank. Don't sag lower back. Breathe." },
-    ua: { name: "Планка (сек)", desc: "Статичний кор.", instructions: "Лікті під плечима. Тіло — пряма дошка. Не провисати поясницею. Дихайте." }
+    ua: { name: "Планка (сек)", desc: "Статичний кор.", instructions: "Лікті під плечима. Тіло — пряма дошка. Не провисати в попереку. Дихайте." }
   },
   mountain_climbers: {
     id: 'mountain_climbers', reps: 30, rest: 60,
@@ -141,7 +141,7 @@
     frames: ["assets/exercises/goltis_joint/0.jpg", "assets/exercises/goltis_joint/1.jpg"],
     ru: { name: "Суставная гимнастика (Голтис)", desc: "Импульсная микрокапилярная активация.", instructions: "Мягкие круговые движения в суставах без усилий. Дыхание спокойное. Не форсировать." },
     en: { name: "Goltis Joint Routine", desc: "Micro-capillary activation.", instructions: "Gentle circular joint movements without force. Breathe calmly. Don't push." },
-    ua: { name: "Суглобова гімнастика (Голтис)", desc: "Імпульсна активація.", instructions: "М'які кругові рухи в суглобах. Дихання спокійне. Не форсувати." }
+    ua: { name: "Суглобова гімнастика (Голтіс)", desc: "Імпульсна активація.", instructions: "М'які кругові рухи в суглобах. Дихання спокійне. Не форсувати." }
   },
 
   /* ===== КОЛЕСО ДЛЯ ПРЕССА (ролик на четырёх колёсах) =====
